@@ -88,7 +88,7 @@ Based on these environmental factors, the system classifies breeding risk into:
 
 ## 🏛 Municipality Dashboard
 
-![Municipality Dashboard](Screenshots/municipality%20dashbord.png)
+![Municipality Dashboard](Screenshots/muunicipality%20dashbord.png)
 
 ---
 
