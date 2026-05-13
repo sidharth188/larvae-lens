@@ -1,435 +1,143 @@
 # 🦟 Larvae Lens
 
-AI-Based Mosquito Breeding Detection & Municipal Reporting System
+AI-Based Mosquito Breeding Detection and Municipal Surveillance System.
+
+Larvae Lens is a smart surveillance platform designed to detect mosquito breeding hotspots using Computer Vision and AI-based image classification. The system allows citizens to report stagnant water locations, automatically classifies the breeding risk level, and notifies municipalities through a centralized dashboard and WhatsApp alerts.
 
 ---
 
-## 📌 Project Overview
+# 🚀 Features
 
-Larvae Lens is an AI-powered smart surveillance platform designed to detect mosquito breeding hotspots using stagnant water images.
-
-The platform allows:
-
-* Users to upload stagnant water images
-* AI-based risk classification (HIGH / MEDIUM / LOW)
-* Municipality dashboard for monitoring complaints
-* WhatsApp alerts for high-risk zones
-* GPS-based location tracking
-* Priority escalation system using Razorpay
-* IBM Watson Assistant chatbot integration
-* Cloud-based data storage using IBM Cloudant
+✅ AI-Based Risk Classification  
+✅ Smart Stagnant Water Detection  
+✅ Municipality Dashboard  
+✅ User Complaint Portal  
+✅ WhatsApp Alert System  
+✅ GPS-Based Location Tracking  
+✅ Complaint History Tracking  
+✅ Priority Municipal Reports  
+✅ Real-Time Map Visualization  
+✅ Cloud Database Integration  
 
 ---
 
-# 🚀 Technologies Used
+# 🛠 Technologies Used
 
 ## Frontend
-
-* HTML5
-* CSS3
-* Bootstrap 5
-* JavaScript
+- HTML
+- CSS
+- Bootstrap
+- JavaScript
 
 ## Backend
+- Python
+- Flask
 
-* Python
-* Flask
-* Flask-CORS
+## AI & Image Processing
+- OpenCV
+- NumPy
+- Computer Vision
 
 ## Database
+- IBM Cloudant
 
-* IBM Cloudant NoSQL Database
+## APIs & Services
+- Twilio WhatsApp API
+- Geolocation API
+- OpenStreetMap / Leaflet.js
 
-## Cloud Services
-
-* IBM Cloud
-* IBM Watson Assistant
-* IBM App ID
-
-## APIs & Integrations
-
-* Twilio WhatsApp API
-* Razorpay Payment Gateway
-* Geolocation API
+## Deployment
+- GitHub Pages
+- Render
 
 ---
 
-# ✨ Features
+# 🧠 AI Classification Model
 
-## 👤 User Dashboard
+The system uses Computer Vision and heuristic AI-based classification techniques to analyze uploaded stagnant water images.
 
-* User Signup/Login
-* Personalized Welcome Message
-* Upload Mosquito Breeding Reports
-* GPS Location Tracking
-* Complaint History
-* Priority Municipal Escalation
-* WhatsApp Emergency Alerts
+The classifier performs:
 
-## 🏢 Municipality Dashboard
+- HSV color analysis
+- Green/murky water detection
+- Brightness analysis
+- Edge density analysis
+- Water reflection detection
 
-* Real-time complaint monitoring
-* Risk level tracking
-* Complaint completion system
-* Priority report identification
-* Dynamic database updates
+Based on these environmental factors, the system classifies breeding risk into:
 
-## 🤖 AI Features
-
-* Stagnant water risk classification
-* Automated HIGH-risk alerting
-* Smart municipal reporting
-
----
-
-# 📂 Project Structure
-
-```bash
-LarveLens/
-│
-├── backend/
-│   ├── app.py
-│   ├── ai_model/
-│   ├── database/
-│   ├── notification/
-│   ├── uploads/
-│   ├── requirements.txt
-│   └── .env
-│
-├── frontend/
-│   ├── index.html
-│   ├── login.html
-│   ├── userdashboard.html
-│   ├── admindashboard.html
-│   ├── css/
-│   ├── js/
-│   └── images/
-│
-└── README.md
-```
-
----
-
-# ⚙️ Installation Guide
-
-## 1️⃣ Clone Repository
-
-```bash
-git clone https://github.com/YOUR_USERNAME/larvae-lens.git
-```
-
----
-
-## 2️⃣ Open Project
-
-```bash
-cd larvae-lens
-```
-
----
-
-## 3️⃣ Create Virtual Environment
-
-```bash
-python -m venv venv
-```
-
----
-
-## 4️⃣ Activate Environment
-
-### Windows
-
-```bash
-venv\Scripts\activate
-```
-
-### Mac/Linux
-
-```bash
-source venv/bin/activate
-```
-
----
-
-## 5️⃣ Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-# 🔐 Environment Variables
-
-Create a `.env` file inside backend folder.
-
-```env
-CLOUDANT_USERNAME=your_username
-CLOUDANT_PASSWORD=your_password
-CLOUDANT_URL=your_cloudant_url
-
-TWILIO_ACCOUNT_SID=your_sid
-TWILIO_AUTH_TOKEN=your_token
-TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
-YOUR_WHATSAPP_NUMBER=whatsapp:+91xxxxxxxxxx
-```
-
----
-
-# ▶️ Running Backend
-
-Inside backend folder:
-
-```bash
-python app.py
-```
-
-Backend will run on:
-
-```bash
-
-```
-
----
-
-# ▶️ Running Frontend
-
-Use VS Code Live Server.
-
-Open:
-
-```text
-index.html
-```
-
-Frontend runs on:
-
-```text
-http://127.0.0.1:5500
-```
-
----
-
-# ☁️ IBM Cloud Setup
-
-## IBM Cloudant
-
-* Create Cloudant service
-* Generate credentials
-* Configure `.env`
-
-## IBM App ID
-
-* Create App ID service
-* Configure authentication
-* Enable login flow
-
-## IBM Watson Assistant
-
-* Create assistant
-* Add web chat integration
-* Paste integration script into frontend
-
----
-
-# 📲 Twilio WhatsApp Setup
-
-* Create Twilio account
-* Activate Sandbox
-* Add WhatsApp credentials to `.env`
-* High-risk complaints trigger automatic alerts
-
----
-
-# 💳 Razorpay Integration
-
-Users can submit:
-
-* Normal reports
-* Priority Municipal Reports
-
-Priority reports use Razorpay payment gateway.
-
----
-
-# 🌐 Deployment Guide
-
-# Frontend Deployment (GitHub Pages)
-
-## Push Project to GitHub
-
-```bash
-git init
-git add .
-git commit -m "Initial Commit"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/larvae-lens.git
-git push -u origin main
-```
-
----
-
-## Enable GitHub Pages
-
-Go to:
-
-```text
-Repository → Settings → Pages
-```
-
-Select:
-
-```text
-Deploy from branch
-```
-
-Branch:
-
-```text
-main
-```
-
-Folder:
-
-```text
-/ root
-```
-
-Your frontend will deploy at:
-
-```text
-https://YOUR_USERNAME.github.io/larvae-lens
-```
-
----
-
-# Backend Deployment (Render)
-
-## Create requirements.txt
-
-```bash
-pip freeze > requirements.txt
-```
-
----
-
-## Deploy on Render
-
-Go to:
-
-```text
-https://render.com
-```
-
-Create:
-
-```text
-New Web Service
-```
-
-Connect GitHub repository.
-
----
-
-## Build Command
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## Start Command
-
-```bash
-gunicorn app:app
-```
-
----
-
-# 🔥 Important Deployment Fix
-
-Replace all:
-
-```javascript
-
-```
-
-with:
-
-```javascript
-https://YOUR_RENDER_APP.onrender.com
-```
-
-inside frontend JS files.
-
----
-
-# 🛡️ Security Notes
-
-Add `.gitignore`
-
-```text
-venv/
-.env
-uploads/
-__pycache__/
-```
-
-Never upload:
-
-* API keys
-* passwords
-* .env file
+- LOW Risk
+- MEDIUM Risk
+- HIGH Risk
 
 ---
 
 # 📸 Screenshots
 
-## Landing Page
+## 🏠 Home Page
 
-* Dark-themed AI surveillance homepage
-
-## User Dashboard
-
-* Upload system
-* Complaint history
-* Priority reporting
-
-## Municipality Dashboard
-
-* Complaint monitoring
-* Risk management
+![Home Page](index.png)
 
 ---
 
-# 📈 Future Enhancements
+## 🔐 User Authentication
 
-* Real AI model training
-* Mobile application
-* Live map visualization
-* SMS notifications
-* Heatmap analytics
-* IoT sensor integration
-* Drone surveillance
+![Login](login.png)
 
 ---
 
-# 👨‍💻 Developer
+## 🏛 Municipality Dashboard
 
-## Siddharth Sagar
+![Municipality Dashboard](muunicipality%20dashbord.png)
 
-MCA Student | AI & IoT Enthusiast
+---
+
+## 📍 Risk Reports & Map
+
+![Reports](uploaded%20reports.png)
+
+---
+
+## 📜 User Complaint History
+
+![Complaint History](user%20complaint%20history.png)
+
+---
+
+## 👤 User Dashboard
+
+![User Dashboard](userdashbord.png)
+
+---
+
+# 🌐 Live Project
+
+## Frontend
+https://sidharth188.github.io/larvae-lens/
+
+## Backend
+https://larvae-lens-backend.onrender.com/
+
+---
+
+# 📌 Future Scope
+
+- Deep Learning CNN Integration
+- YOLO-Based Detection
+- AI Heatmaps
+- Municipality Analytics Dashboard
+- Real-Time Outbreak Prediction
+- Mobile Application Integration
+- Smart City IoT Integration
+
+---
+
+# 👨‍💻 Developed By
+
+Siddharth Sagar
 
 ---
 
 # 📄 License
 
-This project is developed for educational and research purposes.
-
----
-
-# ⭐ Larvae Lens
-
-Smart AI Surveillance for Safer Cities.
+This project is developed for educational, research, and smart-city surveillance purposes.
