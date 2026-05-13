@@ -1,3 +1,5 @@
+import traceback
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from ai_model.classifier import classify_risk
@@ -43,7 +45,7 @@ def upload():
     
     try:
 
-      if risk_level == "HIGH":
+      if True:
 
         send_whatsapp_alert(
 
@@ -57,7 +59,11 @@ def upload():
 
     except Exception as e:
 
+      import traceback
+
       print("WhatsApp Error:", e)
+
+      traceback.print_exc()
 
 
     report_data = {
