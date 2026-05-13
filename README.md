@@ -76,37 +76,37 @@ Based on these environmental factors, the system classifies breeding risk into:
 
 ## 🏠 Home Page
 
-![Home Page](index.png)
+![Home](Screenshots/index.png)
 
 ---
 
 ## 🔐 User Authentication
 
-![Login](login.png)
+![Login](Screenshots/login.png)
 
 ---
 
 ## 🏛 Municipality Dashboard
 
-![Municipality Dashboard](muunicipality%20dashbord.png)
+![Municipality Dashboard](Screenshots/municipality%20dashbord.png)
 
 ---
 
 ## 📍 Risk Reports & Map
 
-![Reports](uploaded%20reports.png)
+![Reports](Screenshots/uploaded%20reports.png)
 
 ---
 
 ## 📜 User Complaint History
 
-![Complaint History](user%20complaint%20history.png)
+![Complaint History](Screenshots/user%20complaint%20history.png)
 
 ---
 
 ## 👤 User Dashboard
 
-![User Dashboard](userdashbord.png)
+![User Dashboard](Screenshots/userdashbord.png)
 
 ---
 
