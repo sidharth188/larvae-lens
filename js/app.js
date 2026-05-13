@@ -42,7 +42,7 @@ localStorage.getItem(
             try{
 
                 const response = await fetch(
-                    "http://127.0.0.1:5000/upload",
+                    "https://larvae-lens-backend.onrender.com/upload",
                     {
                         method:"POST",
                         body:formData
@@ -86,7 +86,7 @@ Risk Level: ${data.risk_level}`
 async function loadReports(){
 
     const response = await fetch(
-        "http://127.0.0.1:5000/reports"
+        "https://larvae-lens-backend.onrender.com/user-reports/"
     );
 
     const reports = await response.json();
