@@ -285,6 +285,8 @@ def user_reports(email):
 
             reports.append(report)
 
+        reports= reports[::-1]  # Reverse to show latest first
+
     return jsonify(reports)
 if __name__ == '__main__':
     app.run(debug=True)

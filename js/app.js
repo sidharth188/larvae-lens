@@ -86,7 +86,7 @@ Risk Level: ${data.risk_level}`
 async function loadReports(){
 
     const response = await fetch(
-        "https://larvae-lens-backend.onrender.com/reports/"
+        "https://larvae-lens-backend.onrender.com/reports"
     );
 
     const reports = await response.json();
@@ -94,10 +94,13 @@ async function loadReports(){
 
     const table =
     document.getElementById("reportTable");
+    if(!table){
+    return;
+}
 
     table.innerHTML = "";
 
-    reports.forEach(report => {
+    reports.reverse().forEach(report => {
 
         table.innerHTML += `
 
