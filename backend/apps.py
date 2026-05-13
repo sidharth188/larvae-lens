@@ -232,7 +232,7 @@ def login_user():
                 "success": True,
 
                 "message":"Login Successful",
-                "name": user.get('name')
+                "name": user.get('name'),
                 "email": user.get('email')
 
             })
