@@ -97,7 +97,7 @@ async function loadReports(){
 
     table.innerHTML = "";
 
-    reports.forEach(report => {
+    reports.reverse().forEach(report => {
 
         table.innerHTML += `
 

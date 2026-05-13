@@ -18,7 +18,9 @@ def send_whatsapp_alert(
 
     latitude,
 
-    longitude
+    longitude,
+    image_url
+    
 
 ):
 
@@ -32,6 +34,8 @@ Location:
 {latitude}, {longitude}
 
 Status: PENDING
+
+Image: {image_url}
 
 Municipality action required.
 '''

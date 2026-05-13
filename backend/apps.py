@@ -1,6 +1,7 @@
 import traceback
 
 from flask import Flask, request, jsonify
+from flask import send_from_directory
 from flask_cors import CORS
 from ai_model.classifier import classify_risk
 from database.cloudant_config import db
@@ -13,7 +14,14 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 UPLOAD_FOLDER = "uploads"
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
 
+    return send_from_directory(
+        app.config['UPLOAD_FOLDER'],
+        filename
+    )
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route('/')
@@ -41,6 +49,7 @@ def upload():
     )
 
     image.save(image_path)
+    image_url = f"https://larvae-lens-backend.onrender.com/uploads/{image.filename}"
     risk_level = classify_risk(image_path)
     
     try:
@@ -53,7 +62,8 @@ def upload():
 
             latitude,
 
-            longitude
+            longitude,
+            image_url
 
         )
 
