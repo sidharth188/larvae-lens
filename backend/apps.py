@@ -1,7 +1,6 @@
 import traceback
 
 from flask import Flask, request, jsonify
-from flask import send_from_directory
 from flask_cors import CORS
 from ai_model.classifier import classify_risk
 from database.cloudant_config import db
@@ -10,6 +9,8 @@ from notification.whatsaap import send_whatsapp_alert
 import os
 
 app = Flask(__name__)
+from flask import send_from_directory
+
 
 CORS(app, resources={r"/*": {"origins": "*"}})
 
