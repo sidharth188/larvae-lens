@@ -6,6 +6,7 @@ from ai_model.classifier import classify_risk
 from database.cloudant_config import db
 from database.cloudant_config import db, users_db
 from notification.whatsaap import send_whatsapp_alert
+from flask import send_from_directory
 import os
 
 app = Flask(__name__)
@@ -20,7 +21,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def uploaded_file(filename):
 
     return send_from_directory(
-        app.config['UPLOAD_FOLDER'],
+        UPLOAD_FOLDER,
         filename
     )
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -138,6 +139,7 @@ def get_reports():
             "longitude": doc.get('longitude'),
 
             "priority": doc.get('priority'),
+            "timestamp": doc.get('timestamp'),
 
         }
 
