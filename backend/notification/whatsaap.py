@@ -19,12 +19,14 @@ def send_whatsapp_alert(
     latitude,
 
     longitude,
+
     image_url
-    
 
 ):
 
-    message = f'''
+    try:
+
+        message = f'''
 
 ⚠ Larvae Lens Alert
 
@@ -40,14 +42,19 @@ Image: {image_url}
 Municipality action required.
 '''
 
-    client.messages.create(
+        msg = client.messages.create(
 
-        body=message,
+            body=message,
 
-        from_=os.getenv("TWILIO_WHATSAPP_NUMBER"),
+            from_=os.getenv("TWILIO_WHATSAPP_NUMBER"),
 
-        to=os.getenv("YOUR_WHATSAPP_NUMBER")
+            to=os.getenv("YOUR_WHATSAPP_NUMBER")
 
-    )
+        )
 
-    print("WhatsApp Alert Sent")
+        print("WhatsApp Alert Sent")
+        print("SID:", msg.sid)
+
+    except Exception as e:
+
+        print("TWILIO ERROR:", e)
