@@ -170,10 +170,21 @@ def signup():
     data = request.json
 
     name = data['name']
-
     email = data['email']
-
     password = data['password']
+
+    # Check existing user
+    for user in users_db:
+
+        if user.get('email') == email:
+
+            return jsonify({
+
+                "success": False,
+
+                "message": "Email already exists"
+
+            })
 
     user_data = {
 
@@ -188,6 +199,7 @@ def signup():
     users_db.create_document(user_data)
 
     return jsonify({
+
         "success": True,
 
         "message":"User Registered Successfully"
@@ -221,6 +233,7 @@ def login_user():
 
                 "message":"Login Successful",
                 "name": user.get('name')
+                "email": user.get('email')
 
             })
 

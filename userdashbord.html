@@ -179,9 +179,7 @@ onclick="submitReport()">
 
 function logout(){
 
-    localStorage.removeItem(
-        "isLoggedIn"
-    );
+    localStorage.clear();
 
     window.location.href =
     "index.html";
