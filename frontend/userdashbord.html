@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Larvae Lens Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+   <!-- Navbar -->
+<nav class="navbar navbar-dark px-4 custom-navbar">
+
+    <div class="container-fluid">
+
+        <!-- Logo -->
+        <a class="navbar-brand"
+        href="index.html">
+
+            <img
+            src="images/logo.png"
+            alt="Larvae Lens"
+            height="65">
+
+        </a>
+        <div class="d-flex align-items-center gap-2">
+        <button
+class="btn nav-btn admin-btn"
+onclick="payNow()">
+
+    Priority Municipal Report ₹20
+
+</button>
+<button
+class="btn nav-btn admin-btn"
+onclick="logout()">
+ <i class="bi bi-box-arrow-right"></i>
+    Logout
+
+</button>
+</div>
+
+    </div>
+
+
+</nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+        <a href="#">
+            <i class="bi bi-speedometer2"></i>
+            Dashboard
+        </a>
+
+        <a href="#">
+            <i class="bi bi-upload"></i>
+            Upload Report
+        </a>
+
+        <a href="#">
+            <i class="bi bi-clock-history"></i>
+            Complaint Status
+        </a>
+
+        <a href="#">
+            <i class="bi bi-credit-card"></i>
+            Priority Report
+        </a>
+
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Welcome -->
+        <div class="dashboard-card">
+
+            <h1>
+               Welcome
+<span id="welcomeUser"></span>
+👋
+            </h1>
+
+            <p>
+                Monitor and report mosquito breeding hotspots in your area.
+            </p>
+
+        </div>
+
+        <!-- Upload Section -->
+        <div class="dashboard-card">
+
+            <h3>
+                Upload Mosquito Breeding Report
+            </h3>
+
+            <div class="upload-box mt-4">
+
+                <i class="bi bi-cloud-upload"
+                style="font-size:60px;color:#00ffaa;"></i>
+
+                <h4 class="mt-3">
+                    Upload Stagnant Water Image
+                </h4>
+
+                <input type="file"
+id="imageInput"
+class="form-control mt-3">
+
+                <button class="btn nav-btn admin-btn"
+onclick="submitReport()">
+    Submit Report
+</button>
+
+
+
+            </div>
+
+        </div>
+
+        <!-- Complaint History -->
+        <div class="dashboard-card">
+
+            <h3>
+                Complaint History
+            </h3>
+ <table class="table table-dark table-hover mt-4">
+
+        <thead>
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Risk Level</th>
+
+                <th>Status</th>
+
+                <th>Time</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="historyTable">
+
+        </tbody>
+
+    </table>
+
+
+
+        </div>
+
+    </div>
+<script src="js/app.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  window.watsonAssistantChatOptions = {
+    integrationID: "5cdf7aee-f898-4bd9-a8fb-93cf08d294b5", // The ID of this integration.
+    region: "https://integrations.au-syd.assistant.watson.appdomain.cloud", // The region your integration is hosted in.
+    serviceInstanceID: "e30db63e-c7e5-43a7-9104-8ca30b3a58e2", // The ID of your service instance.
+    onLoad: async (instance) => { await instance.render(); }
+  };
+  setTimeout(function(){
+    const t=document.createElement('script');
+    t.src="https://web-chat.global.assistant.watson.appdomain.cloud/versions/" + (window.watsonAssistantChatOptions.clientVersion || 'latest') + "/WatsonAssistantChatEntry.js";
+    document.head.appendChild(t);
+  });
+</script>
+<script>
+
+function logout(){
+
+    localStorage.removeItem(
+        "isLoggedIn"
+    );
+
+    window.location.href =
+    "index.html";
+
+}
+
+</script>
+<script>
+
+const userName =
+
+localStorage.getItem(
+    "userName"
+);
+
+document.getElementById(
+    "welcomeUser"
+).innerText = userName;
+
+</script>
+<script>
+
+async function loadUserHistory(){
+
+    const email =
+    localStorage.getItem(
+        "userEmail"
+    );
+
+    const response = await fetch(
+
+        `http://127.0.0.1:5000/user-reports/${email}`
+
+    );
+
+    const reports =
+    await response.json();
+
+    const table =
+    document.getElementById(
+        "historyTable"
+    );
+
+    table.innerHTML = "";
+
+    reports.forEach((report,index)=>{
+
+        table.innerHTML += `
+
+        <tr>
+
+            <td>
+                #LL10${index + 1}
+            </td>
+
+            <td>
+                ${report.risk_level}
+            </td>
+
+            <td>
+                ${report.status}
+            </td>
+
+            <td>
+                ${report.timestamp}
+            </td>
+
+        </tr>
+
+        `;
+
+    });
+
+}
+
+loadUserHistory();
+
+</script>
+</body>
+</html>
