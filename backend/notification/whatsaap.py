@@ -54,6 +54,7 @@ Municipality action required.
 
         print("WhatsApp Alert Sent")
         print("SID:", msg.sid)
+        print("MESSAGE STATUS:", msg.status)
 
     except Exception as e:
 
