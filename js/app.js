@@ -86,7 +86,7 @@ Risk Level: ${data.risk_level}`
 async function loadReports(){
 
     const response = await fetch(
-        "https://larvae-lens-backend.onrender.com/user-reports/"
+        "https://larvae-lens-backend.onrender.com/reports/"
     );
 
     const reports = await response.json();
