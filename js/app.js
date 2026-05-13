@@ -107,7 +107,17 @@ async function loadReports(){
         <tr>
 
             <td>
-                ${report.image}
+                <img
+
+src="https://larvae-lens-backend.onrender.com/uploads/${report.image}"
+
+width="120"
+
+height="80"
+
+style="border-radius:10px;object-fit:cover;"
+
+/>
             </td>
 
             <td class="${report.risk_level.toLowerCase()}">

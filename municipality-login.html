@@ -14,24 +14,23 @@
 
     <style>
 
-        body{
 
-            background:#0d1117;
 
-            display:flex;
+       body{
 
-            justify-content:center;
+    background: linear-gradient(rgba(0,0,0,0.7),
+    rgba(0,0,0,0.7)),
+    url('../images/hero.jpg');
+        background-size: cover;
+    background-position: center;
 
-            align-items:center;
+    color:white;
 
-            height:100vh;
+    font-family:Arial;
 
-            color:white;
+    margin:0;
 
-            font-family:Arial;
-
-        }
-
+}
         .login-box{
 
             background:#161b22;
@@ -63,14 +62,55 @@
             font-weight:bold;
 
         }
+        .custom-navbar{
+
+    background:#161b22;
+
+    padding:15px 30px;
+
+}
+
+.login-container{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    height:85vh;
+
+}
 
     </style>
 
 </head>
 
 <body>
+       <!-- Navbar -->
+<nav class="navbar navbar-dark px-4 custom-navbar">
 
-    <div class="login-box">
+
+        <!-- Logo -->
+        <a class="navbar-brand"
+        href="index.html">
+
+            <img
+            src="images/logo.png"
+            alt="Larvae Lens"
+            height="65">
+
+        </a>
+        
+
+
+
+
+</nav>
+
+    <div class="login-container">
+
+<div class="login-box">
 
         <h1>
             Municipality Login
@@ -105,6 +145,8 @@
         </button>
 
     </div>
+  
+</div>
 
 <script>
 
