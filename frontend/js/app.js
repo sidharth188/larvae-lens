@@ -42,7 +42,7 @@ localStorage.getItem(
             try{
 
                 const response = await fetch(
-                    "https://larvae-lens-backend.onrender.com/upload",
+                    "/upload",
                     {
                         method:"POST",
                         body:formData
@@ -86,7 +86,7 @@ Risk Level: ${data.risk_level}`
 async function loadReports(){
 
     const response = await fetch(
-        "https://larvae-lens-backend.onrender.com/user-reports/"
+        "/reports"
     );
 
     const reports = await response.json();
@@ -192,7 +192,7 @@ async function markCompleted(id){
 
     await fetch(
 
-        `https://larvae-lens-backend.onrender.com/update-status/${id}`,
+        `/update-status/${id}`,
 
         {
             method:"PUT"
@@ -213,7 +213,7 @@ if(window.location.pathname.includes("admindashboard.html")){
 async function loadMap(){
 
     const response = await fetch(
-        "https://larvae-lens-backend.onrender.com/reports"
+        "/reports"
     );
 
     const reports = await response.json();
