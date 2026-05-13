@@ -100,14 +100,18 @@ async function loadReports(){
 
     table.innerHTML = "";
 
-    reports.reverse().forEach(report => {
+ reports.sort((a,b)=>
 
+    b.id.localeCompare(a.id)
+
+).forEach(report => {
         table.innerHTML += `
 
         <tr>
 
-            <td>
-                <img
+           <td>
+
+<img
 
 src="https://larvae-lens-backend.onrender.com/uploads/${report.image}"
 
@@ -117,8 +121,11 @@ height="80"
 
 style="border-radius:10px;object-fit:cover;"
 
+onerror="this.src='images/no-image.png'"
+
 />
-            </td>
+
+</td>
 
             <td class="${report.risk_level.toLowerCase()}">
                 ${report.risk_level}
