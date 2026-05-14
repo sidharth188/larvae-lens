@@ -29,7 +29,7 @@
             min-height:100vh;
             background:
             linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.85)),
-            url('../images/hero.jpg');
+            url('images/hero.jpg');
 
             background-size:cover;
             background-position:center;
@@ -378,49 +378,7 @@ onclick="handleAuth()">
         </div>
 
     </div>
-<script>
 
-function showSignup(){
-
-    document.getElementById(
-        "name"
-    ).style.display = "block";
-
-    document.getElementById(
-        "authButton"
-    ).innerText = "Sign Up";
-
-    document.getElementById(
-        "signupTab"
-    ).classList.add("active");
-
-    document.getElementById(
-        "loginTab"
-    ).classList.remove("active");
-
-}
-
-function showLogin(){
-
-    document.getElementById(
-        "name"
-    ).style.display = "none";
-
-    document.getElementById(
-        "authButton"
-    ).innerText = "Sign In";
-
-    document.getElementById(
-        "loginTab"
-    ).classList.add("active");
-
-    document.getElementById(
-        "signupTab"
-    ).classList.remove("active");
-
-}
-
-</script>
 <script>
 
 let isSignup = false;
@@ -516,7 +474,19 @@ endpoint =
 
     }
 
-    try{
+    const button =
+document.getElementById(
+    "authButton"
+);
+
+button.disabled = true;
+
+button.innerText =
+isSignup ?
+"Signing Up..." :
+"Signing In...";
+
+try{
 
         const response = await fetch(
 
@@ -568,9 +538,21 @@ if(data.success){
 
         console.log(error);
 
-        alert("Authentication Failed");
+        alert(
+"Server waking up... Please try again in few seconds."
+);
 
     }
+finally{
+
+    button.disabled = false;
+
+    button.innerText =
+    isSignup ?
+    "Sign Up" :
+    "Sign In";
+
+}
 
 }
 
