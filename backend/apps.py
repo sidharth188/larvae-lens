@@ -1,5 +1,5 @@
 import traceback
-
+import uuid
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from ai_model.classifier import classify_risk
@@ -10,7 +10,7 @@ from flask import send_from_directory
 import os
 
 app = Flask(__name__)
-from flask import send_from_directory
+
 
 
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -45,13 +45,15 @@ def upload():
     priority = request.form.get('priority')
     email = request.form['email']
 
+    unique_filename = f"{uuid.uuid4()}_{image.filename}"
+
     image_path = os.path.join(
-        UPLOAD_FOLDER,
-        image.filename
-    )
+    UPLOAD_FOLDER,
+    unique_filename
+)
 
     image.save(image_path)
-    image_url = f"https://larvae-lens-backend.onrender.com/uploads/{image.filename}"
+    image_url = f"https://larvae-lens-backend.onrender.com/uploads/{unique_filename}"
     risk_level = classify_risk(image_path)
     
     try:
@@ -80,7 +82,7 @@ def upload():
 
     report_data = {
 
-    "image": image.filename,
+    "image": unique_filename,
 
     "latitude": latitude,
 
@@ -103,7 +105,7 @@ def upload():
 
     print("Risk Level:", risk_level)
 
-    print("Image Saved:", image.filename)
+    print("Image Saved:", unique_filename)
 
     print("Latitude:", latitude)
     print("Longitude:", longitude)
