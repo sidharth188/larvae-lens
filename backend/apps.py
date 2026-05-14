@@ -1,5 +1,7 @@
 import traceback
 import uuid
+import cv2
+import gc
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from ai_model.classifier import classify_risk
@@ -35,6 +37,13 @@ def home():
 def upload():
 
     image = request.files['image']
+    if image.content_length and image.content_length > 5 * 1024 * 1024:
+
+     return jsonify({
+
+        "message":"Image too large"
+
+    }),400
 
     latitude = request.form['latitude']
 
@@ -53,9 +62,17 @@ def upload():
 )
 
     image.save(image_path)
+
+    img = cv2.imread(image_path)
+
+    img = cv2.resize(img, (600, 600))
+
+    cv2.imwrite(image_path, img)
     image_url = f"https://larvae-lens-backend.onrender.com/uploads/{unique_filename}"
     risk_level = classify_risk(image_path)
-    
+    del img
+    gc.collect()
+
     try:
 
       if True:
@@ -124,7 +141,11 @@ def get_reports():
 
     reports = []
 
-    for doc in db:
+    docs = list(db)
+
+    docs = docs[-30:]
+
+    for doc in docs:
 
         report = {
 
@@ -293,4 +314,4 @@ def user_reports(email):
 
     return jsonify(reports)
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
