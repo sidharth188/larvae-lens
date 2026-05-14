@@ -1,5 +1,4 @@
 import traceback
-import base64
 import uuid
 import cv2
 import gc
@@ -65,9 +64,7 @@ def upload():
 )
 
     image.save(image_path)
-    with open(image_path, "rb") as img_file:
-        image_base64 = base64.b64encode(img_file.read()).decode('utf-8')
-
+    
     img = cv2.imread(image_path)
 
     img = cv2.resize(img, (600, 600))
@@ -105,7 +102,7 @@ def upload():
     report_data = {
 
     "image": unique_filename,
-    "image_base64": image_base64,
+  
 
     "latitude": latitude,
 
@@ -158,7 +155,6 @@ def get_reports():
             "id": doc.get('_id'),
 
             "image": doc.get('image'),
-            "image_base64": doc.get('image_base64'),
 
             "risk_level": doc.get('risk_level'),
 
