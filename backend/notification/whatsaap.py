@@ -14,6 +14,8 @@ client = Client(
 
 def send_whatsapp_alert(
 
+    user_name,
+
     risk_level,
 
     latitude,
@@ -30,18 +32,24 @@ def send_whatsapp_alert(
 
 ⚠ Larvae Lens Alert
 
-Risk Level: {risk_level}
+👤 Reported By:
+{user_name}
 
-Location:
-{latitude}, {longitude}
+🚨 Risk Level:
+{risk_level}
 
-Status: PENDING
+📍 Location:
+https://maps.google.com/?q={latitude},{longitude}
 
-Image: {image_url}
+📸 Uploaded Image:
+{image_url}
+
+📌 Status:
+PENDING
 
 Municipality action required.
-'''
 
+'''
         msg = client.messages.create(
 
             body=message,
