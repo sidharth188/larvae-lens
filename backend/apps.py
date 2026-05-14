@@ -55,6 +55,7 @@ def upload():
     
     priority = request.form.get('priority')
     email = request.form['email']
+    user_name = request.form['user_name']
 
     unique_filename = f"{uuid.uuid4()}_{image.filename}"
 
@@ -79,16 +80,19 @@ def upload():
 
       if True:
 
-        send_whatsapp_alert(
+         send_whatsapp_alert(
+
+            user_name,
 
             risk_level,
 
             latitude,
 
             longitude,
+
             image_url
 
-        )
+)
 
     except Exception as e:
 
