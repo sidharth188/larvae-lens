@@ -150,7 +150,6 @@ def get_reports():
 
     docs = list(db)
 
-    docs = docs[-30:]
 
     for doc in docs:
 
@@ -174,6 +173,13 @@ def get_reports():
         }
 
         reports.append(report)
+        reports.sort(
+
+    key=lambda x: x['timestamp'],
+
+    reverse=True
+
+)
 
     return jsonify(reports)
 
