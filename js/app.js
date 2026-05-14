@@ -129,8 +129,7 @@ height="80"
 
 style="border-radius:10px;object-fit:cover;"
 
-onerror="this.src='images/no-image.png'"
-
+onerror="this.src='https://placehold.co/120x80?text=No+Image'"
 />
 
 </td>
