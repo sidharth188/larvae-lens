@@ -49,7 +49,9 @@ def upload():
 
     longitude = request.form['longitude']
 
-    timestamp = request.form['timestamp']
+    from datetime import datetime
+
+    timestamp = datetime.utcnow().isoformat()
     
     priority = request.form.get('priority')
     email = request.form['email']
