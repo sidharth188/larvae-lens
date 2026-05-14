@@ -108,9 +108,10 @@ async function loadReports(){
 
     table.innerHTML = "";
 
- reports.sort((a,b)=>
+reports.sort((a,b)=>
 
-    b.id.localeCompare(a.id)
+    new Date(b.timestamp) -
+    new Date(a.timestamp)
 
 ).forEach(report => {
         table.innerHTML += `
