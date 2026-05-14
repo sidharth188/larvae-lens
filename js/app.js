@@ -17,6 +17,10 @@ async function submitReport(priority=false){
 localStorage.getItem(
     "userEmail"
 );
+const userName =
+localStorage.getItem(
+    "userName"
+);
 
             const latitude =
             position.coords.latitude;
@@ -37,6 +41,10 @@ localStorage.getItem(
             formData.append(
     "email",
     email
+);
+formData.append(
+    "user_name",
+    userName
 );
 
             try{
