@@ -122,8 +122,7 @@ reports.sort((a,b)=>
 
 <img
 
-src="https://larvae-lens-backend.onrender.com/uploads/${report.image}"
-
+src="data:image/jpeg;base64,${report.image_base64}"
 width="120"
 
 height="80"
