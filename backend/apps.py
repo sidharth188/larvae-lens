@@ -68,7 +68,7 @@ def upload():
     
     img = cv2.imread(image_path)
 
-    img = cv2.resize(img, (600, 600))
+    img = cv2.resize(img, (300, 300))
 
     cv2.imwrite(image_path, img)
     image_url = f"https://larvae-lens-backend.onrender.com/uploads/{unique_filename}"
