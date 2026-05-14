@@ -10,7 +10,7 @@ def classify_risk(image_path):
         return "LOW"
 
     # Resize for consistency
-    image = cv2.resize(image, (400, 400))
+    image = cv2.resize(image, (300, 300))
 
     # -----------------------------
     # HSV COLOR ANALYSIS
