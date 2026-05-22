@@ -71,7 +71,14 @@ Based on these environmental factors, the system classifies breeding risk into:
 - HIGH Risk
 
 ---
+## Phase 2 Goals
 
+- CNN-based image classification
+- Dataset collection
+- Real-time analytics
+- Heatmap visualization
+- Smart prediction system
+---
 # 📸 Screenshots
 
 ## 🏠 Home Page
