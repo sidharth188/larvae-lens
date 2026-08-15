@@ -21,6 +21,7 @@ MODEL3_PATH = (
     r"\inspect-open-stagnant-water-zip-and"
     r"\runs\model3_balanced_v3\weights\best.pt"
 )
+MODEL4_PATH = r"C:\Users\siddh\Desktop\Larvelens\runs\detect\model4-larvae-v1\weights\best.pt"
 
 
 class VisionEngine:
@@ -67,6 +68,9 @@ class VisionEngine:
 
         # Load Model 3
         self.model3 = YOLO(MODEL3_PATH)
+
+        # Load Model 4
+        self.model4 = YOLO(MODEL4_PATH)
 
     # ========================================================
     # MAIN ANALYSIS PIPELINE
@@ -402,19 +406,68 @@ class VisionEngine:
     # ========================================================
 
     def run_model4(self, image_path, source):
-        """
-        Model 4:
-        Mosquito larvae detection.
+       """
+       Model 4:
+       Mosquito larvae detection.
 
-        Currently a placeholder.
-        """
+       Classes:
+        0: Bukan Jentik
+        1: Jentik
 
-        return {
-            "detected": False,
-            "confidence": 0.0,
-            "source": source
-        }
+       Only class 1 (Jentik) counts as biological evidence.
+       """
 
+       results = self.model4.predict(
+           source=str(image_path),
+           imgsz=640,
+           conf=0.25,
+           verbose=False
+       )
+
+       larvae_confidences = []
+       bukan_jentik_confidences = []
+
+       for result in results:
+
+           if result.boxes is None:
+               continue
+
+           for cls, conf in zip(
+            result.boxes.cls.tolist(),
+            result.boxes.conf.tolist()
+           ):
+            class_id = int(cls)
+            confidence = float(conf)
+
+            if class_id == 1:
+                # Jentik = mosquito larvae
+                larvae_confidences.append(confidence)
+
+            elif class_id == 0:
+                # Bukan Jentik = not mosquito larvae
+                bukan_jentik_confidences.append(confidence)
+
+    # Biological evidence exists only when
+    # at least one Jentik detection is found.
+       larvae_detected = len(larvae_confidences) > 0
+
+       return {
+           "detected": larvae_detected,
+
+           "confidence": (
+               max(larvae_confidences)
+               if larvae_confidences
+               else 0.0
+           ),
+
+           "larvae_count": len(larvae_confidences),
+
+           "non_larvae_count": len(
+               bukan_jentik_confidences
+           ),
+
+           "source": source
+       }
     # ========================================================
     # FINAL RESULT BUILDER
     # ========================================================
