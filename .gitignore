@@ -33,3 +33,7 @@ Thumbs.db
 backend/.env
 backend/flask_session/
 backend/uploads/
+
+# Frontend configurations
+frontend/js/config.js
+
