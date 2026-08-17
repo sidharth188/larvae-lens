@@ -4,7 +4,8 @@ import requests
 
 from datetime import datetime, timezone
 
-from population_engine import PopulationEngine
+from backend.ai_model.population_engine import PopulationEngine
+from backend.ai_model.hotspot_engine import HotspotEngine
 
 
 class EnvironmentalEngine:
@@ -98,6 +99,9 @@ class EnvironmentalEngine:
         self.population_engine = PopulationEngine(
             radius_m=self.POPULATION_RADIUS_M,
             year=2025
+        )
+        self.hotspot_engine = HotspotEngine(
+        radius_m=500
         )
 
         print(
@@ -1294,6 +1298,67 @@ class EnvironmentalEngine:
                 "source":
                     "WorldPop"
             }
+    # ========================================================
+    # HISTORICAL HOTSPOTS
+    # ========================================================
+
+    def fetch_historical_hotspots(
+        self,
+        latitude,
+        longitude
+    ):
+        """
+        Run Historical Hotspot Engine.
+
+        Primary analysis radius:
+        500 m
+
+    This method only retrieves historical evidence.
+    It does NOT calculate risk.
+        """
+
+        try:
+
+            return self.hotspot_engine.analyze(
+            latitude=latitude,
+            longitude=longitude
+        )
+
+        except Exception as error:
+
+            print(
+            "Historical Hotspot Engine error:",
+            error
+        )
+
+        return {
+            "hotspot_engine":
+                "historical-hotspot-engine-v1",
+
+            "status":
+                "error",
+
+            "search_radius_m":
+                500,
+
+            "hotspots_within_500m":
+                None,
+
+            "nearest_hotspot_distance_m":
+                None,
+
+            "historical_cases_within_500m":
+                None,
+
+            "most_recent_hotspot_year":
+                None,
+
+            "hotspots":
+                [],
+
+            "error":
+                str(error)
+        }
 
     # ========================================================
     # MAIN COLLECTION
@@ -1322,6 +1387,10 @@ class EnvironmentalEngine:
         estimated_population=None,
 
         population_density=None,
+
+        schools_nearby=None,
+        hospitals_nearby=None,
+        colleges_nearby=None,
 
         historical_hotspots=None,
 
@@ -1432,6 +1501,17 @@ class EnvironmentalEngine:
 
                 latitude,
 
+                longitude
+            )
+        )
+
+        # ====================================================
+        # HISTORICAL HOTSPOTS
+        # ====================================================
+
+        historical_risk = (
+            self.fetch_historical_hotspots(
+                latitude,
                 longitude
             )
         )
@@ -1625,23 +1705,29 @@ class EnvironmentalEngine:
 
             "historical_risk": {
 
-                "status":
-                    "not_connected",
+                "status": historical_risk.get("status"),
+                    
 
-                "search_radius_m":
-                    500,
+                "search_radius_m":historical_risk.get(
+                                  "search_radius_m",
+                                    500
+                                       ),
 
-                "hotspots_within_500m":
-                    historical_hotspots,
 
-                "nearest_hotspot_distance_m":
-                    None,
+                "hotspots_within_500m": historical_risk.get(
+                                        "hotspots_within_500m"
+                                          ),
 
-                "historical_cases_within_500m":
-                    historical_cases,
+                "nearest_hotspot_distance_m": historical_risk.get(
+                                              "nearest_hotspot_distance_m"
+                                             ),
 
-                "most_recent_hotspot_year":
-                    None,
+                "historical_cases_within_500m": historical_risk.get(
+                                                "historical_cases_within_500m"
+                                                  ),
+
+                "most_recent_hotspot_year": historical_risk.get("most_recent_hotspot_year"
+                                             ),
 
                 "source":
                     "LarvaeLens historical database"
