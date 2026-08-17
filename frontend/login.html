@@ -28,7 +28,7 @@
             min-height:100vh;
             background:
             linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.85)),
-            url('../images/hero.jpg');
+            url('images/hero.jpg');
 
             background-size:cover;
             background-position:center;
@@ -232,6 +232,52 @@
             background:rgba(255,255,255,0.1);
         }
 
+        .google-btn{
+            width:100%;
+            padding:14px;
+            border:1px solid rgba(255,255,255,0.15);
+            border-radius:12px;
+            background:rgba(255,255,255,0.08);
+            color:white;
+            font-weight:600;
+            font-size:17px;
+            transition:0.3s;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:10px;
+            margin-top:10px;
+        }
+
+        .google-btn:hover{
+            background:rgba(255,255,255,0.15);
+            transform:translateY(-2px);
+            box-shadow:0 0 20px rgba(255,255,255,0.1);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #bdbdbd;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .divider:not(:empty)::before {
+            margin-right: .5em;
+        }
+
+        .divider:not(:empty)::after {
+            margin-left: .5em;
+        }
+
         .footer-text{
             margin-top:25px;
             color:#a5a5a5;
@@ -370,6 +416,16 @@ onclick="handleAuth()">
 
 </form>
 
+            <div class="divider">or</div>
+
+            <button
+            type="button"
+            class="google-btn"
+            id="googleAuthButton"
+            onclick="handleGoogleAuth()">
+                <i class="bi bi-google"></i> Sign in with Google
+            </button>
+
             <div class="footer-text">
                 © 2026 Larvae Lens | Smart Public Health Platform
             </div>
@@ -377,202 +433,119 @@ onclick="handleAuth()">
         </div>
 
     </div>
-<script>
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword,
+    updateProfile,
+    onAuthStateChanged,
+    GoogleAuthProvider,
+    signInWithPopup
+  } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+  
+  import { ENV } from './js/config.js';
 
-function showSignup(){
+  // Initialize Firebase
+  const app = initializeApp(ENV.FIREBASE_CONFIG);
+  const auth = getAuth(app);
 
-    document.getElementById(
-        "name"
-    ).style.display = "block";
+  let isSignup = false;
 
-    document.getElementById(
-        "authButton"
-    ).innerText = "Sign Up";
-
-    document.getElementById(
-        "signupTab"
-    ).classList.add("active");
-
-    document.getElementById(
-        "loginTab"
-    ).classList.remove("active");
-
-}
-
-function showLogin(){
-
-    document.getElementById(
-        "nameField"
-    ).style.display = "none";
-
-    document.getElementById(
-        "authButton"
-    ).innerText = "Sign In";
-
-    document.getElementById(
-        "loginTab"
-    ).classList.add("active");
-
-    document.getElementById(
-        "signupTab"
-    ).classList.remove("active");
-
-}
-
-</script>
-<script>
-
-let isSignup = false;
-
-function showSignup(){
-
+  function showSignup() {
     isSignup = true;
+    const nameEl = document.getElementById("name");
+    if (nameEl) nameEl.style.display = "block";
+    
+    document.getElementById("authButton").innerText = "Sign Up";
+    document.getElementById("signupTab").classList.add("active");
+    document.getElementById("loginTab").classList.remove("active");
+  }
 
-    document.getElementById(
-        "name"
-    ).style.display = "block";
-
-    document.getElementById(
-        "authButton"
-    ).innerText = "Sign Up";
-
-    document.getElementById(
-        "signupTab"
-    ).classList.add("active");
-
-    document.getElementById(
-        "loginTab"
-    ).classList.remove("active");
-
-}
-
-function showLogin(){
-
+  function showLogin() {
     isSignup = false;
+    const nameEl = document.getElementById("name");
+    if (nameEl) nameEl.style.display = "none";
+    
+    document.getElementById("authButton").innerText = "Sign In";
+    document.getElementById("loginTab").classList.add("active");
+    document.getElementById("signupTab").classList.remove("active");
+  }
 
-    document.getElementById(
-        "name"
-    ).style.display = "none";
+  async function handleAuth() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const nameEl = document.getElementById("name");
+    const name = nameEl ? nameEl.value : "";
+    const button = document.getElementById("authButton");
 
-    document.getElementById(
-        "authButton"
-    ).innerText = "Sign In";
-
-    document.getElementById(
-        "loginTab"
-    ).classList.add("active");
-
-    document.getElementById(
-        "signupTab"
-    ).classList.remove("active");
-
-}
-
-async function handleAuth(){
-
-    const name =
-    document.getElementById("name").value;
-
-    const email =
-    document.getElementById("email").value;
-
-    const password =
-    document.getElementById("password").value;
-
-    let endpoint;
-
-    let payload;
-
-    if(isSignup){
-
-        endpoint =
-        "/signup";
-
-        payload = {
-
-            name,
-
-            email,
-
-            password
-
-        };
-
+    if (!email || !password) {
+      alert("Please enter both email and password.");
+      return;
     }
 
-    else{
+    button.disabled = true;
+    button.innerText = isSignup ? "Signing Up..." : "Signing In...";
 
-        endpoint =
-        "/login-user";
-
-        payload = {
-
-            email,
-
-            password
-
-        };
-
+    try {
+      if (isSignup) {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        if (name) {
+          await updateProfile(user, { displayName: name });
+        }
+        alert("Registration Successful! Signing in...");
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+        alert("Login Successful!");
+      }
+    } catch (error) {
+      console.error("Auth Error:", error);
+      alert(error.message);
+    } finally {
+      button.disabled = false;
+      button.innerText = isSignup ? "Sign Up" : "Sign In";
     }
+  }
 
-    try{
-
-        const response = await fetch(
-
-              `https://larvae-lens-backend.onrender.com${endpoint}`,
-
-            {
-
-                method:"POST",
-
-                headers:{
-                    "Content-Type":
-                    "application/json"
-                },
-
-                body: JSON.stringify(payload)
-
-            }
-
-        );
-
-        const data =
-        await response.json();
-
-        alert(data.message);
-
-if(data.success || isSignup){
-
-    localStorage.setItem(
-        "isLoggedIn",
-        "true"
-    );
-        localStorage.setItem(
-        "userName",
-        isSignup ? name : data.name
-    );
-        localStorage.setItem(
-        "userEmail",
-        email
-    );
-
-    window.location.href =
-    "userdashbord.html";
-
-}
-
+  // Monitor auth state changes
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("userEmail", user.email);
+      localStorage.setItem("userName", user.displayName || user.email.split('@')[0]);
+      window.location.href = "userdashbord.html";
     }
+  });
 
-    catch(error){
+  // Handle Google Authentication
+  async function handleGoogleAuth() {
+    const provider = new GoogleAuthProvider();
+    const button = document.getElementById("googleAuthButton");
+    
+    button.disabled = true;
+    const originalText = button.innerHTML;
+    button.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Connecting...`;
 
-        console.log(error);
-
-        alert("Authentication Failed");
-
+    try {
+      await signInWithPopup(auth, provider);
+      alert("Login with Google Successful!");
+    } catch (error) {
+      console.error("Google Auth Error:", error);
+      alert(error.message);
+    } finally {
+      button.disabled = false;
+      button.innerHTML = originalText;
     }
+  }
 
-}
-
+  // Bind to window for inline onclick attributes in HTML
+  window.isSignup = isSignup;
+  window.showSignup = showSignup;
+  window.showLogin = showLogin;
+  window.handleAuth = handleAuth;
+  window.handleGoogleAuth = handleGoogleAuth;
 </script>
 </body>
 </html>

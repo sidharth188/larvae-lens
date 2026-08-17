@@ -160,7 +160,7 @@ onclick="submitReport()">
         </div>
 
     </div>
-<script src="js/app.js"></script>
+<script type="module" src="js/app.js"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
   window.watsonAssistantChatOptions = {
@@ -175,90 +175,58 @@ onclick="submitReport()">
     document.head.appendChild(t);
   });
 </script>
-<script>
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+  import { ENV } from './js/config.js';
 
-function logout(){
+  const app = initializeApp(ENV.FIREBASE_CONFIG);
+  const auth = getAuth(app);
 
-    localStorage.removeItem(
-        "isLoggedIn"
-    );
+  // Set welcome message
+  const userName = localStorage.getItem("userName");
+  if (document.getElementById("welcomeUser")) {
+      document.getElementById("welcomeUser").innerText = userName || "";
+  }
 
-    window.location.href =
-    "index.html";
-
-}
-
-</script>
-<script>
-
-const userName =
-
-localStorage.getItem(
-    "userName"
-);
-
-document.getElementById(
-    "welcomeUser"
-).innerText = userName;
-
-</script>
-<script>
-
-async function loadUserHistory(){
-
-    const email =
-    localStorage.getItem(
-        "userEmail"
-    );
-
-const response = await fetch(
-
-`https://larvae-lens-backend.onrender.com/user-reports/${email}`
-
-    );
-
-    const reports =
-    await response.json();
-
-    const table =
-    document.getElementById(
-        "historyTable"
-    );
-
-    table.innerHTML = "";
-
-    reports.forEach((report,index)=>{
-
-        table.innerHTML += `
-
-        <tr>
-
-            <td>
-                #LL10${index + 1}
-            </td>
-
-            <td>
-                ${report.risk_level}
-            </td>
-
-            <td>
-                ${report.status}
-            </td>
-
-            <td>
-                ${report.timestamp}
-            </td>
-
-        </tr>
-
-        `;
-
+  // Logout handler
+  window.logout = function() {
+    signOut(auth).then(() => {
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("userName");
+      localStorage.removeItem("userEmail");
+      window.location.href = "index.html";
+    }).catch((error) => {
+      console.error("Logout Error:", error);
+      localStorage.removeItem("isLoggedIn");
+      window.location.href = "index.html";
     });
+  };
 
-}
+  // Load user history
+  async function loadUserHistory(){
+      const email = localStorage.getItem("userEmail");
+      if (!email) return;
 
-loadUserHistory();
+      const response = await fetch(`${ENV.API_BASE_URL}/user-reports/${email}`);
+      const reports = await response.json();
+      const table = document.getElementById("historyTable");
+      if (!table) return;
 
+      table.innerHTML = "";
+      reports.forEach((report, index) => {
+          table.innerHTML += `
+          <tr>
+              <td>#LL10${index + 1}</td>
+              <td>${report.risk_level}</td>
+              <td>${report.status}</td>
+              <td>${report.timestamp}</td>
+          </tr>
+          `;
+      });
+  }
+
+  loadUserHistory();
 </script>
 </body>
 </html>
