@@ -7,6 +7,17 @@ import os
 
 from flask import Flask, request, jsonify, send_from_directory, redirect
 from flask_cors import CORS
+from dotenv import load_dotenv
+import cloudinary
+import cloudinary.uploader
+
+load_dotenv()
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET")
+)
 
 from ai_model.classifier import analyze_image
 from database.cloudant_config import db, users_db
@@ -59,15 +70,22 @@ def upload():
     del img
     gc.collect()
 
-    image_url = (
-        "https://larvae-lens-backend.onrender.com/uploads/"
-        f"{unique_filename}"
-    )
-
     # Competition-v2 now exposes both the original categorical result and
     # interpretable visual evidence/risk score.
     analysis = analyze_image(image_path)
     risk_level = analysis["risk_level"]
+
+    try:
+        upload_result = cloudinary.uploader.upload(image_path, folder="larvae_lens")
+        image_url = upload_result.get("secure_url")
+    except Exception as e:
+        print("Cloudinary Error:", e)
+        # Fallback to local url if upload fails or just fail the request
+        return jsonify({"message": "Failed to upload image to cloud"}), 500
+    finally:
+        # Clean up local temporary file
+        if os.path.exists(image_path):
+            os.remove(image_path)
 
     try:
         send_whatsapp_alert(
