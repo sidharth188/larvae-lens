@@ -10,6 +10,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import cloudinary
 import cloudinary.uploader
+import firebase_admin
 
 load_dotenv()
 
@@ -20,7 +21,7 @@ cloudinary.config(
 )
 
 from ai_model.classifier import analyze_image
-from database.cloudant_config import db, users_db
+from database.firestore_config import db
 from notification.whatsaap import send_whatsapp_alert
 
 app = Flask(__name__)
@@ -115,7 +116,7 @@ def upload():
         "status": "PENDING",
     }
 
-    db.create_document(report_data)
+    db.collection('larvae_reports').add(report_data)
 
     print("Risk Level:", risk_level)
     print("Risk Score:", analysis["risk_score"])
@@ -141,9 +142,11 @@ def upload():
 def get_reports():
     reports = []
 
-    for doc in list(db):
+    docs = db.collection('larvae_reports').stream()
+    for doc_ref in docs:
+        doc = doc_ref.to_dict()
         reports.append({
-            "id": doc.get("_id"),
+            "id": doc_ref.id,
             "image": doc.get("image"),
             "risk_level": doc.get("risk_level"),
             "risk_score": doc.get("risk_score"),
@@ -163,9 +166,7 @@ def get_reports():
 
 @app.route("/update-status/<doc_id>", methods=["PUT"])
 def update_status(doc_id):
-    doc = db[doc_id]
-    doc["status"] = "COMPLETED"
-    doc.save()
+    db.collection('larvae_reports').document(doc_id).update({"status": "COMPLETED"})
     return jsonify({"message": "Status Updated"})
 
 
@@ -189,14 +190,15 @@ def signup():
     email = data["email"]
     password = data["password"]
 
-    for user in users_db:
-        if user.get("email") == email:
-            return jsonify({
-                "success": False,
-                "message": "Email already exists",
-            })
+    existing_users = list(db.collection('users').where(filter=firebase_admin.firestore.FieldFilter("email", "==", email)).stream())
+    
+    if len(existing_users) > 0:
+        return jsonify({
+            "success": False,
+            "message": "Email already exists",
+        })
 
-    users_db.create_document({
+    db.collection('users').add({
         "name": name,
         "email": email,
         "password": password,
@@ -214,14 +216,17 @@ def login_user():
     email = data["email"]
     password = data["password"]
 
-    for user in users_db:
-        if user.get("email") == email and user.get("password") == password:
-            return jsonify({
-                "success": True,
-                "message": "Login Successful",
-                "name": user.get("name"),
-                "email": user.get("email"),
-            })
+    users_ref = db.collection('users').where(filter=firebase_admin.firestore.FieldFilter("email", "==", email)).where(filter=firebase_admin.firestore.FieldFilter("password", "==", password)).stream()
+    users_list = list(users_ref)
+
+    if len(users_list) > 0:
+        user = users_list[0].to_dict()
+        return jsonify({
+            "success": True,
+            "message": "Login Successful",
+            "name": user.get("name"),
+            "email": user.get("email"),
+        })
 
     return jsonify({
         "success": False,
@@ -233,15 +238,17 @@ def login_user():
 def user_reports(email):
     reports = []
 
-    for doc in db:
-        if doc.get("email") == email:
-            reports.append({
-                "risk_level": doc.get("risk_level"),
-                "risk_score": doc.get("risk_score"),
-                "evidence": doc.get("evidence", []),
-                "status": doc.get("status"),
-                "timestamp": doc.get("timestamp"),
-            })
+    docs = db.collection('larvae_reports').where(filter=firebase_admin.firestore.FieldFilter("email", "==", email)).stream()
+
+    for doc_ref in docs:
+        doc = doc_ref.to_dict()
+        reports.append({
+            "risk_level": doc.get("risk_level"),
+            "risk_score": doc.get("risk_score"),
+            "evidence": doc.get("evidence", []),
+            "status": doc.get("status"),
+            "timestamp": doc.get("timestamp"),
+        })
 
     reports.reverse()
     return jsonify(reports)
