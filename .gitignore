@@ -8,18 +8,7 @@ vision-env/
 # VS Code
 .vscode/
 
-# YOLO / training outputs
-runs/
-*.pt
-*.onnx
-*.engine
 
-# Dataset / generated data
-datasets/
-dataset/
-outputs/
-work/
-*.cache
 
 # Python tooling
 .pytest_cache/
