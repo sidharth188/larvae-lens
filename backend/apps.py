@@ -31,7 +31,6 @@ cloudinary.config(
 # LARVAELENS IMPORTS
 # ============================================================
 
-from ai_model.classifier import analyze_image
 from ai_model.vision_engine import VisionEngine
 from database.firestore_config import db
 from notification.whatsaap import send_whatsapp_alert
@@ -99,7 +98,13 @@ def home():
 @app.route("/upload", methods=["POST"])
 def upload():
 
-    image = request.files["image"]
+    image = request.files.get("image")
+
+    if image is None:
+
+        return jsonify({
+            "message": "No image provided"
+        }), 400
 
     if (
         image.content_length
@@ -110,9 +115,9 @@ def upload():
             "message": "Image too large"
         }), 400
 
-    latitude = request.form["latitude"]
+    latitude = request.form.get("latitude")
 
-    longitude = request.form["longitude"]
+    longitude = request.form.get("longitude")
 
     timestamp = datetime.utcnow().isoformat()
 
@@ -120,12 +125,12 @@ def upload():
         "priority"
     )
 
-    email = request.form["email"]
+    email = request.form.get("email", "")
 
-    user_name = request.form["user_name"]
+    user_name = request.form.get("user_name", "")
 
     unique_filename = (
-        f"{uuid.uuid4()}_{image.filename}"
+        f"{uuid.uuid4()}_{image.filename or 'image.jpg'}"
     )
 
     image_path = os.path.join(
@@ -138,7 +143,10 @@ def upload():
     )
 
     # --------------------------------------------------------
-    # Preserve existing 300x300 processing behavior.
+    # Validate the uploaded file is a readable image.
+    # The image is NOT resized before analysis — the V1
+    # VisionEngine requires full resolution to reliably
+    # detect small larvae and habitat masks.
     # --------------------------------------------------------
 
     img = cv2.imread(
@@ -147,35 +155,54 @@ def upload():
 
     if img is None:
 
+        if os.path.exists(image_path):
+            os.remove(image_path)
+
         return jsonify({
             "message": "Invalid image"
         }), 400
 
-    img = cv2.resize(
-        img,
-        (300, 300)
-    )
-
-    cv2.imwrite(
-        image_path,
-        img
-    )
-
     del img
-
     gc.collect()
 
     # --------------------------------------------------------
-    # Existing classifier pipeline.
+    # V1 Vision Engine pipeline.
+    # Replaces the legacy rule-based CV classifier.
+    # The engine runs 4 YOLO models plus the Environmental
+    # and Risk engines to produce a structured result.
     # --------------------------------------------------------
 
-    analysis = analyze_image(
-        image_path
+    try:
+        lat_float = float(latitude) if latitude is not None else None
+        lng_float = float(longitude) if longitude is not None else None
+    except (TypeError, ValueError):
+        lat_float = None
+        lng_float = None
+
+    v1_result = vision_engine.analyze(
+        image_path=image_path,
+        latitude=lat_float,
+        longitude=lng_float,
     )
 
-    risk_level = analysis[
-        "risk_level"
-    ]
+    # --------------------------------------------------------
+    # Extract a flat risk_level / risk_score from the V1
+    # result for backward compatibility with the frontend.
+    # --------------------------------------------------------
+
+    risk_assessment = v1_result.get("risk_assessment") or {}
+
+    breeding_risk = risk_assessment.get("breeding_risk") or {}
+
+    risk_level = (
+        breeding_risk.get("level")
+        or "LOW"
+    )
+
+    risk_score = (
+        breeding_risk.get("score")
+        or 0
+    )
 
     try:
 
@@ -253,33 +280,20 @@ def upload():
         "timestamp":
             timestamp,
 
+        # Flat fields kept for backward compatibility
+        # with the existing /reports and /user-reports
+        # endpoints used by the dashboard.
         "risk_level":
             risk_level,
 
         "risk_score":
-            analysis[
-                "risk_score"
-            ],
+            risk_score,
 
         "analysis_method":
-            analysis[
-                "analysis_method"
-            ],
+            "vision-engine-v1",
 
         "model_version":
-            analysis[
-                "model_version"
-            ],
-
-        "evidence":
-            analysis[
-                "evidence"
-            ],
-
-        "visual_metrics":
-            analysis[
-                "metrics"
-            ],
+            v1_result.get("engine", "vision-engine-v1"),
 
         "priority":
             priority,
@@ -289,6 +303,16 @@ def upload():
 
         "status":
             "PENDING",
+
+        # Full V1 risk assessment stored for analytics.
+        "v1_risk_assessment":
+            risk_assessment,
+
+        "v1_route":
+            v1_result.get("route"),
+
+        "v1_status":
+            v1_result.get("status"),
     }
 
     db.collection(
@@ -308,9 +332,17 @@ def upload():
 
     print(
         "Risk Score:",
-        analysis[
-            "risk_score"
-        ]
+        risk_score
+    )
+
+    print(
+        "V1 Route:",
+        v1_result.get("route")
+    )
+
+    print(
+        "V1 Status:",
+        v1_result.get("status")
     )
 
     print(
@@ -342,34 +374,34 @@ def upload():
         "message":
             "Report uploaded successfully",
 
+        # Flat fields for frontend backward compatibility.
         "risk_level":
             risk_level,
 
         "risk_score":
-            analysis[
-                "risk_score"
-            ],
-
-        "evidence":
-            analysis[
-                "evidence"
-            ],
+            risk_score,
 
         "analysis_method":
-            analysis[
-                "analysis_method"
-            ],
+            "vision-engine-v1",
 
         "model_version":
-            analysis[
-                "model_version"
-            ],
+            v1_result.get("engine", "vision-engine-v1"),
 
         "latitude":
             latitude,
 
         "longitude":
             longitude,
+
+        # Full V1 risk breakdown for any frontend that wants it.
+        "risk_assessment":
+            risk_assessment,
+
+        "v1_route":
+            v1_result.get("route"),
+
+        "v1_status":
+            v1_result.get("status"),
     })
 
 
@@ -590,9 +622,14 @@ def api_analyze():
 
     if image is None:
 
-       api_response = build_api_response(result)
+        return jsonify({
 
-       return jsonify(api_response), 400
+            "success": False,
+
+            "message":
+                "No image provided"
+
+        }), 400
 
     # --------------------------------------------------------
     # FILE SIZE
