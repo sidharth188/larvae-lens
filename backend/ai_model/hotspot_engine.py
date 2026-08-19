@@ -1,147 +1,66 @@
-import os
 import math
 from datetime import datetime, timezone
-
-try:
-    import psycopg2
-except ImportError:
-    psycopg2 = None
 
 
 class HotspotEngine:
     """
     LarvaeLens Historical Hotspot Engine V1.
 
-    Queries the LarvaeLens historical hotspot database
-    and determines historical epidemiological evidence
-    within a specified radius of an observation.
+    Firestore-backed implementation.
 
-    Primary LarvaeLens analysis radius:
+    Historical evidence is derived from previous LarvaeLens
+    reports stored in the Firestore collection:
+
+        larvae_reports
+
+    The engine DOES NOT calculate risk.
+
+    It only retrieves historical evidence around the
+    current observation.
+
+    Primary analysis radius:
         500 meters
-
-    IMPORTANT:
-        This engine DOES NOT calculate risk.
-
-        It only retrieves historical evidence.
-
-    V1 spatial calculation:
-        Haversine distance
-
-    Future:
-        PostgreSQL + PostGIS spatial queries.
     """
 
-    ENGINE_VERSION = "historical-hotspot-engine-v1"
+    ENGINE_VERSION = "historical-hotspot-engine-v1-firestore"
 
     DEFAULT_RADIUS_M = 500
+
+    REPORT_COLLECTION = "larvae_reports"
 
     def __init__(
         self,
         radius_m=DEFAULT_RADIUS_M
     ):
+
         self.radius_m = radius_m
-
-        # ----------------------------------------------------
-        # DATABASE CONFIGURATION
-        # ----------------------------------------------------
-
-        self.database_url = os.getenv(
-            "LARVAELENS_DATABASE_URL"
-        )
-
-        self.db_host = os.getenv(
-            "LARVAELENS_DB_HOST"
-        )
-
-        self.db_port = os.getenv(
-            "LARVAELENS_DB_PORT",
-            "5432"
-        )
-
-        self.db_name = os.getenv(
-            "LARVAELENS_DB_NAME"
-        )
-
-        self.db_user = os.getenv(
-            "LARVAELENS_DB_USER"
-        )
-
-        self.db_password = os.getenv(
-            "LARVAELENS_DB_PASSWORD"
-        )
 
         print(
             "Historical Hotspot Engine V1 initialized."
         )
 
-        if self.database_url:
-            print(
-                "Database: configured via "
-                "LARVAELENS_DATABASE_URL"
-            )
-
-        elif (
-            self.db_host
-            and self.db_name
-            and self.db_user
-        ):
-            print(
-                "Database: PostgreSQL configuration detected."
-            )
-
-        else:
-            print(
-                "Database: NOT configured."
-            )
-
-    # ========================================================
-    # DATABASE CONNECTION
-    # ========================================================
-
-    def connect(self):
-        """
-        Create a PostgreSQL connection.
-        """
-
-        if psycopg2 is None:
-
-            raise RuntimeError(
-                "psycopg2 is not installed. "
-                "Install it with: "
-                "pip install psycopg2-binary"
-            )
-
-        if self.database_url:
-
-            return psycopg2.connect(
-                self.database_url,
-                connect_timeout=10
-            )
-
-        if (
-            not self.db_host
-            or not self.db_name
-            or not self.db_user
-        ):
-
-            raise RuntimeError(
-                "PostgreSQL database is not configured."
-            )
-
-        return psycopg2.connect(
-
-            host=self.db_host,
-
-            port=self.db_port,
-
-            dbname=self.db_name,
-
-            user=self.db_user,
-
-            password=self.db_password,
-
-            connect_timeout=10
+        print(
+            "Database: Firestore"
         )
+
+
+    # ========================================================
+    # FIRESTORE
+    # ========================================================
+
+    def get_database(self):
+
+        """
+        Import the existing Firestore connection.
+
+        This uses the same Firebase initialization that
+        the rest of LarvaeLens already uses.
+        """
+
+        from database.firestore_config import db
+
+        return db
+
 
     # ========================================================
     # HAVERSINE DISTANCE
@@ -154,48 +73,36 @@ class HotspotEngine:
         latitude2,
         longitude2
     ):
-        """
-        Calculate great-circle distance between two
-        geographic coordinates.
-
-        Returns:
-            distance in meters.
-        """
 
         earth_radius_m = 6371000.0
 
         lat1 = math.radians(
-            latitude1
+            float(latitude1)
         )
 
         lat2 = math.radians(
-            latitude2
+            float(latitude2)
         )
 
         delta_lat = math.radians(
-            latitude2 - latitude1
+            float(latitude2) -
+            float(latitude1)
         )
 
         delta_lon = math.radians(
-            longitude2 - longitude1
+            float(longitude2) -
+            float(longitude1)
         )
 
         a = (
-
             math.sin(
                 delta_lat / 2
             ) ** 2
-
             +
-
             math.cos(lat1)
-
             *
-
             math.cos(lat2)
-
             *
-
             math.sin(
                 delta_lon / 2
             ) ** 2
@@ -214,143 +121,414 @@ class HotspotEngine:
             earth_radius_m * c
         )
 
+
     # ========================================================
-    # CREATE DATABASE TABLE
+    # SAFE FLOAT
     # ========================================================
 
-    def create_table(self):
-        """
-        Create the historical_hotspots table.
-
-        This does not insert any data.
-        """
-
-        connection = self.connect()
+    @staticmethod
+    def safe_float(value):
 
         try:
 
-            cursor = connection.cursor()
+            if value is None:
+                return None
 
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS
-                historical_hotspots (
+            return float(value)
 
-                    id BIGSERIAL PRIMARY KEY,
+        except (
+            TypeError,
+            ValueError
+        ):
 
-                    latitude DOUBLE PRECISION NOT NULL,
+            return None
 
-                    longitude DOUBLE PRECISION NOT NULL,
-
-                    year INTEGER,
-
-                    month INTEGER,
-
-                    cases INTEGER DEFAULT 0,
-
-                    severity TEXT,
-
-                    source TEXT,
-
-                    created_at TIMESTAMPTZ
-                        DEFAULT CURRENT_TIMESTAMP
-                );
-                """
-            )
-
-            connection.commit()
-
-            cursor.close()
-
-            print(
-                "historical_hotspots table ready."
-            )
-
-        finally:
-
-            connection.close()
 
     # ========================================================
-    # FETCH HOTSPOTS
+    # SAFE INT
     # ========================================================
 
-    def fetch_hotspots(self):
-        """
-        Retrieve historical hotspot records.
-
-        No fake data is created.
-        """
-
-        connection = self.connect()
+    @staticmethod
+    def safe_int(value):
 
         try:
 
-            cursor = connection.cursor()
+            if value is None:
+                return 0
 
-            cursor.execute(
-                """
-                SELECT
-                    id,
-                    latitude,
-                    longitude,
-                    year,
-                    month,
-                    cases,
-                    severity,
-                    source,
-                    created_at
-                FROM historical_hotspots
-                WHERE latitude IS NOT NULL
-                  AND longitude IS NOT NULL
-                """
+            return int(value)
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            return 0
+
+
+    # ========================================================
+    # GET REPORT LOCATION
+    # ========================================================
+
+    @staticmethod
+    def get_report_location(
+        report
+    ):
+
+        """
+        Current Firestore reports store coordinates inside:
+
+            location.latitude
+            location.longitude
+
+        This also supports older documents where coordinates
+        may have been stored at the top level.
+        """
+
+        location = (
+            report.get("location")
+            or {}
+        )
+
+        latitude = (
+            location.get("latitude")
+            if isinstance(
+                location,
+                dict
+            )
+            else None
+        )
+
+        longitude = (
+            location.get("longitude")
+            if isinstance(
+                location,
+                dict
+            )
+            else None
+        )
+
+        # Backwards compatibility
+
+        if latitude is None:
+
+            latitude = report.get(
+                "latitude"
             )
 
-            rows = cursor.fetchall()
+        if longitude is None:
 
-            cursor.close()
+            longitude = report.get(
+                "longitude"
+            )
 
-            hotspots = []
+        latitude = (
+            HotspotEngine.safe_float(
+                latitude
+            )
+        )
 
-            for row in rows:
+        longitude = (
+            HotspotEngine.safe_float(
+                longitude
+            )
+        )
 
-                hotspots.append({
+        return (
+            latitude,
+            longitude
+        )
 
-                    "id": row[0],
 
-                    "latitude": float(
-                        row[1]
-                    ),
+    # ========================================================
+    # REPORT TIMESTAMP
+    # ========================================================
 
-                    "longitude": float(
-                        row[2]
-                    ),
+    @staticmethod
+    def get_report_year(
+        report
+    ):
 
-                    "year": row[3],
+        timestamp = report.get(
+            "timestamp"
+        )
 
-                    "month": row[4],
+        if timestamp is None:
 
-                    "cases": (
-                        row[5]
-                        if row[5] is not None
-                        else 0
-                    ),
+            return None
 
-                    "severity": row[6],
 
-                    "source": row[7],
+        # Firestore Timestamp
 
-                    "created_at": (
-                        row[8].isoformat()
-                        if row[8]
-                        else None
+        if hasattr(
+            timestamp,
+            "year"
+        ):
+
+            return int(
+                timestamp.year
+            )
+
+
+        # Python datetime
+
+        if isinstance(
+            timestamp,
+            datetime
+        ):
+
+            return int(
+                timestamp.year
+            )
+
+
+        # ISO string
+
+        try:
+
+            text = str(
+                timestamp
+            ).strip()
+
+
+            if not text:
+
+                return None
+
+
+            parsed =datetime.fromisoformat(
+                text.replace("Z","+00:00")
+                )
+
+
+            return int(
+                parsed.year
+            )
+
+
+        except Exception:
+
+            return None
+
+
+    # ========================================================
+    # HISTORICAL EVIDENCE TEST
+    # ========================================================
+
+    @staticmethod
+    def is_historical_evidence(
+        report
+    ):
+
+        """
+        Decide whether an old LarvaeLens report should
+        contribute to historical hotspot evidence.
+
+        We do NOT count every submitted report.
+
+        A report qualifies when it has meaningful risk
+        or biological evidence.
+        """
+
+        risk_level = str(
+            report.get(
+                "risk_level",
+                ""
+            )
+        ).strip().upper()
+
+
+        risk_score = (
+            HotspotEngine.safe_float(
+                report.get(
+                    "risk_score"
+                )
+            )
+        )
+
+
+        vision = (
+            report.get("vision")
+            or {}
+        )
+
+
+        model4 = (
+            vision.get("model4")
+            or {}
+        )
+
+
+        larvae_count = (
+            HotspotEngine.safe_int(
+                model4.get(
+                    "larvae_count"
+                )
+            )
+        )
+
+
+        biological_evidence = (
+            str(
+                vision.get(
+                    "final_status",
+                    ""
+                )
+            )
+            .strip()
+            .lower()
+            ==
+            "biological_evidence"
+        )
+
+
+        # Strongest evidence:
+        # confirmed larvae
+
+        if larvae_count > 0:
+
+            return True
+
+
+        if biological_evidence:
+
+            return True
+
+
+        # High / critical historical risk
+
+        if risk_level in (
+            "HIGH",
+            "CRITICAL"
+        ):
+
+            return True
+
+
+        if (
+            risk_score is not None
+            and risk_score >= 60
+        ):
+
+            return True
+
+
+        return False
+
+
+    # ========================================================
+    # FETCH HISTORICAL REPORTS
+    # ========================================================
+
+    def fetch_historical_reports(
+        self
+    ):
+
+        """
+        Retrieve previous LarvaeLens reports
+        from Firestore.
+
+        We intentionally do not require a Firestore
+        geospatial index because the collection stores
+        coordinates inside nested maps.
+
+        Distance filtering is performed locally using
+        the Haversine calculation.
+        """
+
+        db = self.get_database()
+
+
+        docs = (
+            db.collection(
+                self.REPORT_COLLECTION
+            )
+            .stream()
+        )
+
+
+        reports = []
+
+
+        for document in docs:
+
+            try:
+
+                data = (
+                    document.to_dict()
+                    or {}
+                )
+
+
+                latitude, longitude = (
+                    self.get_report_location(
+                        data
                     )
+                )
+
+
+                if (
+                    latitude is None
+                    or
+                    longitude is None
+                ):
+
+                    continue
+
+
+                if not self.is_historical_evidence(
+                    data
+                ):
+
+                    continue
+
+
+                reports.append({
+
+                    "id":
+                        document.id,
+
+                    "latitude":
+                        latitude,
+
+                    "longitude":
+                        longitude,
+
+                    "year":
+                        self.get_report_year(
+                            data
+                        ),
+
+                    "risk_level":
+                        data.get(
+                            "risk_level"
+                        ),
+
+                    "risk_score":
+                        data.get(
+                            "risk_score"
+                        ),
+
+                    "cases":
+                        1,
+
+                    "source":
+                        "LarvaeLens Firestore reports",
+
                 })
 
-            return hotspots
 
-        finally:
+            except Exception as error:
 
-            connection.close()
+                print(
+                    "Skipping malformed "
+                    "historical report:",
+                    error
+                )
+
+
+        return reports
+
 
     # ========================================================
     # ANALYZE LOCATION
@@ -361,26 +539,33 @@ class HotspotEngine:
         latitude,
         longitude
     ):
+
         """
-        Find historical hotspots within the configured
-        radius of the observation.
-
-        Returns:
-
-            hotspots_within_radius
-            nearest hotspot
-            nearest distance
-            historical cases
-            most recent hotspot year
+        Find historical LarvaeLens reports
+        within the configured radius.
         """
 
         # ----------------------------------------------------
         # GPS VALIDATION
         # ----------------------------------------------------
 
+        latitude = (
+            self.safe_float(
+                latitude
+            )
+        )
+
+        longitude = (
+            self.safe_float(
+                longitude
+            )
+        )
+
+
         if (
             latitude is None
-            or longitude is None
+            or
+            longitude is None
         ):
 
             return {
@@ -408,24 +593,29 @@ class HotspotEngine:
 
                 "hotspots":
                     []
+
             }
 
+
         # ----------------------------------------------------
-        # DATABASE
+        # FIRESTORE
         # ----------------------------------------------------
 
         try:
 
-            hotspots = (
-                self.fetch_hotspots()
+            reports = (
+                self.fetch_historical_reports()
             )
+
 
         except Exception as error:
 
             print(
-                "Historical hotspot database error:",
+                "Historical hotspot "
+                "Firestore error:",
                 error
             )
+
 
             return {
 
@@ -455,7 +645,9 @@ class HotspotEngine:
 
                 "error":
                     str(error)
+
             }
+
 
         # ----------------------------------------------------
         # DISTANCE FILTER
@@ -463,60 +655,79 @@ class HotspotEngine:
 
         nearby_hotspots = []
 
-        for hotspot in hotspots:
 
-            distance = (
-                self.calculate_distance_m(
+        for report in reports:
 
-                    latitude,
+            try:
 
-                    longitude,
+                distance = (
+                    self.calculate_distance_m(
 
-                    hotspot[
-                        "latitude"
-                    ],
+                        latitude,
 
-                    hotspot[
-                        "longitude"
-                    ]
-                )
-            )
+                        longitude,
 
-            if (
-                distance
-                <=
-                self.radius_m
-            ):
+                        report[
+                            "latitude"
+                        ],
 
-                hotspot_result = (
-                    hotspot.copy()
+                        report[
+                            "longitude"
+                        ]
+
+                    )
                 )
 
-                hotspot_result[
-                    "distance_m"
-                ] = round(
-                    distance,
-                    2
+
+                if (
+                    distance
+                    <=
+                    self.radius_m
+                ):
+
+                    result = (
+                        report.copy()
+                    )
+
+
+                    result[
+                        "distance_m"
+                    ] = round(
+                        distance,
+                        2
+                    )
+
+
+                    nearby_hotspots.append(
+                        result
+                    )
+
+
+            except Exception as error:
+
+                print(
+                    "Historical distance "
+                    "calculation error:",
+                    error
                 )
 
-                nearby_hotspots.append(
-                    hotspot_result
-                )
 
         # ----------------------------------------------------
-        # SORT BY DISTANCE
+        # SORT
         # ----------------------------------------------------
 
         nearby_hotspots.sort(
 
-            key=lambda hotspot:
-                hotspot[
+            key=lambda item:
+                item[
                     "distance_m"
                 ]
+
         )
 
+
         # ----------------------------------------------------
-        # NO HOTSPOTS
+        # NO HISTORICAL REPORTS
         # ----------------------------------------------------
 
         if not nearby_hotspots:
@@ -545,14 +756,22 @@ class HotspotEngine:
                     None,
 
                 "hotspots":
-                    []
+                    [],
+
+                "source":
+                    "LarvaeLens Firestore reports"
+
             }
+
 
         # ----------------------------------------------------
         # NEAREST
         # ----------------------------------------------------
 
-        nearest = nearby_hotspots[0]
+        nearest = (
+            nearby_hotspots[0]
+        )
+
 
         # ----------------------------------------------------
         # HISTORICAL CASES
@@ -560,14 +779,18 @@ class HotspotEngine:
 
         historical_cases = sum(
 
-            hotspot.get(
-                "cases",
-                0
+            self.safe_int(
+                item.get(
+                    "cases",
+                    1
+                )
             )
 
-            for hotspot
+            for item
             in nearby_hotspots
+
         )
+
 
         # ----------------------------------------------------
         # MOST RECENT YEAR
@@ -575,15 +798,19 @@ class HotspotEngine:
 
         years = [
 
-            hotspot["year"]
+            item.get(
+                "year"
+            )
 
-            for hotspot
+            for item
             in nearby_hotspots
 
-            if hotspot.get(
+            if item.get(
                 "year"
             ) is not None
+
         ]
+
 
         most_recent_year = (
 
@@ -592,7 +819,9 @@ class HotspotEngine:
             if years
 
             else None
+
         )
+
 
         # ----------------------------------------------------
         # FINAL RESULT
@@ -626,7 +855,11 @@ class HotspotEngine:
                 most_recent_year,
 
             "hotspots":
-                nearby_hotspots
+                nearby_hotspots,
+
+            "source":
+                "LarvaeLens Firestore reports"
+
         }
 
 
@@ -638,86 +871,89 @@ if __name__ == "__main__":
 
     engine = HotspotEngine()
 
+
     print(
         "\n=============================================="
     )
 
     print(
-        "HISTORICAL HOTSPOT ENGINE V1"
+        "HISTORICAL HOTSPOT ENGINE V1 - FIRESTORE"
     )
 
     print(
         "=============================================="
     )
 
+
     try:
-
-        # ----------------------------------------------------
-        # CREATE TABLE
-        # ----------------------------------------------------
-
-        engine.create_table()
-
-        # ----------------------------------------------------
-        # TEST LOCATION
-        # ----------------------------------------------------
 
         result = engine.analyze(
 
             latitude=22.8046,
 
             longitude=86.2029
+
         )
+
 
         print(
             "\nSTATUS:",
-            result["status"]
+            result.get(
+                "status"
+            )
         )
+
 
         print(
             "Search radius:",
-            result[
+            result.get(
                 "search_radius_m"
-            ],
+            ),
             "m"
         )
 
+
         print(
-            "Hotspots within 500m:",
-            result[
+            "Historical reports within 500m:",
+            result.get(
                 "hotspots_within_500m"
-            ]
+            )
         )
 
+
         print(
-            "Nearest hotspot:",
-            result[
+            "Nearest historical report:",
+            result.get(
                 "nearest_hotspot_distance_m"
-            ],
+            ),
             "m"
         )
+
 
         print(
             "Historical cases:",
-            result[
+            result.get(
                 "historical_cases_within_500m"
-            ]
+            )
         )
+
 
         print(
             "Most recent year:",
-            result[
+            result.get(
                 "most_recent_hotspot_year"
-            ]
+            )
         )
+
 
     except Exception as error:
 
         print(
-            "\nHotspot Engine test could not run:"
+            "\nHotspot Engine test failed:"
         )
 
         print(error)
+
 
     print(
         "\n=============================================="

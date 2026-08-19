@@ -2,1926 +2,1736 @@
 <html lang="en">
 
 <head>
-<<<<<<< HEAD
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Municipality Dashboard</title><link rel="icon" type="image/png" href="images/icon.png">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<style>body{background:#0d1117;color:white;font-family:Arial}.admin-btn{background:linear-gradient(45deg,#00ffaa,#00bfff)}.sidebar{width:250px;height:100vh;position:fixed;background:#161b22;padding:20px}.sidebar a{display:block;color:white;text-decoration:none;margin:20px 0}.sidebar a:hover{color:#00ffaa}.main-content{margin-left:270px;padding:30px}.dashboard-card{background:#161b22;border-radius:20px;padding:20px;margin-bottom:20px}table{color:white!important}.high{color:red;font-weight:bold}.medium{color:orange;font-weight:bold}.low{color:#00ffaa;font-weight:bold}</style>
-</head>
-<script>if(localStorage.getItem("adminLoggedIn")!=="true")window.location.href="municipality-login.html";</script>
-<body>
-<nav class="navbar navbar-dark px-4"><div class="container-fluid"><a class="navbar-brand" href="index.html"><img src="images/logo.png" alt="Larvae Lens" height="65"></a><button class="btn nav-btn admin-btn" onclick="adminlogout()"><i class="bi bi-box-arrow-right"></i> Logout</button></div></nav>
-<div class="sidebar">
-<a href="#"><i class="bi bi-speedometer2"></i> Dashboard</a>
-<a href="#"><i class="bi bi-upload"></i> Upload Report</a>
-<a href="municipality-analytics.html"><i class="bi bi-bar-chart-line"></i> Analytics</a>
-<a href="#reports"><i class="bi bi-file-earmark-text"></i> Reports</a>
-<a href="#priority-section"><i class="bi bi-exclamation-diamond"></i> Priority Cases</a>
-<a href="#" onclick="adminlogout()"><i class="bi bi-box-arrow-right"></i> Logout</a>
-</div>
-<div class="main-content">
-<div class="dashboard-card"><h1>Municipality Dashboard</h1><p>Monitor mosquito breeding complaints.</p></div>
-<div class="dashboard-card"><h3>Mosquito Risk Map</h3><div id="map" style="height:500px;border-radius:20px"></div></div>
-<div id="reports" class="dashboard-card"><h3>Reports</h3><table class="table table-dark table-hover mt-4"><thead><tr><th>Image</th><th>Risk</th><th>Status</th><th>Action</th></tr></thead><tbody id="reportTable"></tbody></table></div>
-<div id="priority-section" class="dashboard-card"><h3>Priority Cases</h3><p class="text-secondary">Priority reports are marked in the Reports table.</p></div>
-</div>
-<script>function adminlogout(){localStorage.removeItem("adminLoggedIn");window.location.href="municipality-login.html";}</script>
-<script type="module" src="js/app.js"></script><script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-</body></html>
-=======
-
-<meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>Larvae Lens - Municipality Dashboard</title>
-
-<link
-    rel="icon"
-    type="image/png"
-    href="images/icon.png"
->
-
-<link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
->
-
-<link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
->
-
-<link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css"
-/>
-
-
-<style>
-
-*{
-    box-sizing:border-box;
-}
-
-body{
-    margin:0;
-    background:#0d1117;
-    color:white;
-    font-family:Arial,Helvetica,sans-serif;
-}
-
-
-/* =========================
-   NAVBAR
-========================= */
-
-.top-navbar{
-    height:103px;
-    background:#0d1117;
-    border-bottom:1px solid #242b34;
-    display:flex;
-    align-items:center;
-    padding:0 40px;
-    position:fixed;
-    top:0;
-    left:0;
-    right:0;
-    z-index:1000;
-}
-
-.logo{
-    height:72px;
-}
-
-.logout-btn{
-    margin-left:auto;
-    border:none;
-    border-radius:8px;
-    padding:11px 20px;
-    background:linear-gradient(
-        45deg,
-        #00ffaa,
-        #00bfff
-    );
-    color:#061014;
-    font-size:16px;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-
-/* =========================
-   SIDEBAR
-========================= */
-
-.sidebar{
-    position:fixed;
-    top:103px;
-    left:0;
-    bottom:0;
-    width:278px;
-    background:#161b22;
-    padding:38px 22px;
-    z-index:900;
-}
-
-.sidebar a{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    color:#f5f5f5;
-    text-decoration:none;
-    font-size:18px;
-    padding:15px;
-    margin-bottom:12px;
-    border-radius:11px;
-}
-
-.sidebar a:hover{
-    background:#21262d;
-}
-
-.sidebar a.active{
-    background:#222831;
-    color:#00ffaa;
-}
-
-
-/* =========================
-   MAIN
-========================= */
-
-.main-content{
-    margin-left:278px;
-    padding:137px 32px 70px;
-}
-
-.section-card{
-    background:#161b22;
-    border:1px solid #242b34;
-    border-radius:22px;
-    padding:26px;
-    margin-bottom:28px;
-}
-
-.section-title{
-    font-size:32px;
-    font-weight:500;
-    margin-bottom:28px;
-}
-
-
-/* =========================
-   HEADER
-========================= */
-
-.dashboard-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-
-.dashboard-header h1{
-    font-size:42px;
-    font-weight:500;
-    margin-bottom:10px;
-}
-
-.dashboard-header p{
-    color:#8b949e;
-    font-size:18px;
-    margin:0;
-}
-
-.operational-badge{
-    border:1px solid #00ffaa;
-    color:#00ffaa;
-    padding:10px 18px;
-    border-radius:25px;
-}
-
-.operational-dot{
-    display:inline-block;
-    width:9px;
-    height:9px;
-    background:#00ffaa;
-    border-radius:50%;
-    margin-right:8px;
-}
-
-
-/* =========================
-   RISK OVERVIEW
-========================= */
-
-.risk-grid{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:20px;
-}
-
-.risk-card{
-    background:#0d1117;
-    border:1px solid #30363d;
-    border-radius:18px;
-    min-height:135px;
-    padding:25px;
-    display:flex;
-    align-items:center;
-    gap:22px;
-}
-
-.risk-icon{
-    font-size:38px;
-}
-
-.risk-label{
-    color:#8fa1b5;
-    font-size:17px;
-    margin-bottom:8px;
-}
-
-.risk-number{
-    font-size:38px;
-    font-weight:bold;
-}
-
-.icon-total{
-    color:#3897ff;
-}
-
-.icon-critical{
-    color:#ff3b3b;
-}
-
-.icon-high{
-    color:#ff9800;
-}
-
-.icon-medium{
-    color:#ffd400;
-}
-
-.icon-low{
-    color:#00ffaa;
-}
-
-.icon-pending{
-    color:#ff3b3b;
-}
-
-.icon-progress{
-    color:#ffd400;
-}
-
-.icon-completed{
-    color:#00ffaa;
-}
-
-
-/* =========================
-   INTERVENTION
-========================= */
-
-.performance-grid{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:25px;
-}
-
-.performance-label{
-    color:#8fa1b5;
-    font-size:17px;
-    margin-bottom:10px;
-}
-
-.performance-value{
-    font-size:40px;
-    font-weight:bold;
-}
-
-.progress-area{
-    margin-top:30px;
-}
-
-.progress-header{
-    display:flex;
-    justify-content:space-between;
-    margin-bottom:12px;
-}
-
-.progress-container{
-    height:12px;
-    background:#30363d;
-    border-radius:20px;
-    overflow:hidden;
-}
-
-.progress-bar-custom{
-    height:100%;
-    background:#238636;
-    border-radius:20px;
-}
-
-
-/* =========================
-   MAP
-========================= */
-
-#riskMap{
-    height:520px;
-    width:100%;
-    border-radius:18px;
-}
-
-.map-description{
-    color:#8b949e;
-    margin-top:-15px;
-    margin-bottom:20px;
-}
-
-.map-legend{
-    display:flex;
-    gap:25px;
-    margin-top:18px;
-}
-
-.legend-item{
-    display:flex;
-    align-items:center;
-    gap:8px;
-}
-
-.legend-dot{
-    width:14px;
-    height:14px;
-    border-radius:50%;
-}
-
-.legend-critical{
-    background:#ff3b30;
-}
-
-.legend-high{
-    background:#ff9800;
-}
-
-.legend-medium{
-    background:#ffd400;
-}
-
-.legend-low{
-    background:#00e6a8;
-}
-
-
-/* =========================
-   PRIORITY CASES
-========================= */
-
-.priority-card{
-    background:#0d1117;
-    border:1px solid #30363d;
-    border-radius:18px;
-    padding:22px;
-    margin-bottom:16px;
-    display:flex;
-    justify-content:space-between;
-    gap:25px;
-}
-
-.priority-main{
-    flex:1;
-}
-
-.priority-id{
-    font-size:20px;
-    font-weight:bold;
-    margin-bottom:8px;
-}
-
-.priority-location{
-    color:#8fa1b5;
-    margin-bottom:8px;
-}
-
-.priority-description{
-    color:#8fa1b5;
-    margin-bottom:18px;
-}
-
-.priority-bottom{
-    display:flex;
-    align-items:center;
-    gap:18px;
-}
-
-.priority-right{
-    min-width:180px;
-    text-align:right;
-}
-
-
-/* =========================
-   BADGES
-========================= */
-
-.risk-badge{
-    display:inline-block;
-    padding:7px 14px;
-    border-radius:20px;
-    font-weight:bold;
-    font-size:13px;
-    border:1px solid;
-}
-
-.critical-badge{
-    color:#ff3b30;
-    border-color:#ff3b30;
-}
-
-.high-badge{
-    color:#ff9800;
-    border-color:#ff9800;
-}
-
-.medium-badge{
-    color:#ffd400;
-    border-color:#ffd400;
-}
-
-.low-badge{
-    color:#00ffaa;
-    border-color:#00ffaa;
-}
-
-.status-badge{
-    border:1px solid;
-    border-radius:20px;
-    padding:7px 13px;
-    font-weight:bold;
-    display:inline-block;
-}
-
-.status-pending{
-    color:#ff3b30;
-    border-color:#ff3b30;
-}
-
-.status-progress{
-    color:#ffd400;
-    border-color:#ffd400;
-}
-
-.status-completed{
-    color:#00ffaa;
-    border-color:#00ffaa;
-}
-
-.flag{
-    font-weight:bold;
-}
-
-.flag-dot{
-    display:inline-block;
-    width:13px;
-    height:13px;
-    border-radius:50%;
-    margin-right:7px;
-}
-
-.flag-red{
-    background:#ff3b5c;
-}
-
-.flag-yellow{
-    background:#ffd45c;
-}
-
-.flag-green{
-    background:#55e6a5;
-}
-
-
-/* =========================
-   BUTTON
-========================= */
-
-.view-btn{
-    border:1px solid #c9d1d9;
-    background:transparent;
-    color:white;
-    border-radius:7px;
-    padding:8px 15px;
-    margin-top:18px;
-    cursor:pointer;
-}
-
-.view-btn:hover{
-    background:#21262d;
-}
-
-
-/* =========================
-   REPORTS
-========================= */
-
-.report-controls{
-    display:grid;
-    grid-template-columns:2fr 1fr 1fr auto;
-    gap:16px;
-    margin-bottom:25px;
-}
-
-.report-controls input,
-.report-controls select{
-    background:#0d1117;
-    color:white;
-    border:1px solid #30363d;
-    border-radius:9px;
-    padding:13px;
-}
-
-.reset-btn{
-    background:transparent;
-    color:white;
-    border:1px solid #c9d1d9;
-    border-radius:8px;
-    padding:10px 20px;
-}
-
-.table-wrapper{
-    overflow-x:auto;
-}
-
-.reports-table{
-    width:100%;
-    border-collapse:collapse;
-    min-width:1000px;
-}
-
-.reports-table th{
-    color:#8fa1b5;
-    text-align:left;
-    padding:14px 10px;
-    background:#21262d;
-}
-
-.reports-table td{
-    padding:14px 10px;
-    border-top:1px solid #30363d;
-}
-
-.reports-table tbody tr:hover{
-    background:#21262d;
-}
-
-.case-image{
-    width:55px;
-    height:55px;
-    border-radius:10px;
-    background:#21262d;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#00ffaa;
-    font-size:25px;
-}
-
-.case-image img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    border-radius:10px;
-}
-
-
-/* =========================================================
-   EXPANDED CASE MODAL
-========================================================= */
-
-.case-modal{
-    max-width:1200px;
-}
-
-.case-modal .modal-content{
-    background:#0d1117;
-    color:white;
-    border:1px solid #30363d;
-    border-radius:20px;
-    overflow:hidden;
-}
-
-.case-modal .modal-header{
-    background:#161b22;
-    border-bottom:1px solid #30363d;
-    padding:22px 28px;
-}
-
-.case-modal .modal-title{
-    font-size:25px;
-    font-weight:bold;
-}
-
-.case-modal .modal-body{
-    padding:28px;
-    max-height:78vh;
-    overflow-y:auto;
-}
-
-.case-modal .modal-footer{
-    background:#161b22;
-    border-top:1px solid #30363d;
-}
-
-
-/* CASE HEADER */
-
-.expanded-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:25px;
-    margin-bottom:25px;
-}
-
-.expanded-case-id{
-    font-size:30px;
-    font-weight:bold;
-}
-
-.expanded-location{
-    color:#8b949e;
-    margin-top:7px;
-}
-
-.expanded-badges{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-}
-
-
-/* FLAG */
-
-.large-flag{
-    padding:8px 14px;
-    border-radius:20px;
-    font-weight:bold;
-    border:1px solid;
-}
-
-.large-flag.red{
-    color:#ff3b5c;
-    border-color:#ff3b5c;
-}
-
-.large-flag.yellow{
-    color:#ffd45c;
-    border-color:#ffd45c;
-}
-
-.large-flag.green{
-    color:#55e6a5;
-    border-color:#55e6a5;
-}
-
-
-/* IMAGE + MAP */
-
-.case-top-grid{
-    display:grid;
-    grid-template-columns:1fr 1.4fr;
-    gap:20px;
-    margin-bottom:25px;
-}
-
-.case-image-large{
-    height:350px;
-    background:#161b22;
-    border:1px solid #30363d;
-    border-radius:16px;
-    overflow:hidden;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
-
-.case-image-large img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-}
-
-.case-image-placeholder{
-    font-size:80px;
-    color:#00ffaa;
-}
-
-.case-detail-map{
-    height:350px;
-    border-radius:16px;
-    overflow:hidden;
-}
-
-
-/* SECTION */
-
-.detail-section{
-    background:#161b22;
-    border:1px solid #30363d;
-    border-radius:16px;
-    padding:20px;
-    margin-bottom:20px;
-}
-
-.detail-section-title{
-    font-size:20px;
-    font-weight:bold;
-    margin-bottom:18px;
-    color:white;
-}
-
-.detail-grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:14px;
-}
-
-.detail-item{
-    background:#0d1117;
-    border:1px solid #30363d;
-    border-radius:12px;
-    padding:15px;
-}
-
-.detail-label{
-    color:#8b949e;
-    font-size:13px;
-    margin-bottom:7px;
-}
-
-.detail-value{
-    font-size:17px;
-    font-weight:bold;
-}
-
-
-/* EVIDENCE */
-
-.evidence-list{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:12px;
-}
-
-.evidence-item{
-    background:#0d1117;
-    border:1px solid #30363d;
-    border-radius:10px;
-    padding:14px;
-}
-
-.evidence-item i{
-    color:#00ffaa;
-    margin-right:8px;
-}
-
-
-/* SCORE */
-
-.score-box{
-    background:#0d1117;
-    border:1px solid #30363d;
-    border-radius:14px;
-    padding:20px;
-}
-
-.score-number{
-    font-size:36px;
-    font-weight:bold;
-}
-
-.score-progress{
-    height:10px;
-    background:#30363d;
-    border-radius:10px;
-    overflow:hidden;
-    margin-top:12px;
-}
-
-.score-progress-inner{
-    height:100%;
-    border-radius:10px;
-}
-
-
-/* MAP LINK */
-
-.map-link{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    color:#00ffaa;
-    text-decoration:none;
-    border:1px solid #00ffaa;
-    padding:10px 16px;
-    border-radius:8px;
-}
-
-.map-link:hover{
-    background:#00ffaa;
-    color:#061014;
-}
-
-
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media(max-width:1200px){
-
-    .risk-grid,
-    .performance-grid{
-        grid-template-columns:repeat(2,1fr);
-    }
-
-    .case-top-grid{
-        grid-template-columns:1fr;
-    }
-
-}
-
-@media(max-width:800px){
-
-    .sidebar{
-        width:220px;
-    }
-
-    .main-content{
-        margin-left:220px;
-    }
-
-    .priority-card{
-        flex-direction:column;
-    }
-
-    .priority-right{
-        text-align:left;
-    }
-
-    .detail-grid{
-        grid-template-columns:1fr 1fr;
-    }
-
-}
-
-@media(max-width:600px){
-
-    .sidebar{
-        display:none;
-    }
-
-    .main-content{
-        margin-left:0;
-        padding:125px 15px 40px;
-    }
-
-    .risk-grid,
-    .performance-grid,
-    .detail-grid,
-    .evidence-list{
-        grid-template-columns:1fr;
-    }
-
-    .dashboard-header{
-        flex-direction:column;
-        align-items:flex-start;
-    }
-
-    #riskMap{
-        height:400px;
-    }
-
-    .report-controls{
-        grid-template-columns:1fr;
-    }
-
-}
-
-</style>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>LarvaeLens Municipality Dashboard</title>
+
+<link rel="icon" type="image/png" sizes="32x32" href="images/icon.png">
+<link rel="shortcut icon" href="images/icon.png">
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
+
+    <!-- Leaflet -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            background: #0d1117;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        /* =====================================================
+           NAVBAR
+        ===================================================== */
+
+        .custom-navbar {
+            min-height: 90px;
+            background: #0d1117;
+            border-bottom: 1px solid #21262d;
+            position: sticky;
+            top: 0;
+            z-index: 2000;
+        }
+
+        .custom-navbar img {
+            object-fit: contain;
+        }
+
+        .admin-btn {
+            background: linear-gradient(
+                45deg,
+                #00ffaa,
+                #00bfff
+            );
+
+            border: none;
+            color: #061018;
+            font-weight: bold;
+        }
+
+        .admin-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* =====================================================
+           SIDEBAR
+        ===================================================== */
+
+        .sidebar {
+            width: 250px;
+            height: calc(100vh - 90px);
+
+            position: fixed;
+            left: 0;
+            top: 90px;
+
+            background: #161b22;
+
+            padding: 25px 20px;
+
+            border-right: 1px solid #21262d;
+
+            z-index: 1500;
+        }
+
+        .sidebar a {
+            display: block;
+
+            color: white;
+            text-decoration: none;
+
+            margin: 10px 0;
+
+            padding: 12px 14px;
+
+            border-radius: 10px;
+
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: #21262d;
+            color: #00ffaa;
+        }
+
+        .sidebar i {
+            width: 25px;
+        }
+
+        /* =====================================================
+           MAIN
+        ===================================================== */
+
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+
+            max-width: 1800px;
+        }
+
+        .dashboard-card {
+            background: #161b22;
+
+            border-radius: 20px;
+
+            padding: 22px;
+
+            margin-bottom: 22px;
+
+            border: 1px solid #21262d;
+        }
+
+        .dashboard-card h1,
+        .dashboard-card h2,
+        .dashboard-card h3,
+        .dashboard-card h4 {
+            color: white;
+        }
+
+        .dashboard-card p {
+            color: #8b949e;
+        }
+
+        /* =====================================================
+           HEADER
+        ===================================================== */
+
+        .dashboard-header {
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 20px;
+        }
+
+        .operational-badge {
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            background: rgba(0, 255, 170, 0.08);
+
+            border: 1px solid #00ffaa;
+
+            color: #00ffaa;
+
+            border-radius: 30px;
+
+            padding: 10px 16px;
+
+            white-space: nowrap;
+        }
+
+        .operational-dot {
+            width: 9px;
+            height: 9px;
+
+            border-radius: 50%;
+
+            background: #00ffaa;
+        }
+
+        /* =====================================================
+           STAT CARDS
+        ===================================================== */
+
+        .stat-card {
+            background: #0d1117;
+
+            border-radius: 16px;
+
+            padding: 18px;
+
+            min-height: 115px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 16px;
+
+            border: 1px solid #30363d;
+
+            transition: 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: #484f58;
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            min-width: 42px;
+        }
+
+        .stat-label {
+            color: #8b949e;
+            font-size: 14px;
+        }
+
+        .stat-value {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .total-card .stat-icon {
+            color: #58a6ff;
+        }
+
+        .critical-card .stat-icon {
+            color: #ff3b30;
+        }
+
+        .high-card .stat-icon {
+            color: #ff9500;
+        }
+
+        .medium-card .stat-icon {
+            color: #ffd60a;
+        }
+
+        .low-card .stat-icon {
+            color: #00ffaa;
+        }
+
+        .pending-card .stat-icon {
+            color: #ff3b30;
+        }
+
+        .progress-card .stat-icon {
+            color: #ffd60a;
+        }
+
+        .completed-card .stat-icon {
+            color: #00ffaa;
+        }
+
+        /* =====================================================
+           MAP
+        ===================================================== */
+
+        #map {
+            width: 100%;
+            height: 500px;
+
+            border-radius: 18px;
+
+            overflow: hidden;
+        }
+
+        .map-legend {
+            display: flex;
+
+            gap: 20px;
+
+            flex-wrap: wrap;
+
+            margin-top: 15px;
+
+            color: #c9d1d9;
+        }
+
+        .legend-item {
+            display: flex;
+
+            align-items: center;
+
+            gap: 7px;
+        }
+
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+
+            border-radius: 50%;
+        }
+
+        .legend-critical {
+            background: #ff3b30;
+        }
+
+        .legend-high {
+            background: #ff9500;
+        }
+
+        .legend-medium {
+            background: #ffd60a;
+        }
+
+        .legend-low {
+            background: #00ffaa;
+        }
+
+        /* =====================================================
+           PRIORITY CASES
+        ===================================================== */
+
+        .priority-case {
+            background: #0d1117;
+
+            border: 1px solid #30363d;
+
+            border-radius: 15px;
+
+            padding: 16px;
+
+            margin-bottom: 12px;
+
+            transition: 0.2s;
+        }
+
+        .priority-case:hover {
+            border-color: #484f58;
+
+            transform: translateY(-2px);
+        }
+
+        .priority-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 15px;
+        }
+
+        .priority-case-title {
+            font-weight: bold;
+
+            font-size: 17px;
+        }
+
+        .priority-case-meta {
+            color: #8b949e;
+
+            font-size: 13px;
+
+            margin-top: 5px;
+        }
+
+        /* =====================================================
+           BADGES
+        ===================================================== */
+
+        .risk-badge,
+        .status-badge {
+            display: inline-block;
+
+            padding: 6px 12px;
+
+            border-radius: 20px;
+
+            font-size: 12px;
+
+            font-weight: bold;
+
+            white-space: nowrap;
+        }
+
+        .risk-critical {
+            background: rgba(255, 59, 48, 0.15);
+            color: #ff3b30;
+            border: 1px solid #ff3b30;
+        }
+
+        .risk-high {
+            background: rgba(255, 149, 0, 0.15);
+            color: #ff9500;
+            border: 1px solid #ff9500;
+        }
+
+        .risk-medium {
+            background: rgba(255, 214, 10, 0.15);
+            color: #ffd60a;
+            border: 1px solid #ffd60a;
+        }
+
+        .risk-low {
+            background: rgba(0, 255, 170, 0.12);
+            color: #00ffaa;
+            border: 1px solid #00ffaa;
+        }
+
+        .status-pending {
+            background: rgba(255, 59, 48, 0.15);
+            color: #ff3b30;
+            border: 1px solid #ff3b30;
+        }
+
+        .status-progress {
+            background: rgba(255, 214, 10, 0.15);
+            color: #ffd60a;
+            border: 1px solid #ffd60a;
+        }
+
+        .status-completed {
+            background: rgba(0, 255, 170, 0.12);
+            color: #00ffaa;
+            border: 1px solid #00ffaa;
+        }
+
+        /* =====================================================
+           FILTERS
+        ===================================================== */
+
+        .filter-control {
+            width: 100%;
+
+            background: #0d1117;
+
+            color: white;
+
+            border: 1px solid #30363d;
+
+            border-radius: 10px;
+
+            padding: 10px 12px;
+        }
+
+        .filter-control:focus {
+            background: #0d1117;
+
+            color: white;
+
+            border-color: #00ffaa;
+
+            box-shadow: none;
+        }
+
+        .filter-control option {
+            background: #161b22;
+            color: white;
+        }
+
+        /* =====================================================
+           TABLE
+        ===================================================== */
+
+        .table {
+            color: white !important;
+        }
+
+        .table th {
+            color: #8b949e;
+
+            border-color: #30363d;
+
+            white-space: nowrap;
+        }
+
+        .table td {
+            border-color: #30363d;
+
+            vertical-align: middle;
+        }
+
+        .table-hover tbody tr:hover {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .report-thumbnail {
+            width: 65px;
+            height: 65px;
+
+            object-fit: cover;
+
+            border-radius: 10px;
+
+            background: #21262d;
+
+            border: 1px solid #30363d;
+        }
+
+        .view-btn {
+            background: transparent;
+
+            color: #00ffaa;
+
+            border: 1px solid #00ffaa;
+
+            border-radius: 8px;
+
+            padding: 7px 12px;
+        }
+
+        .view-btn:hover {
+            background: #00ffaa;
+            color: #061018;
+        }
+
+        /* =====================================================
+           MODAL
+        ===================================================== */
+
+        .modal-content {
+            background: #161b22;
+
+            color: white;
+
+            border: 1px solid #30363d;
+
+            border-radius: 18px;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #30363d;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #30363d;
+        }
+
+        .btn-close {
+            filter: invert(1);
+        }
+
+        .detail-section {
+            background: #0d1117;
+
+            border: 1px solid #30363d;
+
+            border-radius: 14px;
+
+            padding: 15px;
+
+            height: 100%;
+        }
+
+        .detail-section h5 {
+            color: #00ffaa;
+
+            margin-bottom: 15px;
+        }
+
+        .detail-row {
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 15px;
+
+            padding: 8px 0;
+
+            border-bottom: 1px solid #21262d;
+
+            font-size: 14px;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #8b949e;
+        }
+
+        .detail-value {
+            text-align: right;
+
+            font-weight: 500;
+        }
+
+        .case-image {
+            width: 100%;
+
+            max-height: 330px;
+
+            object-fit: cover;
+
+            border-radius: 14px;
+
+            background: #0d1117;
+        }
+
+        /* =====================================================
+           CASE MAP
+        ===================================================== */
+
+        #caseDetailMap {
+            width: 100%;
+
+            height: 320px;
+
+            border-radius: 14px;
+
+            overflow: hidden;
+
+            background: #0d1117;
+        }
+
+        /* =====================================================
+           WORKFLOW
+        ===================================================== */
+
+        .workflow {
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 8px;
+
+            margin-top: 10px;
+        }
+
+        .workflow-step {
+            flex: 1;
+
+            text-align: center;
+
+            padding: 12px 5px;
+
+            border-radius: 12px;
+
+            background: #0d1117;
+
+            border: 1px solid #30363d;
+
+            font-size: 12px;
+        }
+
+        .workflow-step.active {
+            border-width: 2px;
+        }
+
+        .workflow-red.active {
+            color: #ff3b30;
+            border-color: #ff3b30;
+        }
+
+        .workflow-yellow.active {
+            color: #ffd60a;
+            border-color: #ffd60a;
+        }
+
+        .workflow-green.active {
+            color: #00ffaa;
+            border-color: #00ffaa;
+        }
+
+        /* =====================================================
+           LOADING
+        ===================================================== */
+
+        .loading-box {
+            padding: 35px;
+
+            text-align: center;
+
+            color: #8b949e;
+        }
+
+        .empty-box {
+            padding: 35px;
+
+            text-align: center;
+
+            color: #8b949e;
+        }
+
+        .error-box {
+            background: rgba(255,59,48,0.08);
+
+            border: 1px solid #ff3b30;
+
+            color: #ff7b72;
+
+            border-radius: 12px;
+
+            padding: 15px;
+
+            margin-bottom: 20px;
+        }
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+
+        @media(max-width: 992px) {
+
+            .sidebar {
+                width: 210px;
+            }
+
+            .main-content {
+                margin-left: 210px;
+            }
+
+        }
+
+        @media(max-width: 768px) {
+
+            .sidebar {
+                position: relative;
+
+                width: 100%;
+
+                height: auto;
+
+                top: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+
+                padding: 15px;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+
+                align-items: flex-start;
+            }
+
+            #map {
+                height: 400px;
+            }
+
+            .workflow {
+                flex-direction: column;
+            }
+
+            .workflow-step {
+                width: 100%;
+            }
+
+        }
+
+    </style>
 
 </head>
 
 
 <body>
 
+
+<!-- =========================================================
+     AUTH CHECK
+========================================================= -->
 
 <script>
 
-if(
-    localStorage.getItem("adminLoggedIn") !== "true"
-){
+    if (
+        localStorage.getItem("adminLoggedIn") !== "true"
+    ) {
 
-    window.location.href =
-        "municipality-login.html";
+        window.location.href =
+            "municipality-login.html";
 
-}
+    }
 
 </script>
 
 
-<!-- =========================
+<!-- =========================================================
      NAVBAR
-========================= -->
+========================================================= -->
 
-<nav class="top-navbar">
+<nav class="navbar navbar-dark px-4 custom-navbar">
 
-    <a href="index.html">
+    <div class="container-fluid">
 
-        <img
-            src="images/logo.png"
-            class="logo"
-            alt="Larvae Lens"
+        <a
+            class="navbar-brand"
+            href="index.html"
         >
 
-    </a>
+            <img
+                src="images/logo.png"
+                alt="LarvaeLens"
+                height="65"
+            >
 
-    <button
-        class="logout-btn"
-        onclick="adminLogout()"
-    >
+        </a>
 
-        <i class="bi bi-box-arrow-right"></i>
 
-        Logout
+        <button
+            class="btn admin-btn"
+            onclick="adminLogout()"
+        >
 
-    </button>
+            <i class="bi bi-box-arrow-right"></i>
+
+            Logout
+
+        </button>
+
+    </div>
 
 </nav>
 
 
-<!-- =========================
+<!-- =========================================================
      SIDEBAR
-========================= -->
+========================================================= -->
 
 <aside class="sidebar">
 
     <a
-        href="admindashboard.html"
+        href="#top"
         class="active"
     >
+
         <i class="bi bi-speedometer2"></i>
+
         Dashboard
+
     </a>
+
 
     <a href="#risk-map">
+
         <i class="bi bi-geo-alt"></i>
+
         Risk Map
+
     </a>
+
 
     <a href="municipality-analytics.html">
+
         <i class="bi bi-bar-chart-line"></i>
+
         Analytics
+
     </a>
+
 
     <a href="#priority-cases">
+
         <i class="bi bi-exclamation-diamond"></i>
+
         Priority Cases
+
     </a>
 
+
     <a href="#reports">
+
         <i class="bi bi-file-earmark-text"></i>
+
         Reports
+
     </a>
+
 
     <a
         href="#"
-        onclick="adminLogout();return false;"
+        onclick="adminLogout(); return false;"
     >
+
         <i class="bi bi-box-arrow-right"></i>
+
         Logout
+
     </a>
 
 </aside>
 
 
-<!-- =========================
-     MAIN
-========================= -->
+<!-- =========================================================
+     MAIN CONTENT
+========================================================= -->
 
-<main class="main-content">
+<main
+    class="main-content"
+    id="top"
+>
 
 
-<!-- HEADER -->
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
 
-<section class="section-card">
+    <section class="dashboard-card">
 
-    <div class="dashboard-header">
+        <div class="dashboard-header">
 
-        <div>
+            <div>
 
-            <h1>
-                Municipality Dashboard
-            </h1>
+                <h1>
+                    Municipality Dashboard
+                </h1>
 
-            <p>
-                Monitor mosquito breeding reports,
-                prioritize high-risk cases,
-                and manage municipal interventions.
-            </p>
+                <p class="mb-0">
+
+                    Monitor mosquito breeding reports,
+                    prioritize high-risk cases,
+                    and manage municipal interventions.
+
+                </p>
+
+            </div>
+
+
+            <div class="operational-badge">
+
+                <span class="operational-dot"></span>
+
+                Operational Dashboard
+
+            </div>
 
         </div>
 
-        <div class="operational-badge">
+    </section>
 
-            <span class="operational-dot"></span>
 
-            Operational Dashboard
+    <!-- ERROR AREA -->
+
+    <div
+        id="errorArea"
+        style="display:none;"
+        class="error-box"
+    ></div>
+
+
+    <!-- =====================================================
+         RISK OVERVIEW
+    ====================================================== -->
+
+    <section class="dashboard-card">
+
+        <h3 class="mb-4">
+
+            <i class="bi bi-bar-chart-line"></i>
+
+            Risk Overview
+
+        </h3>
+
+
+        <div class="row g-3">
+
+
+            <!-- TOTAL -->
+
+            <div class="col-xl-3 col-md-6">
+
+                <div class="stat-card total-card">
+
+                    <div class="stat-icon">
+
+                        <i class="bi bi-file-earmark-text"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="stat-label">
+                            Total Cases
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="totalCases"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- CRITICAL -->
+
+            <div class="col-xl-3 col-md-6">
+
+                <div class="stat-card critical-card">
+
+                    <div class="stat-icon">
+
+                        <i class="bi bi-exclamation-octagon"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="stat-label">
+                            Critical
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="criticalCases"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- HIGH -->
+
+            <div class="col-xl-3 col-md-6">
+
+                <div class="stat-card high-card">
+
+                    <div class="stat-icon">
+
+                        <i class="bi bi-exclamation-triangle"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="stat-label">
+                            High
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="highCases"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- MEDIUM -->
+
+            <div class="col-xl-3 col-md-6">
+
+                <div class="stat-card medium-card">
+
+                    <div class="stat-icon">
+
+                        <i class="bi bi-dash-circle"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="stat-label">
+                            Medium
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="mediumCases"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- LOW -->
+
+            <div class="col-xl-3 col-md-6">
+
+                <div class="stat-card low-card">
+
+                    <div class="stat-icon">
+
+                        <i class="bi bi-check-circle"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="stat-label">
+                            Low
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="lowCases"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PENDING -->
+
+            <div class="col-xl-3 col-md-6">
+
+                <div class="stat-card pending-card">
+
+                    <div class="stat-icon">
+
+                        <i class="bi bi-clock-history"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="stat-label">
+                            Pending
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="pendingCases"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- IN PROGRESS -->
+
+            <div class="col-xl-3 col-md-6">
+
+                <div class="stat-card progress-card">
+
+                    <div class="stat-icon">
+
+                        <i class="bi bi-arrow-repeat"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="stat-label">
+                            In Progress
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="progressCases"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- COMPLETED -->
+
+            <div class="col-xl-3 col-md-6">
+
+                <div class="stat-card completed-card">
+
+                    <div class="stat-icon">
+
+                        <i class="bi bi-check2-circle"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="stat-label">
+                            Completed
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="completedCases"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
-    </div>
+    </section>
 
-</section>
 
+    <!-- =====================================================
+         RISK MAP
+    ====================================================== -->
 
-<!-- =========================
-     RISK OVERVIEW
-========================= -->
+    <section
+        class="dashboard-card"
+        id="risk-map"
+    >
 
-<section class="section-card">
+        <h3 class="mb-2">
 
-<h2 class="section-title">
+            <i class="bi bi-geo-alt"></i>
 
-<i class="bi bi-bar-chart-line"></i>
+            Mosquito Risk Map
 
-Risk Overview
+        </h3>
 
-</h2>
+        <p>
+            Report locations loaded directly from the database.
+        </p>
 
 
-<div class="risk-grid">
+        <div id="map"></div>
 
 
-<div class="risk-card">
+        <div class="map-legend">
 
-<i class="bi bi-file-earmark-text risk-icon icon-total"></i>
+            <div class="legend-item">
 
-<div>
+                <span class="legend-dot legend-critical"></span>
 
-<div class="risk-label">
-Total Cases
-</div>
+                Critical
 
-<div
-    class="risk-number"
-    id="totalCases"
->
-0
-</div>
+            </div>
 
-</div>
 
-</div>
+            <div class="legend-item">
 
+                <span class="legend-dot legend-high"></span>
 
-<div class="risk-card">
+                High
 
-<i class="bi bi-exclamation-octagon risk-icon icon-critical"></i>
+            </div>
 
-<div>
 
-<div class="risk-label">
-Critical
-</div>
+            <div class="legend-item">
 
-<div
-    class="risk-number"
-    id="criticalCases"
->
-0
-</div>
+                <span class="legend-dot legend-medium"></span>
 
-</div>
+                Medium
 
-</div>
+            </div>
 
 
-<div class="risk-card">
+            <div class="legend-item">
 
-<i class="bi bi-exclamation-triangle risk-icon icon-high"></i>
+                <span class="legend-dot legend-low"></span>
 
-<div>
+                Low
 
-<div class="risk-label">
-High
-</div>
+            </div>
 
-<div
-    class="risk-number"
-    id="highCases"
->
-0
-</div>
+        </div>
 
-</div>
+    </section>
 
-</div>
 
+    <!-- =====================================================
+         PRIORITY CASES
+    ====================================================== -->
 
-<div class="risk-card">
+    <section
+        class="dashboard-card"
+        id="priority-cases"
+    >
 
-<i class="bi bi-dash-circle risk-icon icon-medium"></i>
+        <div class="d-flex justify-content-between align-items-center mb-3">
 
-<div>
+            <div>
 
-<div class="risk-label">
-Medium
-</div>
+                <h3 class="mb-1">
 
-<div
-    class="risk-number"
-    id="mediumCases"
->
-0
-</div>
+                    <i class="bi bi-exclamation-diamond"></i>
 
-</div>
+                    Top Priority Cases
 
-</div>
+                </h3>
 
+                <p class="mb-0">
+                    Highest-risk reports requiring attention.
+                </p>
 
-<div class="risk-card">
+            </div>
 
-<i class="bi bi-check-circle risk-icon icon-low"></i>
+        </div>
 
-<div>
 
-<div class="risk-label">
-Low
-</div>
+        <div id="priorityCases">
 
-<div
-    class="risk-number"
-    id="lowCases"
->
-0
-</div>
+            <div class="loading-box">
+                Loading priority cases...
+            </div>
 
-</div>
+        </div>
 
-</div>
+    </section>
 
 
-<div class="risk-card">
+    <!-- =====================================================
+         REPORTS
+    ====================================================== -->
 
-<i class="bi bi-flag risk-icon icon-pending"></i>
+    <section
+        class="dashboard-card"
+        id="reports"
+    >
 
-<div>
+        <div class="d-flex justify-content-between align-items-center mb-4">
 
-<div class="risk-label">
-Pending
-</div>
+            <div>
 
-<div
-    class="risk-number"
-    id="pendingCases"
->
-0
-</div>
+                <h3 class="mb-1">
 
-</div>
+                    <i class="bi bi-file-earmark-text"></i>
 
-</div>
+                    All Reports
 
+                </h3>
 
-<div class="risk-card">
+                <p class="mb-0">
+                    Live reports from Firestore.
+                </p>
 
-<i class="bi bi-arrow-repeat risk-icon icon-progress"></i>
+            </div>
 
-<div>
 
-<div class="risk-label">
-In Progress
-</div>
+            <button
+                class="btn btn-outline-info"
+                onclick="loadReports()"
+            >
 
-<div
-    class="risk-number"
-    id="progressCases"
->
-0
-</div>
+                <i class="bi bi-arrow-clockwise"></i>
 
-</div>
+                Refresh
 
-</div>
+            </button>
 
+        </div>
 
-<div class="risk-card">
 
-<i class="bi bi-check2-all risk-icon icon-completed"></i>
+        <!-- FILTERS -->
 
-<div>
+        <div class="row g-3 mb-4">
 
-<div class="risk-label">
-Completed
-</div>
 
-<div
-    class="risk-number"
-    id="completedCases"
->
-0
-</div>
+            <div class="col-lg-5">
 
-</div>
+                <input
+                    type="text"
+                    id="searchInput"
+                    class="filter-control"
+                    placeholder="Search report ID, location or user..."
+                >
 
-</div>
+            </div>
 
 
-</div>
+            <div class="col-lg-3">
 
-</section>
+                <select
+                    id="riskFilter"
+                    class="filter-control"
+                >
 
+                    <option value="">
+                        All Risk Levels
+                    </option>
 
-<!-- =========================
-     INTERVENTION PERFORMANCE
-========================= -->
+                    <option value="CRITICAL">
+                        Critical
+                    </option>
 
-<section class="section-card">
+                    <option value="HIGH">
+                        High
+                    </option>
 
-<h2 class="section-title">
+                    <option value="MEDIUM">
+                        Medium
+                    </option>
 
-<i class="bi bi-clipboard-check"></i>
+                    <option value="LOW">
+                        Low
+                    </option>
 
-Intervention Performance
+                </select>
 
-</h2>
+            </div>
 
 
-<div class="performance-grid">
+            <div class="col-lg-3">
 
-<div>
+                <select
+                    id="statusFilter"
+                    class="filter-control"
+                >
 
-<div class="performance-label">
-Total Cases
-</div>
+                    <option value="">
+                        All Statuses
+                    </option>
 
-<div
-    class="performance-value"
-    id="performanceTotal"
->
-0
-</div>
+                    <option value="PENDING">
+                        Pending
+                    </option>
 
-</div>
+                    <option value="IN PROGRESS">
+                        In Progress
+                    </option>
 
+                    <option value="COMPLETED">
+                        Completed
+                    </option>
 
-<div>
+                </select>
 
-<div class="performance-label">
-Completed
-</div>
+            </div>
 
-<div
-    class="performance-value"
-    id="performanceCompleted"
->
-0
-</div>
 
-</div>
+            <div class="col-lg-1">
 
+                <button
+                    class="btn btn-outline-secondary w-100 h-100"
+                    onclick="resetFilters()"
+                    title="Reset filters"
+                >
 
-<div>
+                    <i class="bi bi-x-lg"></i>
 
-<div class="performance-label">
-Pending
-</div>
+                </button>
 
-<div
-    class="performance-value"
-    id="performancePending"
->
-0
-</div>
+            </div>
 
-</div>
+        </div>
 
 
-<div>
+        <!-- TABLE -->
 
-<div class="performance-label">
-Resolution Rate
-</div>
+        <div class="table-responsive">
 
-<div
-    class="performance-value"
-    id="resolutionRate"
->
-0%
-</div>
+            <table class="table table-dark table-hover">
 
-</div>
+                <thead>
 
-</div>
+                    <tr>
 
+                        <th>
+                            Image
+                        </th>
 
-<div class="progress-area">
+                        <th>
+                            Report ID
+                        </th>
 
-<div class="progress-header">
+                        <th>
+                            User
+                        </th>
 
-<span>
-Completion progress
-</span>
+                        <th>
+                            Location
+                        </th>
 
-<span id="progressPercentage">
-0%
-</span>
+                        <th>
+                            Risk
+                        </th>
 
-</div>
+                        <th>
+                            Score
+                        </th>
 
-<div class="progress-container">
+                        <th>
+                            Status
+                        </th>
 
-<div
-    id="completionProgress"
-    class="progress-bar-custom"
-></div>
+                        <th>
+                            Date
+                        </th>
 
-</div>
+                        <th>
+                            Action
+                        </th>
 
-</div>
+                    </tr>
 
-</section>
+                </thead>
 
 
-<!-- =========================
-     MAP
-========================= -->
+                <tbody id="reportTable">
 
-<section
-    class="section-card"
-    id="risk-map"
->
+                    <tr>
 
-<h2 class="section-title">
+                        <td
+                            colspan="9"
+                            class="text-center"
+                        >
 
-<i class="bi bi-geo-alt"></i>
+                            <div class="loading-box">
 
-Mosquito Risk Map
+                                Loading reports...
 
-</h2>
+                            </div>
 
-<p class="map-description">
+                        </td>
 
-View reported cases geographically.
-Marker color represents municipal risk.
+                    </tr>
 
-</p>
+                </tbody>
 
-<div id="riskMap"></div>
+            </table>
 
+        </div>
 
-<div class="map-legend">
-
-<div class="legend-item">
-<span class="legend-dot legend-critical"></span>
-Critical
-</div>
-
-<div class="legend-item">
-<span class="legend-dot legend-high"></span>
-High
-</div>
-
-<div class="legend-item">
-<span class="legend-dot legend-medium"></span>
-Medium
-</div>
-
-<div class="legend-item">
-<span class="legend-dot legend-low"></span>
-Low
-</div>
-
-</div>
-
-</section>
-
-
-<!-- =========================
-     PRIORITY CASES
-========================= -->
-
-<section
-    class="section-card"
-    id="priority-cases"
->
-
-<div
-    style="
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        margin-bottom:25px;
-    "
->
-
-<div>
-
-<h2
-    class="section-title"
-    style="margin-bottom:5px;"
->
-
-<i class="bi bi-exclamation-diamond"></i>
-
-Top Priority Cases
-
-</h2>
-
-<div style="color:#8b949e;">
-Cases requiring the earliest municipal attention.
-</div>
-
-</div>
-
-<span class="risk-badge critical-badge">
-PRIORITY
-</span>
-
-</div>
-
-
-<div id="priorityContainer"></div>
-
-</section>
-
-
-<!-- =========================
-     REPORTS
-========================= -->
-
-<section
-    class="section-card"
-    id="reports"
->
-
-<h2 class="section-title">
-
-<i class="bi bi-file-earmark-text"></i>
-
-All Reports
-
-</h2>
-
-<p style="color:#8b949e;margin-top:-15px;">
-Search, filter, and inspect individual reports.
-</p>
-
-
-<div class="report-controls">
-
-<input
-    type="text"
-    id="searchInput"
-    placeholder="Search case ID, location, habitat..."
->
-
-
-<select id="riskFilter">
-
-<option value="">
-All Risks
-</option>
-
-<option value="CRITICAL">
-Critical
-</option>
-
-<option value="HIGH">
-High
-</option>
-
-<option value="MEDIUM">
-Medium
-</option>
-
-<option value="LOW">
-Low
-</option>
-
-</select>
-
-
-<select id="statusFilter">
-
-<option value="">
-All Status
-</option>
-
-<option value="PENDING">
-Pending
-</option>
-
-<option value="IN PROGRESS">
-In Progress
-</option>
-
-<option value="COMPLETED">
-Completed
-</option>
-
-</select>
-
-
-<button
-    class="reset-btn"
-    onclick="resetFilters()"
->
-
-<i class="bi bi-arrow-counterclockwise"></i>
-
-Reset Filters
-
-</button>
-
-</div>
-
-
-<div class="table-wrapper">
-
-<table class="reports-table">
-
-<thead>
-
-<tr>
-
-<th>Image</th>
-
-<th>Case</th>
-
-<th>Location</th>
-
-<th>Risk</th>
-
-<th>Score</th>
-
-<th>Flag</th>
-
-<th>Status</th>
-
-<th>Time</th>
-
-<th>Action</th>
-
-</tr>
-
-</thead>
-
-<tbody id="reportTable"></tbody>
-
-</table>
-
-</div>
-
-</section>
+    </section>
 
 
 </main>
 
 
-<!-- =====================================================
-     FULL EXPANDED CASE MODAL
-===================================================== -->
+<!-- =========================================================
+     CASE DETAILS MODAL
+========================================================= -->
 
 <div
     class="modal fade"
     id="caseDetailsModal"
     tabindex="-1"
+    aria-hidden="true"
 >
 
-<div class="modal-dialog modal-xl modal-dialog-centered case-modal">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
 
-<div class="modal-content">
-
-
-<div class="modal-header">
-
-<div>
-
-<div class="modal-title">
-
-<i class="bi bi-file-earmark-medical"></i>
-
-Case Investigation
-
-</div>
-
-<div
-    style="
-        color:#8b949e;
-        font-size:14px;
-        margin-top:4px;
-    "
->
-Complete case intelligence and municipal assessment
-</div>
-
-</div>
+        <div class="modal-content">
 
 
-<button
-    type="button"
-    class="btn-close"
-    data-bs-dismiss="modal"
-></button>
+            <div class="modal-header">
 
-</div>
+                <div>
+
+                    <h4
+                        class="modal-title"
+                        id="caseModalTitle"
+                    >
+                        Case Details
+                    </h4>
+
+                    <small
+                        class="text-secondary"
+                        id="caseModalSubtitle"
+                    >
+                    </small>
+
+                </div>
 
 
-<div
-    class="modal-body"
-    id="caseDetailsBody"
->
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                ></button>
 
-</div>
+            </div>
 
 
-<div class="modal-footer">
+            <div
+                class="modal-body"
+                id="caseModalBody"
+            >
 
-    <div class="me-auto d-flex gap-2">
+            </div>
 
-        <button
-            type="button"
-            class="btn btn-danger"
-            onclick="updateCaseStatus('PENDING')"
-        >
-            <i class="bi bi-flag"></i>
-            Pending
-        </button>
 
-        <button
-            type="button"
-            class="btn btn-warning"
-            onclick="updateCaseStatus('IN PROGRESS')"
-        >
-            <i class="bi bi-arrow-repeat"></i>
-            In Progress
-        </button>
+            <div class="modal-footer">
 
-        <button
-            type="button"
-            class="btn btn-success"
-            onclick="updateCaseStatus('COMPLETED')"
-        >
-            <i class="bi bi-check2-circle"></i>
-            Completed
-        </button>
+                <div class="me-auto">
+
+                    <strong>
+                        Update Status:
+                    </strong>
+
+                </div>
+
+
+                <button
+                    class="btn btn-danger"
+                    onclick="updateCaseStatus('PENDING')"
+                >
+
+                    Pending
+
+                </button>
+
+
+                <button
+                    class="btn btn-warning"
+                    onclick="updateCaseStatus('IN PROGRESS')"
+                >
+
+                    In Progress
+
+                </button>
+
+
+                <button
+                    class="btn btn-success"
+                    onclick="updateCaseStatus('COMPLETED')"
+                >
+
+                    Completed
+
+                </button>
+
+
+                <button
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+
+                    Close
+
+                </button>
+
+            </div>
+
+        </div>
 
     </div>
 
-    <button
-        type="button"
-        class="btn btn-secondary"
-        data-bs-dismiss="modal"
-    >
-        Close
-    </button>
-
 </div>
 
 
-</div>
-
-</div>
-
-</div>
-
+<!-- Bootstrap -->
 
 <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
 ></script>
 
+
+<!-- Leaflet -->
+
 <script
-    src="https://unpkg.com/leaflet/dist/leaflet.js"
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
 ></script>
 
 
 <script>
 
 
-/* =====================================================
-   DEMO DATA
-===================================================== */
+/* =========================================================
+   CONFIGURATION
+========================================================= */
 
-const demoReports = [
+/*
+    LOCAL BACKEND
 
-{
-    id:"LR-0001",
-    latitude:22.8046,
-    longitude:86.2029,
-    risk_level:"CRITICAL",
-    risk_score:80.83,
-    status:"PENDING",
-    timestamp:"2026-08-19T03:20:00Z",
+    Your Flask app is running on:
+        http://127.0.0.1:5000
 
-    evidence:[
-        "Larvae detected",
-        "Open stagnant water",
-        "Large habitat coverage"
-    ],
+    When you deploy the backend later, change this ONE line
+    to your Cloud Run URL.
+*/
 
-    vision:{
-        status:"biological_evidence",
-        route:"model3",
+const API_BASE =
+    "https://larvae-lens-backend-908924004639.us-central1.run.app";
 
-        breeding_object:{
-            detected:false,
-            confidence:0
-        },
 
-        habitat:{
-            detected:true,
-            type:"open_stagnant_water",
-            confidence:0.2747,
-
-            bounding_box:{
-                area_pixels:54936.01,
-                coverage_percent:83.83
-            },
-
-            segmentation:{
-                area_pixels:41801.83,
-                coverage_percent:63.78,
-                mask_ratio:0.637845
-            }
-        },
-
-        larvae:{
-            detected:true,
-            count:3,
-            non_larvae_count:0,
-            confidence:0.5002,
-            density_per_10000_pixels:0.7177
-        }
-    },
-
-    environment:{
-
-        weather:{
-            temperature_c:25.1,
-            humidity_percent:96
-        },
-
-        rainfall:{
-            "24h_mm":16.1,
-            "3d_mm":43.7,
-            "7d_mm":119.3
-        },
-
-        population:{
-            radius_m:500,
-            estimated_population:16664.89,
-            density_per_km2:21297.79
-        },
-
-        nearby_facilities:{
-            schools_500m:8,
-            hospitals_500m:9,
-            higher_education_500m:7
-        },
-
-        historical_hotspot:{
-            status:"database_unavailable",
-            hotspots_500m:null,
-            nearest_hotspot_m:null,
-            historical_cases:null
-        }
-
-    },
-
-    risk:{
-        breeding:{
-            score:74,
-            max_score:100,
-            level:"HIGH"
-        },
-
-        municipal:{
-            score:80.83,
-            max_score:100,
-            level:"CRITICAL",
-            status:"PROVISIONAL"
-        }
-    },
-
-    workflow:{
-        status:"PENDING",
-        display_flag:"RED"
-    }
-},
-
-{
-    id:"LR-0002",
-    latitude:22.8100,
-    longitude:86.2100,
-    risk_level:"HIGH",
-    risk_score:64.58,
-    status:"IN PROGRESS",
-    timestamp:"2026-08-19T04:10:00Z",
-
-    evidence:[
-        "Stagnant water habitat detected"
-    ],
-
-    vision:{
-        habitat:{
-            detected:true,
-            type:"open_stagnant_water",
-            confidence:0.71
-        },
-
-        larvae:{
-            detected:true,
-            count:2,
-            confidence:0.61
-        }
-    },
-
-    environment:{
-        weather:{
-            temperature_c:26.4,
-            humidity_percent:91
-        },
-
-        rainfall:{
-            "24h_mm":12.3,
-            "3d_mm":31.2,
-            "7d_mm":94.5
-        },
-
-        population:{
-            radius_m:500,
-            estimated_population:13200
-        },
-
-        nearby_facilities:{
-            schools_500m:5,
-            hospitals_500m:3,
-            higher_education_500m:2
-        }
-    }
-},
-
-{
-    id:"LR-0003",
-    latitude:22.7980,
-    longitude:86.1950,
-    risk_level:"MEDIUM",
-    risk_score:45,
-    status:"PENDING",
-    timestamp:"2026-08-18T16:30:00Z",
-
-    evidence:[
-        "Potential breeding object detected"
-    ]
-},
-
-{
-    id:"LR-0004",
-    latitude:22.8150,
-    longitude:86.1900,
-    risk_level:"LOW",
-    risk_score:22,
-    status:"COMPLETED",
-    timestamp:"2026-08-18T10:20:00Z",
-
-    evidence:[
-        "Low breeding potential"
-    ]
-}
-
-];
-
+/* =========================================================
+   GLOBAL STATE
+========================================================= */
 
 let reports = [];
 
-let map;
+let activeCaseId = null;
+
+let map = null;
+
+let mapMarkers = [];
 
 
-/* =====================================================
+/* =========================================================
    LOGOUT
-===================================================== */
+========================================================= */
 
-function adminLogout(){
+function adminLogout() {
 
     localStorage.removeItem(
         "adminLoggedIn"
@@ -1933,101 +1743,29 @@ function adminLogout(){
 }
 
 
-/* =====================================================
-   MAP
-===================================================== */
+/* Keep compatibility with old spelling */
 
-function initializeMap(){
+function adminlogout() {
 
-    map =
-        L.map("riskMap")
-        .setView(
-            [22.8046,86.2029],
-            13
-        );
-
-
-    L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-            maxZoom:19,
-            attribution:
-                '&copy; OpenStreetMap contributors'
-        }
-    ).addTo(map);
+    adminLogout();
 
 }
 
 
-/* =====================================================
-   RISK COLOR
-===================================================== */
+/* =========================================================
+   SAFE VALUE
+========================================================= */
 
-function getRiskColor(risk){
+function valueOrUnavailable(value) {
 
-    const value =
-        String(risk || "")
-        .toUpperCase();
+    if (
+        value === undefined ||
+        value === null ||
+        value === ""
+    ) {
 
-    if(value==="CRITICAL")
-        return "#ff3b30";
+        return "Data unavailable";
 
-    if(value==="HIGH")
-        return "#ff9800";
-
-    if(value==="MEDIUM")
-        return "#ffd400";
-
-    return "#00e6a8";
-
-}
-
-
-/* =====================================================
-   RISK BADGE
-===================================================== */
-
-function getRiskBadge(risk){
-
-    const value =
-        String(risk || "LOW")
-        .toUpperCase();
-
-    let cls="low-badge";
-
-    if(value==="CRITICAL")
-        cls="critical-badge";
-
-    else if(value==="HIGH")
-        cls="high-badge";
-
-    else if(value==="MEDIUM")
-        cls="medium-badge";
-
-    return `
-        <span class="risk-badge ${cls}">
-            ${value}
-        </span>
-    `;
-
-}
-
-
-/* =====================================================
-   STATUS
-===================================================== */
-
-function normalizeStatus(status){
-
-    const value =
-        String(status || "PENDING")
-        .toUpperCase();
-
-    if(
-        value==="IN_PROGRESS" ||
-        value==="WORKING"
-    ){
-        return "IN PROGRESS";
     }
 
     return value;
@@ -2035,559 +1773,969 @@ function normalizeStatus(status){
 }
 
 
-function getStatusBadge(status){
+/* =========================================================
+   NORMALIZE STATUS
+========================================================= */
+
+function normalizeStatus(status) {
+
+    if (!status) {
+
+        return "PENDING";
+
+    }
 
     const value =
-        normalizeStatus(status);
+        String(status)
+            .trim()
+            .toUpperCase();
 
-    let cls="status-pending";
+    if (
+        value === "IN_PROGRESS" ||
+        value === "IN-PROGRESS" ||
+        value === "IN PROGRESS"
+    ) {
 
-    if(value==="IN PROGRESS")
-        cls="status-progress";
+        return "IN PROGRESS";
 
-    if(value==="COMPLETED")
-        cls="status-completed";
+    }
 
-    return `
-        <span class="status-badge ${cls}">
-            ${value}
-        </span>
-    `;
+    if (value === "COMPLETED") {
+
+        return "COMPLETED";
+
+    }
+
+    return "PENDING";
 
 }
 
 
-/* =====================================================
-   FLAG
-===================================================== */
+/* =========================================================
+   NORMALIZE RISK
+========================================================= */
 
-function getFlag(status){
+function normalizeRisk(risk) {
+
+    if (!risk) {
+
+        return "LOW";
+
+    }
 
     const value =
+        String(risk)
+            .trim()
+            .toUpperCase();
+
+    if (
+        value === "CRITICAL" ||
+        value === "HIGH" ||
+        value === "MEDIUM" ||
+        value === "LOW"
+    ) {
+
+        return value;
+
+    }
+
+    return "LOW";
+
+}
+
+
+/* =========================================================
+   RISK COLOR
+========================================================= */
+
+function getRiskColor(risk) {
+
+    const normalized =
+        normalizeRisk(risk);
+
+    if (normalized === "CRITICAL") {
+
+        return "#ff3b30";
+
+    }
+
+    if (normalized === "HIGH") {
+
+        return "#ff9500";
+
+    }
+
+    if (normalized === "MEDIUM") {
+
+        return "#ffd60a";
+
+    }
+
+    return "#00ffaa";
+
+}
+
+
+/* =========================================================
+   RISK BADGE
+========================================================= */
+
+function getRiskBadge(risk) {
+
+    const normalized =
+        normalizeRisk(risk);
+
+    const className =
+        normalized === "CRITICAL"
+            ? "risk-critical"
+            : normalized === "HIGH"
+                ? "risk-high"
+                : normalized === "MEDIUM"
+                    ? "risk-medium"
+                    : "risk-low";
+
+
+    return `
+
+        <span class="risk-badge ${className}">
+
+            ${normalized}
+
+        </span>
+
+    `;
+
+}
+
+
+/* =========================================================
+   STATUS BADGE
+========================================================= */
+
+function getStatusBadge(status) {
+
+    const normalized =
         normalizeStatus(status);
 
-    if(value==="COMPLETED"){
+    const className =
+        normalized === "COMPLETED"
+            ? "status-completed"
+            : normalized === "IN PROGRESS"
+                ? "status-progress"
+                : "status-pending";
 
-        return `
-            <span class="flag">
-                <span class="flag-dot flag-green"></span>
-                Done
-            </span>
-        `;
-
-    }
-
-    if(value==="IN PROGRESS"){
-
-        return `
-            <span class="flag">
-                <span class="flag-dot flag-yellow"></span>
-                Working
-            </span>
-        `;
-
-    }
 
     return `
-        <span class="flag">
-            <span class="flag-dot flag-red"></span>
-            Not Done
+
+        <span class="status-badge ${className}">
+
+            ${normalized}
+
         </span>
-    `;
-
-}
-
-
-/* =====================================================
-   ADD MAP MARKER
-===================================================== */
-
-function addMarker(report){
-
-    const lat =
-        parseFloat(report.latitude);
-
-    const lng =
-        parseFloat(report.longitude);
-
-    if(
-        Number.isNaN(lat) ||
-        Number.isNaN(lng)
-    ){
-        return;
-    }
-
-
-    const color =
-        getRiskColor(
-            report.risk_level
-        );
-
-
-    const marker =
-        L.circleMarker(
-            [lat,lng],
-            {
-                radius:11,
-                fillColor:color,
-                color:color,
-                weight:2,
-                opacity:1,
-                fillOpacity:.85
-            }
-        );
-
-
-    marker.bindPopup(`
-
-        <strong>
-            ${report.id || "Report"}
-        </strong>
-
-        <br><br>
-
-        Risk:
-        <strong style="color:${color}">
-            ${report.risk_level || "N/A"}
-        </strong>
-
-        <br>
-
-        Score:
-        ${report.risk_score ?? "N/A"}
-
-        <br>
-
-        Status:
-        ${normalizeStatus(report.status)}
-
-        <br><br>
-
-        <button
-            onclick="viewReport('${report.id}')"
-            style="
-                background:#0d1117;
-                color:#00ffaa;
-                border:1px solid #00ffaa;
-                border-radius:6px;
-                padding:6px 10px;
-            "
-        >
-            View Full Case
-        </button>
-
-    `);
-
-    marker.addTo(map);
-
-}
-
-
-/* =====================================================
-   DASHBOARD COUNTS
-===================================================== */
-
-function updateDashboard(){
-
-    const total=reports.length;
-
-    const critical=
-        reports.filter(
-            r =>
-                String(r.risk_level)
-                .toUpperCase()==="CRITICAL"
-        ).length;
-
-    const high=
-        reports.filter(
-            r =>
-                String(r.risk_level)
-                .toUpperCase()==="HIGH"
-        ).length;
-
-    const medium=
-        reports.filter(
-            r =>
-                String(r.risk_level)
-                .toUpperCase()==="MEDIUM"
-        ).length;
-
-    const low=
-        reports.filter(
-            r =>
-                String(r.risk_level)
-                .toUpperCase()==="LOW"
-        ).length;
-
-    const pending=
-        reports.filter(
-            r =>
-                normalizeStatus(r.status)==="PENDING"
-        ).length;
-
-    const progress=
-        reports.filter(
-            r =>
-                normalizeStatus(r.status)==="IN PROGRESS"
-        ).length;
-
-    const completed=
-        reports.filter(
-            r =>
-                normalizeStatus(r.status)==="COMPLETED"
-        ).length;
-
-
-    document.getElementById("totalCases").textContent=total;
-    document.getElementById("criticalCases").textContent=critical;
-    document.getElementById("highCases").textContent=high;
-    document.getElementById("mediumCases").textContent=medium;
-    document.getElementById("lowCases").textContent=low;
-    document.getElementById("pendingCases").textContent=pending;
-    document.getElementById("progressCases").textContent=progress;
-    document.getElementById("completedCases").textContent=completed;
-
-
-    document.getElementById("performanceTotal").textContent=total;
-
-    document.getElementById("performanceCompleted").textContent=completed;
-
-    document.getElementById("performancePending").textContent=pending;
-
-
-    const rate =
-        total > 0
-        ? Math.round(
-            completed / total * 1000
-        ) / 10
-        : 0;
-
-
-    document.getElementById("resolutionRate").textContent =
-        rate+"%";
-
-    document.getElementById("progressPercentage").textContent =
-        rate+"%";
-
-    document.getElementById("completionProgress").style.width =
-        rate+"%";
-
-}
-
-
-/* =====================================================
-   PRIORITY CASES
-===================================================== */
-
-function renderPriorityCases(){
-
-    const container=
-        document.getElementById(
-            "priorityContainer"
-        );
-
-
-    const priority=
-        [...reports]
-        .filter(
-            r =>
-                ["CRITICAL","HIGH"]
-                .includes(
-                    String(
-                        r.risk_level
-                    ).toUpperCase()
-                )
-        )
-        .sort(
-            (a,b) =>
-                Number(b.risk_score || 0)
-                -
-                Number(a.risk_score || 0)
-        )
-        .slice(0,5);
-
-
-    if(priority.length===0){
-
-        container.innerHTML=`
-            <div style="color:#8b949e;">
-                No priority cases found.
-            </div>
-        `;
-
-        return;
-    }
-
-
-    container.innerHTML =
-        priority
-        .map(
-            report =>
-                createPriorityCard(report)
-        )
-        .join("");
-
-}
-
-
-function createPriorityCard(report){
-
-    const evidence =
-        Array.isArray(report.evidence)
-        ? report.evidence
-        : [];
-
-
-    const description =
-        evidence.length
-        ? evidence.join(" • ")
-        : "High-risk mosquito breeding case.";
-
-
-    return `
-
-        <div class="priority-card">
-
-            <div class="priority-main">
-
-                <div class="priority-id">
-                    ${report.id || "REPORT"}
-                </div>
-
-                <div class="priority-location">
-
-                    <i class="bi bi-geo-alt"></i>
-
-                    ${report.latitude ?? "—"},
-                    ${report.longitude ?? "—"}
-
-                </div>
-
-                <div class="priority-description">
-
-                    ${description}
-
-                </div>
-
-                <div class="priority-bottom">
-
-                    ${getFlag(report.status)}
-
-                    ${getStatusBadge(report.status)}
-
-                </div>
-
-            </div>
-
-
-            <div class="priority-right">
-
-                ${getRiskBadge(report.risk_level)}
-
-                <div
-                    style="
-                        font-size:17px;
-                        margin-top:12px;
-                        font-weight:bold;
-                    "
-                >
-
-                    Score:
-                    ${report.risk_score ?? "N/A"}
-
-                </div>
-
-
-                <button
-                    class="view-btn"
-                    onclick="viewReport('${report.id}')"
-                >
-
-                    <i class="bi bi-eye"></i>
-
-                    View Details
-
-                </button>
-
-            </div>
-
-        </div>
 
     `;
 
 }
 
 
-/* =====================================================
-   FORMAT DATE
-===================================================== */
+/* =========================================================
+   DISPLAY FLAG
+========================================================= */
 
-function formatDate(value){
+function getDisplayFlag(status) {
 
-    if(!value)
+    const normalized =
+        normalizeStatus(status);
+
+    if (normalized === "COMPLETED") {
+
+        return "GREEN";
+
+    }
+
+    if (normalized === "IN PROGRESS") {
+
+        return "YELLOW";
+
+    }
+
+    return "RED";
+
+}
+
+
+/* =========================================================
+   DATE
+========================================================= */
+
+function formatDate(timestamp) {
+
+    if (!timestamp) {
+
         return "Data unavailable";
 
-    const date=new Date(value);
+    }
 
-    if(
+    const date =
+        new Date(timestamp);
+
+    if (
         Number.isNaN(
             date.getTime()
         )
-    ){
-        return value;
+    ) {
+
+        return String(timestamp);
+
     }
 
     return date.toLocaleString(
         "en-IN",
         {
-            day:"2-digit",
-            month:"short",
-            year:"numeric",
-            hour:"2-digit",
-            minute:"2-digit"
+            dateStyle: "medium",
+            timeStyle: "short"
         }
     );
 
 }
 
 
-/* =====================================================
+/* =========================================================
    IMAGE
-===================================================== */
+========================================================= */
 
-function getImage(report){
+function getImage(report) {
 
-    if(report.image_url){
+    const image =
+        report.image_url ||
+        report.image ||
+        "";
+
+
+    if (!image) {
 
         return `
-            <div class="case-image">
-                <img
-                    src="${report.image_url}"
-                    alt="Case"
-                >
+
+            <div
+                class="report-thumbnail d-flex align-items-center justify-content-center"
+            >
+
+                <i class="bi bi-image text-secondary"></i>
+
             </div>
+
         `;
 
     }
 
-    if(report.image){
-
-        return `
-            <div class="case-image">
-                <i class="bi bi-bug-fill"></i>
-            </div>
-        `;
-
-    }
 
     return `
-        <div class="case-image">
-            <i class="bi bi-bug-fill"></i>
-        </div>
+
+        <img
+            src="${escapeHtml(image)}"
+            class="report-thumbnail"
+            alt="Report"
+            onerror="this.style.display='none'"
+        >
+
     `;
 
 }
 
 
-/* =====================================================
-   REPORT TABLE
-===================================================== */
+/* =========================================================
+   HTML ESCAPE
+========================================================= */
 
-function renderReports(){
+function escapeHtml(value) {
 
-    const table=
-        document.getElementById(
-            "reportTable"
+    if (
+        value === undefined ||
+        value === null
+    ) {
+
+        return "";
+
+    }
+
+    return String(value)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* =========================================================
+   UPDATE STATISTICS
+========================================================= */
+
+function updateStatistics() {
+
+    const total =
+        reports.length;
+
+
+    let critical = 0;
+    let high = 0;
+    let medium = 0;
+    let low = 0;
+
+    let pending = 0;
+    let progress = 0;
+    let completed = 0;
+
+
+    reports.forEach(
+        function(report) {
+
+            const risk =
+                normalizeRisk(
+                    report.risk_level
+                );
+
+            const status =
+                normalizeStatus(
+                    report.status
+                );
+
+
+            if (risk === "CRITICAL") {
+
+                critical++;
+
+            }
+            else if (risk === "HIGH") {
+
+                high++;
+
+            }
+            else if (risk === "MEDIUM") {
+
+                medium++;
+
+            }
+            else {
+
+                low++;
+
+            }
+
+
+            if (status === "PENDING") {
+
+                pending++;
+
+            }
+            else if (
+                status === "IN PROGRESS"
+            ) {
+
+                progress++;
+
+            }
+            else {
+
+                completed++;
+
+            }
+
+        }
+    );
+
+
+    document.getElementById(
+        "totalCases"
+    ).textContent = total;
+
+
+    document.getElementById(
+        "criticalCases"
+    ).textContent = critical;
+
+
+    document.getElementById(
+        "highCases"
+    ).textContent = high;
+
+
+    document.getElementById(
+        "mediumCases"
+    ).textContent = medium;
+
+
+    document.getElementById(
+        "lowCases"
+    ).textContent = low;
+
+
+    document.getElementById(
+        "pendingCases"
+    ).textContent = pending;
+
+
+    document.getElementById(
+        "progressCases"
+    ).textContent = progress;
+
+
+    document.getElementById(
+        "completedCases"
+    ).textContent = completed;
+
+}
+
+
+/* =========================================================
+   INITIALIZE MAP
+========================================================= */
+
+function initializeMap() {
+
+    if (map) {
+
+        return;
+
+    }
+
+
+    map =
+        L.map("map").setView(
+            [22.8046, 86.2029],
+            13
         );
 
 
-    const search=
-        document.getElementById(
-            "searchInput"
-        ).value.toLowerCase();
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom: 19,
+
+            attribution:
+                "&copy; OpenStreetMap contributors"
+        }
+    ).addTo(map);
+
+}
 
 
-    const risk=
-        document.getElementById(
-            "riskFilter"
-        ).value;
+/* =========================================================
+   CLEAR MAP
+========================================================= */
+
+function clearMapMarkers() {
+
+    mapMarkers.forEach(
+        function(marker) {
+
+            map.removeLayer(
+                marker
+            );
+
+        }
+    );
+
+    mapMarkers = [];
+
+}
 
 
-    const status=
-        document.getElementById(
-            "statusFilter"
-        ).value;
+/* =========================================================
+   LOAD MAP MARKERS
+========================================================= */
+
+function loadMapMarkers() {
+
+    initializeMap();
+
+    clearMapMarkers();
 
 
-    const filtered=
+    const validReports =
         reports.filter(
-            report => {
+            function(report) {
 
-                const id=
-                    String(
-                        report.id || ""
-                    ).toLowerCase();
-
-                const location=
-                    `${report.latitude || ""}
-                     ${report.longitude || ""}`
-                    .toLowerCase();
-
-                const riskValue=
-                    String(
-                        report.risk_level || ""
-                    ).toUpperCase();
-
-                const statusValue=
-                    normalizeStatus(
-                        report.status
+                const lat =
+                    parseFloat(
+                        report.latitude
                     );
 
+                const lng =
+                    parseFloat(
+                        report.longitude
+                    );
 
                 return (
-
-                    (
-                        !search ||
-                        id.includes(search) ||
-                        location.includes(search)
-                    )
-
-                    &&
-
-                    (
-                        !risk ||
-                        riskValue===risk
-                    )
-
-                    &&
-
-                    (
-                        !status ||
-                        statusValue===status
-                    )
-
+                    Number.isFinite(lat) &&
+                    Number.isFinite(lng)
                 );
 
             }
         );
 
 
-    if(filtered.length===0){
+    validReports.forEach(
+        function(report) {
 
-        table.innerHTML=`
+            const lat =
+                parseFloat(
+                    report.latitude
+                );
+
+            const lng =
+                parseFloat(
+                    report.longitude
+                );
+
+
+            const risk =
+                normalizeRisk(
+                    report.risk_level
+                );
+
+
+            const color =
+                getRiskColor(
+                    risk
+                );
+
+
+            const marker =
+                L.circleMarker(
+                    [lat, lng],
+                    {
+                        radius: 10,
+
+                        color: color,
+
+                        fillColor: color,
+
+                        fillOpacity: 0.8,
+
+                        weight: 2
+                    }
+                ).addTo(map);
+
+
+            marker.bindPopup(`
+
+                <div style="min-width:220px">
+
+                    <strong>
+                        ${escapeHtml(report.id)}
+                    </strong>
+
+                    <hr>
+
+                    <strong>Risk:</strong>
+                    ${escapeHtml(risk)}
+
+                    <br>
+
+                    <strong>Score:</strong>
+                    ${escapeHtml(
+                        valueOrUnavailable(
+                            report.risk_score
+                        )
+                    )}
+
+                    <br>
+
+                    <strong>Status:</strong>
+                    ${escapeHtml(
+                        normalizeStatus(
+                            report.status
+                        )
+                    )}
+
+                    <br><br>
+
+                    <button
+                        class="btn btn-sm btn-primary"
+                        onclick="viewReport('${escapeHtml(report.id)}')"
+                    >
+                        View Case
+                    </button>
+
+                </div>
+
+            `);
+
+
+            mapMarkers.push(
+                marker
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   RENDER PRIORITY CASES
+========================================================= */
+
+function renderPriorityCases() {
+
+    const container =
+        document.getElementById(
+            "priorityCases"
+        );
+
+
+    if (!reports.length) {
+
+        container.innerHTML = `
+
+            <div class="empty-box">
+
+                <i class="bi bi-check-circle fs-2"></i>
+
+                <div class="mt-2">
+
+                    No reports found.
+
+                </div>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    const priority =
+        [...reports]
+
+            .sort(
+                function(a, b) {
+
+                    const scoreA =
+                        Number(
+                            a.risk_score
+                        ) || 0;
+
+                    const scoreB =
+                        Number(
+                            b.risk_score
+                        ) || 0;
+
+                    return scoreB - scoreA;
+
+                }
+            )
+
+            .slice(0, 5);
+
+
+    container.innerHTML =
+        priority
+            .map(
+                function(report) {
+
+                    const risk =
+                        normalizeRisk(
+                            report.risk_level
+                        );
+
+                    const status =
+                        normalizeStatus(
+                            report.status
+                        );
+
+
+                    return `
+
+                        <div class="priority-case">
+
+                            <div class="priority-header">
+
+                                <div>
+
+                                    <div class="priority-case-title">
+
+                                        ${escapeHtml(
+                                            report.id
+                                        )}
+
+                                    </div>
+
+                                    <div class="priority-case-meta">
+
+                                        ${escapeHtml(
+                                            valueOrUnavailable(
+                                                report.user_name
+                                            )
+                                        )}
+
+                                        &nbsp; • &nbsp;
+
+                                        ${escapeHtml(
+                                            valueOrUnavailable(
+                                                report.latitude
+                                            )
+                                        )},
+
+                                        ${escapeHtml(
+                                            valueOrUnavailable(
+                                                report.longitude
+                                            )
+                                        )}
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="text-end">
+
+                                    ${getRiskBadge(risk)}
+
+                                    <div class="mt-2">
+
+                                        ${getStatusBadge(status)}
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+
+                                <div class="text-secondary">
+
+                                    Risk Score:
+
+                                    <strong class="text-white">
+
+                                        ${escapeHtml(
+                                            valueOrUnavailable(
+                                                report.risk_score
+                                            )
+                                        )}
+
+                                        / 100
+
+                                    </strong>
+
+                                </div>
+
+
+                                <button
+                                    class="view-btn"
+                                    onclick="viewReport('${escapeHtml(report.id)}')"
+                                >
+
+                                    <i class="bi bi-eye"></i>
+
+                                    View Case
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    `;
+
+                }
+            )
+            .join("");
+
+}
+
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+function resetFilters() {
+
+    document.getElementById(
+        "searchInput"
+    ).value = "";
+
+
+    document.getElementById(
+        "riskFilter"
+    ).value = "";
+
+
+    document.getElementById(
+        "statusFilter"
+    ).value = "";
+
+
+    renderReports();
+
+}
+
+
+/* =========================================================
+   REPORT TABLE
+========================================================= */
+
+function renderReports() {
+
+    const table =
+        document.getElementById(
+            "reportTable"
+        );
+
+
+    const search =
+        document.getElementById(
+            "searchInput"
+        )
+        .value
+        .toLowerCase()
+        .trim();
+
+
+    const riskFilter =
+        document.getElementById(
+            "riskFilter"
+        ).value;
+
+
+    const statusFilter =
+        document.getElementById(
+            "statusFilter"
+        ).value;
+
+
+    const filtered =
+        reports.filter(
+            function(report) {
+
+                const id =
+                    String(
+                        report.id || ""
+                    )
+                    .toLowerCase();
+
+
+                const user =
+                    String(
+                        report.user_name || ""
+                    )
+                    .toLowerCase();
+
+
+                const email =
+                    String(
+                        report.email || ""
+                    )
+                    .toLowerCase();
+
+
+                const latitude =
+                    String(
+                        report.latitude || ""
+                    );
+
+
+                const longitude =
+                    String(
+                        report.longitude || ""
+                    );
+
+
+                const searchMatch =
+                    !search ||
+
+                    id.includes(search) ||
+
+                    user.includes(search) ||
+
+                    email.includes(search) ||
+
+                    latitude.includes(search) ||
+
+                    longitude.includes(search);
+
+
+                const reportRisk =
+                    normalizeRisk(
+                        report.risk_level
+                    );
+
+
+                const reportStatus =
+                    normalizeStatus(
+                        report.status
+                    );
+
+
+                const riskMatch =
+                    !riskFilter ||
+                    reportRisk === riskFilter;
+
+
+                const statusMatch =
+                    !statusFilter ||
+                    reportStatus === statusFilter;
+
+
+                return (
+                    searchMatch &&
+                    riskMatch &&
+                    statusMatch
+                );
+
+            }
+        );
+
+
+    if (!filtered.length) {
+
+        table.innerHTML = `
 
             <tr>
 
                 <td
                     colspan="9"
-                    style="
-                        text-align:center;
-                        padding:30px;
-                        color:#8b949e;
-                    "
+                    class="text-center"
                 >
 
-                    No reports found.
+                    <div class="empty-box">
+
+                        <i class="bi bi-search fs-2"></i>
+
+                        <div class="mt-2">
+
+                            No matching reports found.
+
+                        </div>
+
+                    </div>
 
                 </td>
 
@@ -2602,1178 +2750,725 @@ function renderReports(){
 
     table.innerHTML =
         filtered
-        .map(
-            report => `
+            .map(
+                function(report) {
 
-            <tr>
+                    const risk =
+                        normalizeRisk(
+                            report.risk_level
+                        );
 
-                <td>
-                    ${getImage(report)}
-                </td>
 
-                <td>
-                    <strong>
-                        ${report.id || "—"}
-                    </strong>
-                </td>
+                    const status =
+                        normalizeStatus(
+                            report.status
+                        );
 
-                <td>
-                    ${report.latitude ?? "—"},
-                    ${report.longitude ?? "—"}
-                </td>
 
-                <td>
-                    ${getRiskBadge(
-                        report.risk_level
-                    )}
-                </td>
+                    const latitude =
+                        report.latitude !== undefined &&
+                        report.latitude !== null
+                            ? Number(
+                                report.latitude
+                            ).toFixed(5)
+                            : "—";
 
-                <td>
-                    <strong>
-                        ${report.risk_score ?? "—"} / 100
-                    </strong>
-                </td>
 
-                <td>
-                    ${getFlag(report.status)}
-                </td>
+                    const longitude =
+                        report.longitude !== undefined &&
+                        report.longitude !== null
+                            ? Number(
+                                report.longitude
+                            ).toFixed(5)
+                            : "—";
 
-                <td>
-                    ${getStatusBadge(report.status)}
-                </td>
 
-                <td>
-                    ${formatDate(report.timestamp)}
-                </td>
+                    return `
 
-                <td>
+                        <tr>
 
-                    <button
-                        class="view-btn"
-                        style="margin-top:0;"
-                        onclick="viewReport('${report.id}')"
-                    >
+                            <td>
 
-                        <i class="bi bi-eye"></i>
+                                ${getImage(report)}
 
-                        View
+                            </td>
 
-                    </button>
 
-                </td>
+                            <td>
 
-            </tr>
+                                <strong>
 
-            `
-        )
-        .join("");
+                                    ${escapeHtml(
+                                        report.id || "—"
+                                    )}
+
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+
+                                <div>
+
+                                    ${escapeHtml(
+                                        report.user_name || "—"
+                                    )}
+
+                                </div>
+
+                                <small class="text-secondary">
+
+                                    ${escapeHtml(
+                                        report.email || ""
+                                    )}
+
+                                </small>
+
+                            </td>
+
+
+                            <td>
+
+                                ${latitude},
+                                ${longitude}
+
+                            </td>
+
+
+                            <td>
+
+                                ${getRiskBadge(risk)}
+
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+
+                                    ${escapeHtml(
+                                        valueOrUnavailable(
+                                            report.risk_score
+                                        )
+                                    )}
+
+                                    / 100
+
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+
+                                ${getStatusBadge(status)}
+
+                            </td>
+
+
+                            <td>
+
+                                ${escapeHtml(
+                                    formatDate(
+                                        report.timestamp
+                                    )
+                                )}
+
+                            </td>
+
+
+                            <td>
+
+                                <button
+                                    class="view-btn"
+                                    onclick="viewReport('${escapeHtml(report.id)}')"
+                                >
+
+                                    <i class="bi bi-eye"></i>
+
+                                    View
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                    `;
+
+                }
+            )
+            .join("");
 
 }
 
 
-/* =====================================================
-   SAFE VALUE
-===================================================== */
+/* =========================================================
+   VIEW REPORT
+========================================================= */
 
-function valueOrUnavailable(value){
-
-    if(
-        value === undefined ||
-        value === null ||
-        value === ""
-    ){
-        return "Data unavailable";
-    }
-
-    return value;
-
-}
-
-
-/* =====================================================
-   PERCENT
-===================================================== */
-
-function percentage(value){
-
-    if(
-        value === undefined ||
-        value === null
-    ){
-        return "Data unavailable";
-    }
-
-    return (
-        Number(value) * 100
-    ).toFixed(2)+"%";
-
-}
-
-/* =====================================================
-   ACTIVE CASE
-===================================================== */
-
-let activeCaseId = null;
-
-
-/* =====================================================
-   UPDATE CASE STATUS
-===================================================== */
-
-function updateCaseStatus(newStatus){
-
-    if(!activeCaseId){
-        return;
-    }
+function viewReport(id) {
 
     const report =
         reports.find(
-            r =>
-                String(r.id) ===
-                String(activeCaseId)
-        );
+            function(item) {
 
-    if(!report){
-        return;
-    }
+                return String(
+                    item.id
+                ) === String(id);
 
-
-    /* Update main status */
-
-    report.status = newStatus;
-
-
-    /* Keep workflow structure synchronized */
-
-    if(!report.workflow){
-        report.workflow = {};
-    }
-
-    report.workflow.status = newStatus;
-
-
-    /* Update display flag */
-
-    if(newStatus === "COMPLETED"){
-
-        report.workflow.display_flag = "GREEN";
-
-    }
-    else if(newStatus === "IN PROGRESS"){
-
-        report.workflow.display_flag = "YELLOW";
-
-    }
-    else{
-
-        report.workflow.display_flag = "RED";
-
-    }
-
-
-    /* Refresh dashboard */
-
-    updateDashboard();
-
-    renderPriorityCases();
-
-    renderReports();
-
-
-    /* Refresh the expanded case */
-
-    viewReport(activeCaseId);
-
-}
-/* =====================================================
-   EXPANDED CASE VIEW
-===================================================== */
-
-function viewReport(id){
-
-    const report=
-        reports.find(
-            r =>
-                String(r.id)===String(id)
+            }
         );
 
 
-    if(!report)
+    if (!report) {
+
         return;
-    activeCaseId = id;
+
+    }
 
 
-    /*
-       Support both:
+    activeCaseId =
+        report.id;
 
-       1. Your new complete analysis structure
-       2. Your current Firestore flat structure
-    */
+
+    const risk =
+        normalizeRisk(
+            report.risk_level
+        );
+
+
+    const status =
+        normalizeStatus(
+            report.status
+        );
+
+
+    const flag =
+        getDisplayFlag(
+            status
+        );
+
+
+    document.getElementById(
+        "caseModalTitle"
+    ).textContent =
+        `Case ${report.id}`;
+
+
+    document.getElementById(
+        "caseModalSubtitle"
+    ).textContent =
+        formatDate(
+            report.timestamp
+        );
+
 
     const vision =
         report.vision || {};
 
+
     const environment =
         report.environment || {};
+
 
     const weather =
         environment.weather || {};
 
+
     const rainfall =
         environment.rainfall || {};
+
 
     const population =
         environment.population || {};
 
+
     const facilities =
         environment.nearby_facilities || {};
+
 
     const hotspot =
         environment.historical_hotspot || {};
 
-    const risk =
+
+    const riskData =
         report.risk || {};
 
-    const breedingRisk =
-        risk.breeding || {};
 
-    const municipalRisk =
-        risk.municipal || {};
+    const breeding =
+        riskData.breeding || {};
 
-    const workflow =
-        report.workflow || {};
 
-    const habitat =
-        vision.habitat || {};
+    const municipal =
+        riskData.municipal || {};
 
-    const larvae =
-        vision.larvae || {};
 
-    const breedingObject =
-        vision.breeding_object || {};
-
-    const segmentation =
-        habitat.segmentation || {};
-
-    const boundingBox =
-        habitat.bounding_box || {};
+    const location =
+        report.location || {};
 
 
     const latitude =
-        valueOrUnavailable(
-            report.latitude
-        );
+        report.latitude ??
+        location.latitude;
+
 
     const longitude =
-        valueOrUnavailable(
-            report.longitude
-        );
+        report.longitude ??
+        location.longitude;
 
 
-    const mapsUrl =
-        (
-            report.latitude !== undefined &&
-            report.longitude !== undefined
-        )
-        ?
-        `https://www.google.com/maps?q=${report.latitude},${report.longitude}`
-        :
-        "#";
+    const accuracy =
+        report.accuracy_m ??
+        location.accuracy_m;
 
 
-    const riskLevel =
-        municipalRisk.level ||
-        report.risk_level ||
-        "Data unavailable";
+    const image =
+        report.image_url ||
+        report.image ||
+        "";
 
 
-    const riskScore =
-        municipalRisk.score ??
-        report.risk_score;
+    let imageHtml = `
 
+        <div class="empty-box">
 
-    const currentStatus =
-        workflow.status ||
-        report.status ||
-        "PENDING";
+            <i class="bi bi-image fs-2"></i>
 
+            <div class="mt-2">
 
-    let flag =
-        workflow.display_flag;
-
-
-    if(!flag){
-
-        const normalized =
-            normalizeStatus(currentStatus);
-
-        flag =
-            normalized==="COMPLETED"
-            ? "GREEN"
-            :
-            normalized==="IN PROGRESS"
-            ? "YELLOW"
-            : "RED";
-
-    }
-
-
-    let flagClass="red";
-
-    if(flag==="YELLOW")
-        flagClass="yellow";
-
-    if(flag==="GREEN")
-        flagClass="green";
-
-
-    const evidence =
-        Array.isArray(report.evidence)
-        ? report.evidence
-        : [];
-
-
-    let evidenceHtml="";
-
-    if(evidence.length){
-
-        evidenceHtml =
-            evidence
-            .map(
-                item => `
-                    <div class="evidence-item">
-
-                        <i class="bi bi-check-circle-fill"></i>
-
-                        ${item}
-
-                    </div>
-                `
-            )
-            .join("");
-
-    }else{
-
-        evidenceHtml=`
-
-            <div class="evidence-item">
-
-                <i class="bi bi-info-circle"></i>
-
-                No biological evidence data available.
+                No image available
 
             </div>
+
+        </div>
+
+    `;
+
+
+    if (image) {
+
+        imageHtml = `
+
+            <img
+                src="${escapeHtml(image)}"
+                class="case-image"
+                alt="Case image"
+            >
 
         `;
 
     }
 
 
-    document.getElementById(
-        "caseDetailsBody"
-    ).innerHTML = `
+    const mapButton =
+        latitude !== undefined &&
+        latitude !== null &&
+        longitude !== undefined &&
+        longitude !== null
 
+            ? `
 
-    <!-- CASE HEADER -->
-
-    <div class="expanded-header">
-
-        <div>
-
-            <div class="expanded-case-id">
-
-                ${valueOrUnavailable(report.id)}
-
-            </div>
-
-            <div class="expanded-location">
-
-                <i class="bi bi-geo-alt"></i>
-
-                ${latitude},
-                ${longitude}
-
-            </div>
-
-            <div
-                style="
-                    color:#8b949e;
-                    margin-top:7px;
-                "
-            >
-
-                Reported:
-                ${formatDate(report.timestamp)}
-
-            </div>
-
-        </div>
-
-
-        <div class="expanded-badges">
-
-            ${getRiskBadge(riskLevel)}
-
-            ${getStatusBadge(currentStatus)}
-
-            <span class="large-flag ${flagClass}">
-
-                <i class="bi bi-flag-fill"></i>
-
-                ${flag}
-
-            </span>
-
-        </div>
-
-    </div>
-
-
-    <!-- IMAGE + MAP -->
-
-    <div class="case-top-grid">
-
-
-        <div class="case-image-large">
-
-            ${
-                report.image_url
-
-                ?
-
-                `
-                <img
-                    src="${report.image_url}"
-                    alt="Case image"
-                >
-                `
-
-                :
-
-                `
-                <div class="case-image-placeholder">
-
-                    <i class="bi bi-bug-fill"></i>
-
-                </div>
-                `
-            }
-
-        </div>
-
-
-        <div
-            id="caseDetailMap"
-            class="case-detail-map"
-        ></div>
-
-
-    </div>
-
-
-    <!-- LOCATION -->
-
-    <div class="detail-section">
-
-        <div class="detail-section-title">
-
-            <i class="bi bi-geo-alt"></i>
-
-            Location Intelligence
-
-        </div>
-
-
-        <div class="detail-grid">
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Latitude
-                </div>
-
-                <div class="detail-value">
-                    ${latitude}
-                </div>
-
-            </div>
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Longitude
-                </div>
-
-                <div class="detail-value">
-                    ${longitude}
-                </div>
-
-            </div>
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    GPS Accuracy
-                </div>
-
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        report.accuracy_m
-                    )}${report.accuracy_m ? " m" : ""}
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div style="margin-top:18px;">
-
-            ${
-                mapsUrl !== "#"
-
-                ?
-
-                `
                 <a
-                    href="${mapsUrl}"
+                    href="https://www.google.com/maps?q=${encodeURIComponent(latitude)},${encodeURIComponent(longitude)}"
                     target="_blank"
-                    class="map-link"
+                    class="btn btn-outline-success mt-3"
                 >
 
                     <i class="bi bi-map"></i>
 
-                    Open Location in Google Maps
+                    Open in Google Maps
 
                 </a>
-                `
 
-                :
+            `
 
-                `
-                <span style="color:#8b949e;">
-                    Map location unavailable
-                </span>
-                `
-            }
+            : "";
+
+
+    document.getElementById(
+        "caseModalBody"
+    ).innerHTML = `
+
+
+        <!-- IMAGE + MAP -->
+
+        <div class="row g-4 mb-4">
+
+
+            <div class="col-lg-6">
+
+                <div class="detail-section">
+
+                    <h5>
+
+                        <i class="bi bi-image"></i>
+
+                        Evidence Image
+
+                    </h5>
+
+                    ${imageHtml}
+
+                </div>
+
+            </div>
+
+
+            <div class="col-lg-6">
+
+                <div class="detail-section">
+
+                    <h5>
+
+                        <i class="bi bi-geo-alt"></i>
+
+                        Case Location
+
+                    </h5>
+
+                    <div id="caseDetailMap"></div>
+
+                    ${mapButton}
+
+                </div>
+
+            </div>
 
         </div>
 
-    </div>
+
+        <!-- CASE SUMMARY -->
+
+        <div class="row g-4 mb-4">
 
 
-    <!-- MUNICIPAL RISK -->
+            <div class="col-lg-4">
 
-    <div class="detail-section">
+                <div class="detail-section">
 
-        <div class="detail-section-title">
-
-            <i class="bi bi-shield-exclamation"></i>
-
-            Municipal Risk Assessment
-
-        </div>
+                    <h5>
+                        Case
+                    </h5>
 
 
-        <div class="detail-grid">
+                    <div class="detail-row">
 
+                        <span class="detail-label">
+                            Report ID
+                        </span>
 
-            <div class="score-box">
-
-                <div class="detail-label">
-                    Municipal Risk
-                </div>
-
-                <div class="score-number">
-
-                    ${valueOrUnavailable(riskScore)}
-
-                </div>
-
-                <div style="color:#8b949e;">
-                    / 100
-                </div>
-
-                ${
-                    riskScore !== undefined &&
-                    riskScore !== null
-
-                    ?
-
-                    `
-                    <div class="score-progress">
-
-                        <div
-                            class="score-progress-inner"
-                            style="
-                                width:${Math.min(
-                                    Number(riskScore),
-                                    100
-                                )}%;
-                                background:${getRiskColor(riskLevel)};
-                            "
-                        ></div>
+                        <span class="detail-value">
+                            ${escapeHtml(report.id)}
+                        </span>
 
                     </div>
-                    `
-
-                    :
-
-                    ""
-                }
-
-            </div>
 
 
-            <div class="detail-item">
+                    <div class="detail-row">
 
-                <div class="detail-label">
-                    Risk Level
-                </div>
+                        <span class="detail-label">
+                            User
+                        </span>
 
-                <div class="detail-value">
-                    ${riskLevel}
-                </div>
+                        <span class="detail-value">
+                            ${escapeHtml(
+                                valueOrUnavailable(
+                                    report.user_name
+                                )
+                            )}
+                        </span>
 
-            </div>
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Assessment Status
-                </div>
-
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        municipalRisk.status
-                    )}
-                </div>
-
-            </div>
+                    </div>
 
 
-            <div class="detail-item">
+                    <div class="detail-row">
 
-                <div class="detail-label">
-                    Breeding Risk Score
-                </div>
+                        <span class="detail-label">
+                            Email
+                        </span>
 
-                <div class="detail-value">
+                        <span class="detail-value">
+                            ${escapeHtml(
+                                valueOrUnavailable(
+                                    report.email
+                                )
+                            )}
+                        </span>
 
-                    ${
-                        breedingRisk.score !== undefined
-                        ?
-                        `${breedingRisk.score} / ${valueOrUnavailable(breedingRisk.max_score)}`
-                        :
-                        "Data unavailable"
-                    }
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
+                    </div>
 
 
-    <!-- BIOLOGICAL EVIDENCE -->
+                    <div class="detail-row">
 
-    <div class="detail-section">
+                        <span class="detail-label">
+                            Risk
+                        </span>
 
-        <div class="detail-section-title">
+                        <span class="detail-value">
 
-            <i class="bi bi-bug"></i>
+                            ${getRiskBadge(risk)}
 
-            Biological Evidence
+                        </span>
 
-        </div>
-
-
-        <div class="detail-grid">
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Analysis Status
-                </div>
-
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        vision.status
-                    )}
-                </div>
-
-            </div>
+                    </div>
 
 
-            <div class="detail-item">
+                    <div class="detail-row">
 
-                <div class="detail-label">
-                    AI Route
-                </div>
+                        <span class="detail-label">
+                            Score
+                        </span>
 
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        vision.route
-                    )}
-                </div>
+                        <span class="detail-value">
 
-            </div>
+                            ${escapeHtml(
+                                valueOrUnavailable(
+                                    report.risk_score
+                                )
+                            )}
+                            / 100
+
+                        </span>
+
+                    </div>
 
 
-            <div class="detail-item">
+                    <div class="detail-row">
 
-                <div class="detail-label">
-                    Breeding Object
-                </div>
+                        <span class="detail-label">
+                            Status
+                        </span>
 
-                <div class="detail-value">
+                        <span class="detail-value">
 
-                    ${
-                        breedingObject.detected === undefined
-                        ?
-                        "Data unavailable"
-                        :
-                        breedingObject.detected
-                        ? "Detected"
-                        : "Not detected"
-                    }
+                            ${getStatusBadge(status)}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Priority Flag
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${flag}
+
+                        </span>
+
+                    </div>
 
                 </div>
 
             </div>
 
 
-            <div class="detail-item">
+            <!-- LOCATION -->
 
-                <div class="detail-label">
-                    Habitat
-                </div>
+            <div class="col-lg-4">
 
-                <div class="detail-value">
+                <div class="detail-section">
 
-                    ${
-                        habitat.detected === undefined
-                        ?
-                        "Data unavailable"
-                        :
-                        habitat.detected
-                        ? "Detected"
-                        : "Not detected"
-                    }
-
-                </div>
-
-            </div>
+                    <h5>
+                        Location
+                    </h5>
 
 
-            <div class="detail-item">
+                    <div class="detail-row">
 
-                <div class="detail-label">
-                    Habitat Type
-                </div>
+                        <span class="detail-label">
+                            Latitude
+                        </span>
 
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        habitat.type
-                    )}
-                </div>
+                        <span class="detail-value">
 
-            </div>
+                            ${escapeHtml(
+                                valueOrUnavailable(
+                                    latitude
+                                )
+                            )}
 
+                        </span>
 
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Habitat Confidence
-                </div>
-
-                <div class="detail-value">
-
-                    ${
-                        habitat.confidence !== undefined
-                        ?
-                        percentage(habitat.confidence)
-                        :
-                        "Data unavailable"
-                    }
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
+                    </div>
 
 
-    <!-- HABITAT ANALYSIS -->
+                    <div class="detail-row">
 
-    <div class="detail-section">
+                        <span class="detail-label">
+                            Longitude
+                        </span>
 
-        <div class="detail-section-title">
+                        <span class="detail-value">
 
-            <i class="bi bi-water"></i>
+                            ${escapeHtml(
+                                valueOrUnavailable(
+                                    longitude
+                                )
+                            )}
 
-            Habitat & Segmentation
+                        </span>
 
-        </div>
-
-
-        <div class="detail-grid">
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Bounding Box Area
-                </div>
-
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        boundingBox.area_pixels
-                    )}
-                </div>
-
-            </div>
+                    </div>
 
 
-            <div class="detail-item">
+                    <div class="detail-row">
 
-                <div class="detail-label">
-                    Bounding Coverage
-                </div>
+                        <span class="detail-label">
+                            Accuracy
+                        </span>
 
-                <div class="detail-value">
+                        <span class="detail-value">
 
-                    ${
-                        boundingBox.coverage_percent !== undefined
-                        ?
-                        boundingBox.coverage_percent+"%"
-                        :
-                        "Data unavailable"
-                    }
+                            ${
+                                accuracy !== undefined &&
+                                accuracy !== null
+                                    ? escapeHtml(accuracy) + " m"
+                                    : "Data unavailable"
+                            }
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Timestamp
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${escapeHtml(
+                                formatDate(
+                                    report.timestamp
+                                )
+                            )}
+
+                        </span>
+
+                    </div>
 
                 </div>
 
             </div>
 
 
-            <div class="detail-item">
+            <!-- VISION -->
 
-                <div class="detail-label">
-                    Segmentation Area
-                </div>
+            <div class="col-lg-4">
 
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        segmentation.area_pixels
-                    )}
-                </div>
+                <div class="detail-section">
 
-            </div>
+                    <h5>
 
+                        <i class="bi bi-eye"></i>
 
-            <div class="detail-item">
+                        Vision Analysis
 
-                <div class="detail-label">
-                    Segmentation Coverage
-                </div>
+                    </h5>
 
-                <div class="detail-value">
 
-                    ${
-                        segmentation.coverage_percent !== undefined
-                        ?
-                        segmentation.coverage_percent+"%"
-                        :
-                        "Data unavailable"
-                    }
+                    <div class="detail-row">
 
-                </div>
+                        <span class="detail-label">
+                            Engine
+                        </span>
 
-            </div>
+                        <span class="detail-value">
 
+                            ${escapeHtml(
+                                valueOrUnavailable(
+                                    vision.engine
+                                )
+                            )}
 
-            <div class="detail-item">
+                        </span>
 
-                <div class="detail-label">
-                    Mask Ratio
-                </div>
+                    </div>
 
-                <div class="detail-value">
 
-                    ${
-                        segmentation.mask_ratio !== undefined
-                        ?
-                        percentage(
-                            segmentation.mask_ratio
-                        )
-                        :
-                        "Data unavailable"
-                    }
+                    <div class="detail-row">
 
-                </div>
+                        <span class="detail-label">
+                            Route
+                        </span>
 
-            </div>
+                        <span class="detail-value">
 
-        </div>
+                            ${escapeHtml(
+                                valueOrUnavailable(
+                                    vision.route
+                                )
+                            )}
 
-    </div>
+                        </span>
 
+                    </div>
 
-    <!-- LARVAE -->
 
-    <div class="detail-section">
+                    <div class="detail-row">
 
-        <div class="detail-section-title">
+                        <span class="detail-label">
+                            Final Status
+                        </span>
 
-            <i class="bi bi-bug-fill"></i>
+                        <span class="detail-value">
 
-            Larvae Detection
+                            ${escapeHtml(
+                                valueOrUnavailable(
+                                    vision.final_status
+                                )
+                            )}
 
-        </div>
+                        </span>
 
+                    </div>
 
-        <div class="detail-grid">
 
+                    <div class="detail-row">
 
-            <div class="detail-item">
+                        <span class="detail-label">
+                            Model 1
+                        </span>
 
-                <div class="detail-label">
-                    Larvae Detected
-                </div>
+                        <span class="detail-value">
 
-                <div class="detail-value">
+                            ${
+                                vision.model1?.detected
+                                    ? "Detected"
+                                    : "Not detected"
+                            }
 
-                    ${
-                        larvae.detected === undefined
-                        ?
-                        "Data unavailable"
-                        :
-                        larvae.detected
-                        ? "YES"
-                        : "NO"
-                    }
+                        </span>
 
-                </div>
+                    </div>
 
-            </div>
 
+                    <div class="detail-row">
 
-            <div class="detail-item">
+                        <span class="detail-label">
+                            Model 4 Larvae
+                        </span>
 
-                <div class="detail-label">
-                    Larvae Count
-                </div>
+                        <span class="detail-value">
 
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        larvae.count
-                    )}
-                </div>
+                            ${
+                                vision.model4?.larvae_count ??
+                                vision.larvae?.count ??
+                                "Data unavailable"
+                            }
 
-            </div>
+                        </span>
 
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Non-Larvae Count
-                </div>
-
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        larvae.non_larvae_count
-                    )}
-                </div>
-
-            </div>
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Confidence
-                </div>
-
-                <div class="detail-value">
-
-                    ${
-                        larvae.confidence !== undefined
-                        ?
-                        percentage(
-                            larvae.confidence
-                        )
-                        :
-                        "Data unavailable"
-                    }
-
-                </div>
-
-            </div>
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Density / 10,000 Pixels
-                </div>
-
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        larvae.density_per_10000_pixels
-                    )}
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- EVIDENCE -->
-
-    <div class="detail-section">
-
-        <div class="detail-section-title">
-
-            <i class="bi bi-search"></i>
-
-            Evidence Summary
-
-        </div>
-
-
-        <div class="evidence-list">
-
-            ${evidenceHtml}
-
-        </div>
-
-    </div>
-
-
-    <!-- ENVIRONMENT -->
-
-    <div class="detail-section">
-
-        <div class="detail-section-title">
-
-            <i class="bi bi-cloud-sun"></i>
-
-            Environmental Conditions
-
-        </div>
-
-
-        <div class="detail-grid">
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Temperature
-                </div>
-
-                <div class="detail-value">
-
-                    ${
-                        weather.temperature_c !== undefined
-                        ?
-                        weather.temperature_c+" °C"
-                        :
-                        "Data unavailable"
-                    }
-
-                </div>
-
-            </div>
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Humidity
-                </div>
-
-                <div class="detail-value">
-
-                    ${
-                        weather.humidity_percent !== undefined
-                        ?
-                        weather.humidity_percent+"%"
-                        :
-                        "Data unavailable"
-                    }
-
-                </div>
-
-            </div>
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Rainfall - 24h
-                </div>
-
-                <div class="detail-value">
-
-                    ${
-                        rainfall["24h_mm"] !== undefined
-                        ?
-                        rainfall["24h_mm"]+" mm"
-                        :
-                        "Data unavailable"
-                    }
-
-                </div>
-
-            </div>
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Rainfall - 3 Days
-                </div>
-
-                <div class="detail-value">
-
-                    ${
-                        rainfall["3d_mm"] !== undefined
-                        ?
-                        rainfall["3d_mm"]+" mm"
-                        :
-                        "Data unavailable"
-                    }
-
-                </div>
-
-            </div>
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Rainfall - 7 Days
-                </div>
-
-                <div class="detail-value">
-
-                    ${
-                        rainfall["7d_mm"] !== undefined
-                        ?
-                        rainfall["7d_mm"]+" mm"
-                        :
-                        "Data unavailable"
-                    }
+                    </div>
 
                 </div>
 
@@ -3781,304 +3476,267 @@ function viewReport(id){
 
         </div>
 
-    </div>
 
+        <!-- ENVIRONMENT -->
 
-    <!-- POPULATION -->
+        <div class="row g-4 mb-4">
 
-    <div class="detail-section">
 
-        <div class="detail-section-title">
+            <div class="col-lg-4">
 
-            <i class="bi bi-people"></i>
+                <div class="detail-section">
 
-            Population Exposure
+                    <h5>
 
-        </div>
+                        <i class="bi bi-cloud-sun"></i>
 
+                        Weather
 
-        <div class="detail-grid">
+                    </h5>
 
 
-            <div class="detail-item">
+                    <div class="detail-row">
 
-                <div class="detail-label">
-                    Analysis Radius
-                </div>
+                        <span class="detail-label">
+                            Temperature
+                        </span>
 
-                <div class="detail-value">
+                        <span class="detail-value">
 
-                    ${
-                        population.radius_m !== undefined
-                        ?
-                        population.radius_m+" m"
-                        :
-                        "Data unavailable"
-                    }
+                            ${
+                                weather.temperature_c !== undefined &&
+                                weather.temperature_c !== null
 
-                </div>
+                                    ? escapeHtml(
+                                        weather.temperature_c
+                                    ) + " °C"
 
-            </div>
+                                    : "Data unavailable"
+                            }
 
+                        </span>
 
-            <div class="detail-item">
+                    </div>
 
-                <div class="detail-label">
-                    Estimated Population
-                </div>
 
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        population.estimated_population
-                    )}
-                </div>
+                    <div class="detail-row">
 
-            </div>
+                        <span class="detail-label">
+                            Humidity
+                        </span>
 
+                        <span class="detail-value">
 
-            <div class="detail-item">
+                            ${
+                                weather.humidity_percent !== undefined &&
+                                weather.humidity_percent !== null
 
-                <div class="detail-label">
-                    Population Density
-                </div>
+                                    ? escapeHtml(
+                                        weather.humidity_percent
+                                    ) + "%"
 
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        population.density_per_km2
-                    )}
-                </div>
+                                    : "Data unavailable"
+                            }
 
-            </div>
+                        </span>
 
-        </div>
+                    </div>
 
-    </div>
 
+                    <div class="detail-row">
 
-    <!-- FACILITIES -->
+                        <span class="detail-label">
+                            Source
+                        </span>
 
-    <div class="detail-section">
+                        <span class="detail-value">
 
-        <div class="detail-section-title">
+                            ${escapeHtml(
+                                valueOrUnavailable(
+                                    weather.source ||
+                                    environment.source
+                                )
+                            )}
 
-            <i class="bi bi-buildings"></i>
+                        </span>
 
-            Nearby Sensitive Locations
-
-        </div>
-
-
-        <div class="detail-grid">
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Schools within 500m
-                </div>
-
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        facilities.schools_500m
-                    )}
-                </div>
-
-            </div>
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Hospitals within 500m
-                </div>
-
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        facilities.hospitals_500m
-                    )}
-                </div>
-
-            </div>
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Higher Education within 500m
-                </div>
-
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        facilities.higher_education_500m
-                    )}
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- HOTSPOT -->
-
-    <div class="detail-section">
-
-        <div class="detail-section-title">
-
-            <i class="bi bi-fire"></i>
-
-            Historical Hotspot Intelligence
-
-        </div>
-
-
-        <div class="detail-grid">
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Database Status
-                </div>
-
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        hotspot.status
-                    )}
-                </div>
-
-            </div>
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Hotspots within 500m
-                </div>
-
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        hotspot.hotspots_500m
-                    )}
-                </div>
-
-            </div>
-
-
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Nearest Hotspot
-                </div>
-
-                <div class="detail-value">
-
-                    ${
-                        hotspot.nearest_hotspot_m !== undefined &&
-                        hotspot.nearest_hotspot_m !== null
-
-                        ?
-
-                        hotspot.nearest_hotspot_m+" m"
-
-                        :
-
-                        "Data unavailable"
-                    }
+                    </div>
 
                 </div>
 
             </div>
 
 
-            <div class="detail-item">
+            <div class="col-lg-4">
 
-                <div class="detail-label">
-                    Historical Cases
-                </div>
+                <div class="detail-section">
 
-                <div class="detail-value">
-                    ${valueOrUnavailable(
-                        hotspot.historical_cases
-                    )}
+                    <h5>
+
+                        <i class="bi bi-cloud-rain"></i>
+
+                        Rainfall
+
+                    </h5>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            24 Hours
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${
+                                rainfall["24h_mm"] ??
+                                environment.rainfall_24h_mm ??
+                                "Data unavailable"
+                            }
+
+                            ${
+                                rainfall["24h_mm"] !== undefined ||
+                                environment.rainfall_24h_mm !== undefined
+                                    ? " mm"
+                                    : ""
+                            }
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            3 Days
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${
+                                rainfall["3d_mm"] ??
+                                environment.rainfall_3d_mm ??
+                                "Data unavailable"
+                            }
+
+                            ${
+                                rainfall["3d_mm"] !== undefined ||
+                                environment.rainfall_3d_mm !== undefined
+                                    ? " mm"
+                                    : ""
+                            }
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            7 Days
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${
+                                rainfall["7d_mm"] ??
+                                environment.rainfall_7d_mm ??
+                                "Data unavailable"
+                            }
+
+                            ${
+                                rainfall["7d_mm"] !== undefined ||
+                                environment.rainfall_7d_mm !== undefined
+                                    ? " mm"
+                                    : ""
+                            }
+
+                        </span>
+
+                    </div>
+
                 </div>
 
             </div>
 
-        </div>
 
-    </div>
+            <div class="col-lg-4">
 
+                <div class="detail-section">
 
-    <!-- WORKFLOW -->
+                    <h5>
 
-    <div class="detail-section">
+                        <i class="bi bi-people"></i>
 
-        <div class="detail-section-title">
+                        Population
 
-            <i class="bi bi-clipboard-check"></i>
-
-            Municipal Intervention
-
-        </div>
+                    </h5>
 
 
-        <div class="detail-grid">
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Radius
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${
+                                population.search_radius_m ??
+                                population.radius_m ??
+                                "Data unavailable"
+                            }
+
+                            ${
+                                population.search_radius_m !== undefined ||
+                                population.radius_m !== undefined
+                                    ? " m"
+                                    : ""
+                            }
+
+                        </span>
+
+                    </div>
 
 
-            <div class="detail-item">
+                    <div class="detail-row">
 
-                <div class="detail-label">
-                    Current Status
-                </div>
+                        <span class="detail-label">
+                            Estimated Population
+                        </span>
 
-                <div class="detail-value">
-                    ${normalizeStatus(currentStatus)}
-                </div>
+                        <span class="detail-value">
 
-            </div>
+                            ${
+                                population.estimated_population_500m ??
+                                population.estimated_population ??
+                                "Data unavailable"
+                            }
 
+                        </span>
 
-            <div class="detail-item">
-
-                <div class="detail-label">
-                    Display Flag
-                </div>
-
-                <div class="detail-value">
-                    ${flag}
-                </div>
-
-            </div>
+                    </div>
 
 
-            <div class="detail-item">
+                    <div class="detail-row">
 
-                <div class="detail-label">
-                    Priority
-                </div>
+                        <span class="detail-label">
+                            Density
+                        </span>
 
-                <div class="detail-value">
+                        <span class="detail-value">
 
-                    ${
-                        String(riskLevel)
-                        .toUpperCase()
-                        === "CRITICAL"
-                        ||
-                        String(riskLevel)
-                        .toUpperCase()
-                        === "HIGH"
+                            ${
+                                population.population_density_500m ??
+                                population.density_per_km2 ??
+                                "Data unavailable"
+                            }
 
-                        ?
+                        </span>
 
-                        "EARLY ATTENTION REQUIRED"
-
-                        :
-
-                        "NORMAL"
-
-                    }
+                    </div>
 
                 </div>
 
@@ -4086,15 +3744,362 @@ function viewReport(id){
 
         </div>
 
-    </div>
 
+        <!-- FACILITIES + HISTORICAL + RISK -->
+
+        <div class="row g-4 mb-4">
+
+
+            <div class="col-lg-4">
+
+                <div class="detail-section">
+
+                    <h5>
+
+                        <i class="bi bi-building"></i>
+
+                        Nearby Facilities
+
+                    </h5>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Schools 500m
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${
+                                facilities.schools_500m ??
+                                facilities.schools?.within_500m ??
+                                "Data unavailable"
+                            }
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Hospitals 500m
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${
+                                facilities.hospitals_500m ??
+                                facilities.hospitals?.within_500m ??
+                                "Data unavailable"
+                            }
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Universities 500m
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${
+                                facilities.higher_education_500m ??
+                                facilities.universities?.within_500m ??
+                                "Data unavailable"
+                            }
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-lg-4">
+
+                <div class="detail-section">
+
+                    <h5>
+
+                        <i class="bi bi-clock-history"></i>
+
+                        Historical Risk
+
+                    </h5>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Hotspots 500m
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${
+                                hotspot.hotspots_500m ??
+                                hotspot.hotspots_within_500m ??
+                                "Data unavailable"
+                            }
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Nearest Hotspot
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${
+                                hotspot.nearest_hotspot_m ??
+                                hotspot.nearest_hotspot_distance_m ??
+                                "Data unavailable"
+                            }
+
+                            ${
+                                hotspot.nearest_hotspot_m !== undefined ||
+                                hotspot.nearest_hotspot_distance_m !== undefined
+                                    ? " m"
+                                    : ""
+                            }
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Historical Cases
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${
+                                hotspot.historical_cases ??
+                                hotspot.historical_cases_within_500m ??
+                                "Data unavailable"
+                            }
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-lg-4">
+
+                <div class="detail-section">
+
+                    <h5>
+
+                        <i class="bi bi-speedometer2"></i>
+
+                        Risk Assessment
+
+                    </h5>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Risk Level
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${getRiskBadge(risk)}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Final Score
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${
+                                municipal.score ??
+                                breeding.score ??
+                                report.risk_score ??
+                                "Data unavailable"
+                            }
+
+                            / 100
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Biological Score
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${
+                                report.risk?.biological_score ??
+                                "Data unavailable"
+                            }
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Environmental Score
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${
+                                report.risk?.environmental_score ??
+                                "Data unavailable"
+                            }
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Population Score
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${
+                                report.risk?.population_score ??
+                                "Data unavailable"
+                            }
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- WORKFLOW -->
+
+        <div class="detail-section">
+
+            <h5>
+
+                <i class="bi bi-list-check"></i>
+
+                Intervention Workflow
+
+            </h5>
+
+
+            <div class="workflow">
+
+
+                <div
+                    class="
+                        workflow-step
+                        workflow-red
+                        ${status === "PENDING" ? "active" : ""}
+                    "
+                >
+
+                    <i class="bi bi-exclamation-circle"></i>
+
+                    <br>
+
+                    Pending
+
+                </div>
+
+
+                <div
+                    class="
+                        workflow-step
+                        workflow-yellow
+                        ${status === "IN PROGRESS" ? "active" : ""}
+                    "
+                >
+
+                    <i class="bi bi-arrow-repeat"></i>
+
+                    <br>
+
+                    In Progress
+
+                </div>
+
+
+                <div
+                    class="
+                        workflow-step
+                        workflow-green
+                        ${status === "COMPLETED" ? "active" : ""}
+                    "
+                >
+
+                    <i class="bi bi-check-circle"></i>
+
+                    <br>
+
+                    Completed
+
+                </div>
+
+            </div>
+
+
+            <div class="mt-3 text-secondary">
+
+                Current status:
+
+                <strong class="text-white">
+
+                    ${escapeHtml(status)}
+
+                </strong>
+
+            </div>
+
+        </div>
 
     `;
 
-
-    /*
-       Show modal first so Leaflet knows its dimensions.
-    */
 
     const modalElement =
         document.getElementById(
@@ -4113,33 +4118,26 @@ function viewReport(id){
 
     modalElement.addEventListener(
         "shown.bs.modal",
-        function(){
+        function() {
 
-            setTimeout(
-                function(){
-
-                    createCaseMap(
-                        report
-                    );
-
-                },
-                150
+            createCaseMap(
+                report
             );
 
         },
         {
-            once:true
+            once: true
         }
     );
 
 }
 
 
-/* =====================================================
+/* =========================================================
    CASE DETAIL MAP
-===================================================== */
+========================================================= */
 
-function createCaseMap(report){
+function createCaseMap(report) {
 
     const container =
         document.getElementById(
@@ -4147,16 +4145,21 @@ function createCaseMap(report){
         );
 
 
-    if(!container)
+    if (!container) {
+
         return;
 
+    }
 
-    if(
+
+    if (
         report.latitude === undefined ||
-        report.longitude === undefined
-    ){
+        report.latitude === null ||
+        report.longitude === undefined ||
+        report.longitude === null
+    ) {
 
-        container.innerHTML=`
+        container.innerHTML = `
 
             <div
                 style="
@@ -4184,17 +4187,50 @@ function createCaseMap(report){
 
 
     const lat =
-        parseFloat(report.latitude);
+        parseFloat(
+            report.latitude
+        );
+
 
     const lng =
-        parseFloat(report.longitude);
+        parseFloat(
+            report.longitude
+        );
+
+
+    if (
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lng)
+    ) {
+
+        container.innerHTML = `
+
+            <div
+                style="
+                    height:100%;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    color:#8b949e;
+                "
+            >
+
+                Location unavailable
+
+            </div>
+
+        `;
+
+        return;
+
+    }
 
 
     const detailMap =
         L.map(
             "caseDetailMap"
         ).setView(
-            [lat,lng],
+            [lat, lng],
             16
         );
 
@@ -4202,11 +4238,14 @@ function createCaseMap(report){
     L.tileLayer(
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
-            maxZoom:19,
+            maxZoom: 19,
+
             attribution:
-                '&copy; OpenStreetMap contributors'
+                "&copy; OpenStreetMap contributors"
         }
-    ).addTo(detailMap);
+    ).addTo(
+        detailMap
+    );
 
 
     const color =
@@ -4216,36 +4255,46 @@ function createCaseMap(report){
 
 
     L.circleMarker(
-        [lat,lng],
+        [lat, lng],
         {
-            radius:14,
-            fillColor:color,
-            color:"#ffffff",
-            weight:3,
-            fillOpacity:.9
+            radius: 14,
+
+            fillColor: color,
+
+            color: "#ffffff",
+
+            weight: 3,
+
+            fillOpacity: 0.9
         }
     )
     .addTo(detailMap)
     .bindPopup(
-        `<strong>${report.id}</strong>`
+        `<strong>${escapeHtml(report.id)}</strong>`
     )
     .openPopup();
 
 
     L.circle(
-        [lat,lng],
+        [lat, lng],
         {
-            radius:500,
-            color:color,
-            fillColor:color,
-            fillOpacity:.08,
-            weight:1
+            radius: 500,
+
+            color: color,
+
+            fillColor: color,
+
+            fillOpacity: 0.08,
+
+            weight: 1
         }
-    ).addTo(detailMap);
+    ).addTo(
+        detailMap
+    );
 
 
     setTimeout(
-        function(){
+        function() {
 
             detailMap.invalidateSize();
 
@@ -4256,71 +4305,159 @@ function createCaseMap(report){
 }
 
 
-/* =====================================================
-   FILTERS
-===================================================== */
+/* =========================================================
+   UPDATE CASE STATUS
+========================================================= */
 
-function resetFilters(){
+async function updateCaseStatus(
+    newStatus
+) {
 
-    document.getElementById(
-        "searchInput"
-    ).value="";
+    if (!activeCaseId) {
 
-    document.getElementById(
-        "riskFilter"
-    ).value="";
+        return;
 
-    document.getElementById(
-        "statusFilter"
-    ).value="";
+    }
 
-    renderReports();
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_BASE}/update-status/${encodeURIComponent(activeCaseId)}`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify(
+                        {
+                            status:
+                                newStatus
+                        }
+                    )
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.message ||
+                "Failed to update status"
+            );
+
+        }
+
+
+        const report =
+            reports.find(
+                function(item) {
+
+                    return String(
+                        item.id
+                    ) === String(
+                        activeCaseId
+                    );
+
+                }
+            );
+
+
+        if (report) {
+
+            report.status =
+                normalizeStatus(
+                    newStatus
+                );
+
+
+            if (!report.workflow) {
+
+                report.workflow = {};
+
+            }
+
+
+            report.workflow.status =
+                report.status;
+
+
+            report.workflow.display_flag =
+                getDisplayFlag(
+                    report.status
+                );
+
+        }
+
+
+        updateStatistics();
+
+        renderPriorityCases();
+
+        renderReports();
+
+        loadMapMarkers();
+
+        viewReport(
+            activeCaseId
+        );
+
+
+    }
+    catch (error) {
+
+        console.error(
+            "Status update failed:",
+            error
+        );
+
+
+        alert(
+            "Could not update the case status.\n\n" +
+            error.message
+        );
+
+    }
 
 }
 
 
-document.getElementById(
-    "searchInput"
-).addEventListener(
-    "input",
-    renderReports
-);
+/* =========================================================
+   LOAD REPORTS FROM FIRESTORE THROUGH FLASK
+========================================================= */
+
+async function loadReports() {
+
+    const errorArea =
+        document.getElementById(
+            "errorArea"
+        );
 
 
-document.getElementById(
-    "riskFilter"
-).addEventListener(
-    "change",
-    renderReports
-);
+    errorArea.style.display =
+        "none";
 
 
-document.getElementById(
-    "statusFilter"
-).addEventListener(
-    "change",
-    renderReports
-);
-
-
-/* =====================================================
-   LOAD REPORTS
-===================================================== */
-
-async function loadReports(){
-
-    try{
+    try {
 
         const response =
             await fetch(
-                "http://127.0.0.1:5000/reports"
+                `${API_BASE}/reports`
             );
 
 
-        if(!response.ok){
+        if (!response.ok) {
 
             throw new Error(
-                "Backend unavailable"
+                `Backend returned HTTP ${response.status}`
             );
 
         }
@@ -4330,54 +4467,132 @@ async function loadReports(){
             await response.json();
 
 
-        if(
-            Array.isArray(data) &&
-            data.length>0
-        ){
+        if (!Array.isArray(data)) {
 
-            reports=data;
-
-        }else{
-
-            reports=demoReports;
+            throw new Error(
+                "Invalid response from /reports"
+            );
 
         }
 
+
+        reports =
+            data;
+
+
+        updateStatistics();
+
+        renderPriorityCases();
+
+        renderReports();
+
+        loadMapMarkers();
+
+
+        console.log(
+            "Reports loaded:",
+            reports.length
+        );
+
     }
+    catch (error) {
 
-    catch(error){
-
-        console.warn(
-            "Backend unavailable. Using demo data.",
+        console.error(
+            "Failed to load reports:",
             error
         );
 
-        reports=demoReports;
+
+        reports = [];
+
+
+        updateStatistics();
+
+        renderPriorityCases();
+
+        renderReports();
+
+        clearMapMarkers();
+
+
+        errorArea.innerHTML = `
+
+            <strong>
+                <i class="bi bi-exclamation-triangle"></i>
+
+                Database/API connection failed
+            </strong>
+
+            <br><br>
+
+            Could not load reports from:
+
+            <code style="color:#ff7b72">
+                ${escapeHtml(API_BASE)}/reports
+            </code>
+
+            <br><br>
+
+            Make sure your Flask backend is running.
+
+            <br>
+
+            Error:
+
+            ${escapeHtml(error.message)}
+
+        `;
+
+
+        errorArea.style.display =
+            "block";
 
     }
-
-
-    updateDashboard();
-
-    renderPriorityCases();
-
-    renderReports();
-
-
-    reports.forEach(
-        addMarker
-    );
 
 }
 
 
-/* =====================================================
-   START
-===================================================== */
+/* =========================================================
+   EVENT LISTENERS
+========================================================= */
+
+document
+    .getElementById(
+        "searchInput"
+    )
+    .addEventListener(
+        "input",
+        renderReports
+    );
+
+
+document
+    .getElementById(
+        "riskFilter"
+    )
+    .addEventListener(
+        "change",
+        renderReports
+    );
+
+
+document
+    .getElementById(
+        "statusFilter"
+    )
+    .addEventListener(
+        "change",
+        renderReports
+    );
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
 
 document.addEventListener(
     "DOMContentLoaded",
-    function(){
+    function() {
 
         initializeMap();
 
@@ -4386,10 +4601,10 @@ document.addEventListener(
     }
 );
 
+
 </script>
 
 
 </body>
 
 </html>
->>>>>>> 875544b (final changes admin dashboard and some api)
