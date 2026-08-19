@@ -125,6 +125,8 @@
 
                     <tr>
 
+                        <th>Image</th>
+
                         <th>ID</th>
 
                         <th>Risk Level</th>
@@ -203,12 +205,14 @@
 
             table.innerHTML = "";
             reports.forEach((report, index) => {
+                const imageUrl = report.image_url || `${ENV.API_BASE_URL}/uploads/${report.image}`;
                 table.innerHTML += `
           <tr>
+              <td><img src="${imageUrl}" width="80" height="50" style="border-radius:5px;object-fit:cover" onerror="this.src='https://placehold.co/80x50?text=No+Image'"></td>
               <td>#LL10${index + 1}</td>
               <td>${report.risk_level}</td>
               <td>${report.status}</td>
-              <td>${report.timestamp}</td>
+              <td>${new Date(report.timestamp).toLocaleString()}</td>
           </tr>
           `;
             });

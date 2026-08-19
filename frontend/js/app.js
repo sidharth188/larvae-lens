@@ -4,6 +4,14 @@ async function submitReport(priority=false){
     const imageInput=document.getElementById("imageInput");
     const file=imageInput.files[0];
     if(!file){alert("Please select an image");return;}
+    
+    // UI Loader State
+    const submitBtn = document.querySelector(".upload-box button");
+    if(submitBtn) {
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Uploading...';
+        submitBtn.disabled = true;
+    }
+
     navigator.geolocation.getCurrentPosition(async(position)=>{
         const email=localStorage.getItem("userEmail");
         const userName=localStorage.getItem("userName");
@@ -12,6 +20,8 @@ async function submitReport(priority=false){
         try{
             const response=await fetch(`${ENV.API_BASE_URL}/upload`,{method:"POST",body:formData});
             const data=await response.json();
+            if(submitBtn){ submitBtn.innerHTML = 'Submit Report'; submitBtn.disabled = false; }
+
             if (!response.ok || data.success === false) {
                 alert(`Upload failed: ${data.message || data.error || 'Unknown error'}`);
                 return;
@@ -20,9 +30,13 @@ async function submitReport(priority=false){
             console.log(data);
         }catch(error){
             console.log(error);
+            if(submitBtn){ submitBtn.innerHTML = 'Submit Report'; submitBtn.disabled = false; }
             alert("Network error: Upload failed");
         }
-    },()=>alert("Location access denied"));
+    },()=>{
+        if(submitBtn){ submitBtn.innerHTML = 'Submit Report'; submitBtn.disabled = false; }
+        alert("Location access denied")
+    });
 }
 
 function normalizeCaseStatus(status){const value=String(status||"PENDING").toUpperCase();return value==="IN_PROGRESS"||value==="WORKING"?"IN PROGRESS":value;}
@@ -33,7 +47,8 @@ async function loadReports(){
     const table=document.getElementById("reportTable");if(!table)return;table.innerHTML="";
     reports.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp)).forEach(report=>{
         const status=normalizeCaseStatus(report.status);
-        table.innerHTML+=`<tr><td><img src="${ENV.API_BASE_URL}/uploads/${report.image}" width="120" height="80" style="border-radius:10px;object-fit:cover" onerror="this.src='https://placehold.co/120x80?text=No+Image'"></td><td class="${report.risk_level.toLowerCase()}">${report.risk_level} ${report.priority==="true"?'<span class="badge bg-danger">PRIORITY</span>':''}</td><td><span class="badge ${statusBadgeClass(status)}">${status}</span></td><td><div class="d-flex flex-wrap gap-2"><button class="btn btn-danger btn-sm" onclick="setCaseStatus('${report.id}','PENDING',this)">Pending</button><button class="btn btn-warning btn-sm" onclick="setCaseStatus('${report.id}','IN PROGRESS',this)">In Progress</button><button class="btn btn-success btn-sm" onclick="setCaseStatus('${report.id}','COMPLETED',this)">Completed</button></div></td></tr>`;
+        const imageUrl = report.image_url || `${ENV.API_BASE_URL}/uploads/${report.image}`;
+        table.innerHTML+=`<tr><td><img src="${imageUrl}" width="120" height="80" style="border-radius:10px;object-fit:cover" onerror="this.src='https://placehold.co/120x80?text=No+Image'"></td><td class="${report.risk_level.toLowerCase()}">${report.risk_level} ${report.priority==="true"?'<span class="badge bg-danger">PRIORITY</span>':''}</td><td><span class="badge ${statusBadgeClass(status)}">${status}</span></td><td><div class="d-flex flex-wrap gap-2"><button class="btn btn-danger btn-sm" onclick="setCaseStatus('${report.id}','PENDING',this)">Pending</button><button class="btn btn-warning btn-sm" onclick="setCaseStatus('${report.id}','IN PROGRESS',this)">In Progress</button><button class="btn btn-success btn-sm" onclick="setCaseStatus('${report.id}','COMPLETED',this)">Completed</button></div></td></tr>`;
     });
 }
 
