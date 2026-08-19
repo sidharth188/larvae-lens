@@ -9,7 +9,19 @@ async function submitReport(priority=false){
         const userName=localStorage.getItem("userName");
         const formData=new FormData();
         formData.append("image",file);formData.append("latitude",position.coords.latitude);formData.append("longitude",position.coords.longitude);formData.append("timestamp",new Date().toLocaleString());formData.append("priority",priority);formData.append("email",email);formData.append("user_name",userName);
-        try{const response=await fetch(`${ENV.API_BASE_URL}/upload`,{method:"POST",body:formData});const data=await response.json();alert(`Report Uploaded Successfully\n\nRisk Level: ${data.risk_level}`);console.log(data);}catch(error){console.log(error);alert("Upload failed");}
+        try{
+            const response=await fetch(`${ENV.API_BASE_URL}/upload`,{method:"POST",body:formData});
+            const data=await response.json();
+            if (!response.ok || data.success === false) {
+                alert(`Upload failed: ${data.message || data.error || 'Unknown error'}`);
+                return;
+            }
+            alert(`Report Uploaded Successfully\n\nRisk Level: ${data.risk_level}`);
+            console.log(data);
+        }catch(error){
+            console.log(error);
+            alert("Network error: Upload failed");
+        }
     },()=>alert("Location access denied"));
 }
 
