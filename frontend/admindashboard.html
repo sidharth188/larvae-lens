@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+<<<<<<< HEAD
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Municipality Dashboard</title><link rel="icon" type="image/png" href="images/icon.png">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -27,3 +29,4367 @@
 <script>function adminlogout(){localStorage.removeItem("adminLoggedIn");window.location.href="municipality-login.html";}</script>
 <script type="module" src="js/app.js"></script><script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </body></html>
+=======
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Larvae Lens - Municipality Dashboard</title>
+
+<link
+    rel="icon"
+    type="image/png"
+    href="images/icon.png"
+>
+
+<link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+>
+
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+>
+
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+/>
+
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:#0d1117;
+    color:white;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+
+/* =========================
+   NAVBAR
+========================= */
+
+.top-navbar{
+    height:103px;
+    background:#0d1117;
+    border-bottom:1px solid #242b34;
+    display:flex;
+    align-items:center;
+    padding:0 40px;
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    z-index:1000;
+}
+
+.logo{
+    height:72px;
+}
+
+.logout-btn{
+    margin-left:auto;
+    border:none;
+    border-radius:8px;
+    padding:11px 20px;
+    background:linear-gradient(
+        45deg,
+        #00ffaa,
+        #00bfff
+    );
+    color:#061014;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar{
+    position:fixed;
+    top:103px;
+    left:0;
+    bottom:0;
+    width:278px;
+    background:#161b22;
+    padding:38px 22px;
+    z-index:900;
+}
+
+.sidebar a{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    color:#f5f5f5;
+    text-decoration:none;
+    font-size:18px;
+    padding:15px;
+    margin-bottom:12px;
+    border-radius:11px;
+}
+
+.sidebar a:hover{
+    background:#21262d;
+}
+
+.sidebar a.active{
+    background:#222831;
+    color:#00ffaa;
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+.main-content{
+    margin-left:278px;
+    padding:137px 32px 70px;
+}
+
+.section-card{
+    background:#161b22;
+    border:1px solid #242b34;
+    border-radius:22px;
+    padding:26px;
+    margin-bottom:28px;
+}
+
+.section-title{
+    font-size:32px;
+    font-weight:500;
+    margin-bottom:28px;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.dashboard-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.dashboard-header h1{
+    font-size:42px;
+    font-weight:500;
+    margin-bottom:10px;
+}
+
+.dashboard-header p{
+    color:#8b949e;
+    font-size:18px;
+    margin:0;
+}
+
+.operational-badge{
+    border:1px solid #00ffaa;
+    color:#00ffaa;
+    padding:10px 18px;
+    border-radius:25px;
+}
+
+.operational-dot{
+    display:inline-block;
+    width:9px;
+    height:9px;
+    background:#00ffaa;
+    border-radius:50%;
+    margin-right:8px;
+}
+
+
+/* =========================
+   RISK OVERVIEW
+========================= */
+
+.risk-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:20px;
+}
+
+.risk-card{
+    background:#0d1117;
+    border:1px solid #30363d;
+    border-radius:18px;
+    min-height:135px;
+    padding:25px;
+    display:flex;
+    align-items:center;
+    gap:22px;
+}
+
+.risk-icon{
+    font-size:38px;
+}
+
+.risk-label{
+    color:#8fa1b5;
+    font-size:17px;
+    margin-bottom:8px;
+}
+
+.risk-number{
+    font-size:38px;
+    font-weight:bold;
+}
+
+.icon-total{
+    color:#3897ff;
+}
+
+.icon-critical{
+    color:#ff3b3b;
+}
+
+.icon-high{
+    color:#ff9800;
+}
+
+.icon-medium{
+    color:#ffd400;
+}
+
+.icon-low{
+    color:#00ffaa;
+}
+
+.icon-pending{
+    color:#ff3b3b;
+}
+
+.icon-progress{
+    color:#ffd400;
+}
+
+.icon-completed{
+    color:#00ffaa;
+}
+
+
+/* =========================
+   INTERVENTION
+========================= */
+
+.performance-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:25px;
+}
+
+.performance-label{
+    color:#8fa1b5;
+    font-size:17px;
+    margin-bottom:10px;
+}
+
+.performance-value{
+    font-size:40px;
+    font-weight:bold;
+}
+
+.progress-area{
+    margin-top:30px;
+}
+
+.progress-header{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:12px;
+}
+
+.progress-container{
+    height:12px;
+    background:#30363d;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progress-bar-custom{
+    height:100%;
+    background:#238636;
+    border-radius:20px;
+}
+
+
+/* =========================
+   MAP
+========================= */
+
+#riskMap{
+    height:520px;
+    width:100%;
+    border-radius:18px;
+}
+
+.map-description{
+    color:#8b949e;
+    margin-top:-15px;
+    margin-bottom:20px;
+}
+
+.map-legend{
+    display:flex;
+    gap:25px;
+    margin-top:18px;
+}
+
+.legend-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.legend-dot{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+}
+
+.legend-critical{
+    background:#ff3b30;
+}
+
+.legend-high{
+    background:#ff9800;
+}
+
+.legend-medium{
+    background:#ffd400;
+}
+
+.legend-low{
+    background:#00e6a8;
+}
+
+
+/* =========================
+   PRIORITY CASES
+========================= */
+
+.priority-card{
+    background:#0d1117;
+    border:1px solid #30363d;
+    border-radius:18px;
+    padding:22px;
+    margin-bottom:16px;
+    display:flex;
+    justify-content:space-between;
+    gap:25px;
+}
+
+.priority-main{
+    flex:1;
+}
+
+.priority-id{
+    font-size:20px;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+.priority-location{
+    color:#8fa1b5;
+    margin-bottom:8px;
+}
+
+.priority-description{
+    color:#8fa1b5;
+    margin-bottom:18px;
+}
+
+.priority-bottom{
+    display:flex;
+    align-items:center;
+    gap:18px;
+}
+
+.priority-right{
+    min-width:180px;
+    text-align:right;
+}
+
+
+/* =========================
+   BADGES
+========================= */
+
+.risk-badge{
+    display:inline-block;
+    padding:7px 14px;
+    border-radius:20px;
+    font-weight:bold;
+    font-size:13px;
+    border:1px solid;
+}
+
+.critical-badge{
+    color:#ff3b30;
+    border-color:#ff3b30;
+}
+
+.high-badge{
+    color:#ff9800;
+    border-color:#ff9800;
+}
+
+.medium-badge{
+    color:#ffd400;
+    border-color:#ffd400;
+}
+
+.low-badge{
+    color:#00ffaa;
+    border-color:#00ffaa;
+}
+
+.status-badge{
+    border:1px solid;
+    border-radius:20px;
+    padding:7px 13px;
+    font-weight:bold;
+    display:inline-block;
+}
+
+.status-pending{
+    color:#ff3b30;
+    border-color:#ff3b30;
+}
+
+.status-progress{
+    color:#ffd400;
+    border-color:#ffd400;
+}
+
+.status-completed{
+    color:#00ffaa;
+    border-color:#00ffaa;
+}
+
+.flag{
+    font-weight:bold;
+}
+
+.flag-dot{
+    display:inline-block;
+    width:13px;
+    height:13px;
+    border-radius:50%;
+    margin-right:7px;
+}
+
+.flag-red{
+    background:#ff3b5c;
+}
+
+.flag-yellow{
+    background:#ffd45c;
+}
+
+.flag-green{
+    background:#55e6a5;
+}
+
+
+/* =========================
+   BUTTON
+========================= */
+
+.view-btn{
+    border:1px solid #c9d1d9;
+    background:transparent;
+    color:white;
+    border-radius:7px;
+    padding:8px 15px;
+    margin-top:18px;
+    cursor:pointer;
+}
+
+.view-btn:hover{
+    background:#21262d;
+}
+
+
+/* =========================
+   REPORTS
+========================= */
+
+.report-controls{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr auto;
+    gap:16px;
+    margin-bottom:25px;
+}
+
+.report-controls input,
+.report-controls select{
+    background:#0d1117;
+    color:white;
+    border:1px solid #30363d;
+    border-radius:9px;
+    padding:13px;
+}
+
+.reset-btn{
+    background:transparent;
+    color:white;
+    border:1px solid #c9d1d9;
+    border-radius:8px;
+    padding:10px 20px;
+}
+
+.table-wrapper{
+    overflow-x:auto;
+}
+
+.reports-table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:1000px;
+}
+
+.reports-table th{
+    color:#8fa1b5;
+    text-align:left;
+    padding:14px 10px;
+    background:#21262d;
+}
+
+.reports-table td{
+    padding:14px 10px;
+    border-top:1px solid #30363d;
+}
+
+.reports-table tbody tr:hover{
+    background:#21262d;
+}
+
+.case-image{
+    width:55px;
+    height:55px;
+    border-radius:10px;
+    background:#21262d;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#00ffaa;
+    font-size:25px;
+}
+
+.case-image img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    border-radius:10px;
+}
+
+
+/* =========================================================
+   EXPANDED CASE MODAL
+========================================================= */
+
+.case-modal{
+    max-width:1200px;
+}
+
+.case-modal .modal-content{
+    background:#0d1117;
+    color:white;
+    border:1px solid #30363d;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.case-modal .modal-header{
+    background:#161b22;
+    border-bottom:1px solid #30363d;
+    padding:22px 28px;
+}
+
+.case-modal .modal-title{
+    font-size:25px;
+    font-weight:bold;
+}
+
+.case-modal .modal-body{
+    padding:28px;
+    max-height:78vh;
+    overflow-y:auto;
+}
+
+.case-modal .modal-footer{
+    background:#161b22;
+    border-top:1px solid #30363d;
+}
+
+
+/* CASE HEADER */
+
+.expanded-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:25px;
+    margin-bottom:25px;
+}
+
+.expanded-case-id{
+    font-size:30px;
+    font-weight:bold;
+}
+
+.expanded-location{
+    color:#8b949e;
+    margin-top:7px;
+}
+
+.expanded-badges{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+
+/* FLAG */
+
+.large-flag{
+    padding:8px 14px;
+    border-radius:20px;
+    font-weight:bold;
+    border:1px solid;
+}
+
+.large-flag.red{
+    color:#ff3b5c;
+    border-color:#ff3b5c;
+}
+
+.large-flag.yellow{
+    color:#ffd45c;
+    border-color:#ffd45c;
+}
+
+.large-flag.green{
+    color:#55e6a5;
+    border-color:#55e6a5;
+}
+
+
+/* IMAGE + MAP */
+
+.case-top-grid{
+    display:grid;
+    grid-template-columns:1fr 1.4fr;
+    gap:20px;
+    margin-bottom:25px;
+}
+
+.case-image-large{
+    height:350px;
+    background:#161b22;
+    border:1px solid #30363d;
+    border-radius:16px;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.case-image-large img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.case-image-placeholder{
+    font-size:80px;
+    color:#00ffaa;
+}
+
+.case-detail-map{
+    height:350px;
+    border-radius:16px;
+    overflow:hidden;
+}
+
+
+/* SECTION */
+
+.detail-section{
+    background:#161b22;
+    border:1px solid #30363d;
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+.detail-section-title{
+    font-size:20px;
+    font-weight:bold;
+    margin-bottom:18px;
+    color:white;
+}
+
+.detail-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+}
+
+.detail-item{
+    background:#0d1117;
+    border:1px solid #30363d;
+    border-radius:12px;
+    padding:15px;
+}
+
+.detail-label{
+    color:#8b949e;
+    font-size:13px;
+    margin-bottom:7px;
+}
+
+.detail-value{
+    font-size:17px;
+    font-weight:bold;
+}
+
+
+/* EVIDENCE */
+
+.evidence-list{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+}
+
+.evidence-item{
+    background:#0d1117;
+    border:1px solid #30363d;
+    border-radius:10px;
+    padding:14px;
+}
+
+.evidence-item i{
+    color:#00ffaa;
+    margin-right:8px;
+}
+
+
+/* SCORE */
+
+.score-box{
+    background:#0d1117;
+    border:1px solid #30363d;
+    border-radius:14px;
+    padding:20px;
+}
+
+.score-number{
+    font-size:36px;
+    font-weight:bold;
+}
+
+.score-progress{
+    height:10px;
+    background:#30363d;
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:12px;
+}
+
+.score-progress-inner{
+    height:100%;
+    border-radius:10px;
+}
+
+
+/* MAP LINK */
+
+.map-link{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    color:#00ffaa;
+    text-decoration:none;
+    border:1px solid #00ffaa;
+    padding:10px 16px;
+    border-radius:8px;
+}
+
+.map-link:hover{
+    background:#00ffaa;
+    color:#061014;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:1200px){
+
+    .risk-grid,
+    .performance-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .case-top-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+@media(max-width:800px){
+
+    .sidebar{
+        width:220px;
+    }
+
+    .main-content{
+        margin-left:220px;
+    }
+
+    .priority-card{
+        flex-direction:column;
+    }
+
+    .priority-right{
+        text-align:left;
+    }
+
+    .detail-grid{
+        grid-template-columns:1fr 1fr;
+    }
+
+}
+
+@media(max-width:600px){
+
+    .sidebar{
+        display:none;
+    }
+
+    .main-content{
+        margin-left:0;
+        padding:125px 15px 40px;
+    }
+
+    .risk-grid,
+    .performance-grid,
+    .detail-grid,
+    .evidence-list{
+        grid-template-columns:1fr;
+    }
+
+    .dashboard-header{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    #riskMap{
+        height:400px;
+    }
+
+    .report-controls{
+        grid-template-columns:1fr;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<script>
+
+if(
+    localStorage.getItem("adminLoggedIn") !== "true"
+){
+
+    window.location.href =
+        "municipality-login.html";
+
+}
+
+</script>
+
+
+<!-- =========================
+     NAVBAR
+========================= -->
+
+<nav class="top-navbar">
+
+    <a href="index.html">
+
+        <img
+            src="images/logo.png"
+            class="logo"
+            alt="Larvae Lens"
+        >
+
+    </a>
+
+    <button
+        class="logout-btn"
+        onclick="adminLogout()"
+    >
+
+        <i class="bi bi-box-arrow-right"></i>
+
+        Logout
+
+    </button>
+
+</nav>
+
+
+<!-- =========================
+     SIDEBAR
+========================= -->
+
+<aside class="sidebar">
+
+    <a
+        href="admindashboard.html"
+        class="active"
+    >
+        <i class="bi bi-speedometer2"></i>
+        Dashboard
+    </a>
+
+    <a href="#risk-map">
+        <i class="bi bi-geo-alt"></i>
+        Risk Map
+    </a>
+
+    <a href="municipality-analytics.html">
+        <i class="bi bi-bar-chart-line"></i>
+        Analytics
+    </a>
+
+    <a href="#priority-cases">
+        <i class="bi bi-exclamation-diamond"></i>
+        Priority Cases
+    </a>
+
+    <a href="#reports">
+        <i class="bi bi-file-earmark-text"></i>
+        Reports
+    </a>
+
+    <a
+        href="#"
+        onclick="adminLogout();return false;"
+    >
+        <i class="bi bi-box-arrow-right"></i>
+        Logout
+    </a>
+
+</aside>
+
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<main class="main-content">
+
+
+<!-- HEADER -->
+
+<section class="section-card">
+
+    <div class="dashboard-header">
+
+        <div>
+
+            <h1>
+                Municipality Dashboard
+            </h1>
+
+            <p>
+                Monitor mosquito breeding reports,
+                prioritize high-risk cases,
+                and manage municipal interventions.
+            </p>
+
+        </div>
+
+        <div class="operational-badge">
+
+            <span class="operational-dot"></span>
+
+            Operational Dashboard
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     RISK OVERVIEW
+========================= -->
+
+<section class="section-card">
+
+<h2 class="section-title">
+
+<i class="bi bi-bar-chart-line"></i>
+
+Risk Overview
+
+</h2>
+
+
+<div class="risk-grid">
+
+
+<div class="risk-card">
+
+<i class="bi bi-file-earmark-text risk-icon icon-total"></i>
+
+<div>
+
+<div class="risk-label">
+Total Cases
+</div>
+
+<div
+    class="risk-number"
+    id="totalCases"
+>
+0
+</div>
+
+</div>
+
+</div>
+
+
+<div class="risk-card">
+
+<i class="bi bi-exclamation-octagon risk-icon icon-critical"></i>
+
+<div>
+
+<div class="risk-label">
+Critical
+</div>
+
+<div
+    class="risk-number"
+    id="criticalCases"
+>
+0
+</div>
+
+</div>
+
+</div>
+
+
+<div class="risk-card">
+
+<i class="bi bi-exclamation-triangle risk-icon icon-high"></i>
+
+<div>
+
+<div class="risk-label">
+High
+</div>
+
+<div
+    class="risk-number"
+    id="highCases"
+>
+0
+</div>
+
+</div>
+
+</div>
+
+
+<div class="risk-card">
+
+<i class="bi bi-dash-circle risk-icon icon-medium"></i>
+
+<div>
+
+<div class="risk-label">
+Medium
+</div>
+
+<div
+    class="risk-number"
+    id="mediumCases"
+>
+0
+</div>
+
+</div>
+
+</div>
+
+
+<div class="risk-card">
+
+<i class="bi bi-check-circle risk-icon icon-low"></i>
+
+<div>
+
+<div class="risk-label">
+Low
+</div>
+
+<div
+    class="risk-number"
+    id="lowCases"
+>
+0
+</div>
+
+</div>
+
+</div>
+
+
+<div class="risk-card">
+
+<i class="bi bi-flag risk-icon icon-pending"></i>
+
+<div>
+
+<div class="risk-label">
+Pending
+</div>
+
+<div
+    class="risk-number"
+    id="pendingCases"
+>
+0
+</div>
+
+</div>
+
+</div>
+
+
+<div class="risk-card">
+
+<i class="bi bi-arrow-repeat risk-icon icon-progress"></i>
+
+<div>
+
+<div class="risk-label">
+In Progress
+</div>
+
+<div
+    class="risk-number"
+    id="progressCases"
+>
+0
+</div>
+
+</div>
+
+</div>
+
+
+<div class="risk-card">
+
+<i class="bi bi-check2-all risk-icon icon-completed"></i>
+
+<div>
+
+<div class="risk-label">
+Completed
+</div>
+
+<div
+    class="risk-number"
+    id="completedCases"
+>
+0
+</div>
+
+</div>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     INTERVENTION PERFORMANCE
+========================= -->
+
+<section class="section-card">
+
+<h2 class="section-title">
+
+<i class="bi bi-clipboard-check"></i>
+
+Intervention Performance
+
+</h2>
+
+
+<div class="performance-grid">
+
+<div>
+
+<div class="performance-label">
+Total Cases
+</div>
+
+<div
+    class="performance-value"
+    id="performanceTotal"
+>
+0
+</div>
+
+</div>
+
+
+<div>
+
+<div class="performance-label">
+Completed
+</div>
+
+<div
+    class="performance-value"
+    id="performanceCompleted"
+>
+0
+</div>
+
+</div>
+
+
+<div>
+
+<div class="performance-label">
+Pending
+</div>
+
+<div
+    class="performance-value"
+    id="performancePending"
+>
+0
+</div>
+
+</div>
+
+
+<div>
+
+<div class="performance-label">
+Resolution Rate
+</div>
+
+<div
+    class="performance-value"
+    id="resolutionRate"
+>
+0%
+</div>
+
+</div>
+
+</div>
+
+
+<div class="progress-area">
+
+<div class="progress-header">
+
+<span>
+Completion progress
+</span>
+
+<span id="progressPercentage">
+0%
+</span>
+
+</div>
+
+<div class="progress-container">
+
+<div
+    id="completionProgress"
+    class="progress-bar-custom"
+></div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     MAP
+========================= -->
+
+<section
+    class="section-card"
+    id="risk-map"
+>
+
+<h2 class="section-title">
+
+<i class="bi bi-geo-alt"></i>
+
+Mosquito Risk Map
+
+</h2>
+
+<p class="map-description">
+
+View reported cases geographically.
+Marker color represents municipal risk.
+
+</p>
+
+<div id="riskMap"></div>
+
+
+<div class="map-legend">
+
+<div class="legend-item">
+<span class="legend-dot legend-critical"></span>
+Critical
+</div>
+
+<div class="legend-item">
+<span class="legend-dot legend-high"></span>
+High
+</div>
+
+<div class="legend-item">
+<span class="legend-dot legend-medium"></span>
+Medium
+</div>
+
+<div class="legend-item">
+<span class="legend-dot legend-low"></span>
+Low
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     PRIORITY CASES
+========================= -->
+
+<section
+    class="section-card"
+    id="priority-cases"
+>
+
+<div
+    style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:25px;
+    "
+>
+
+<div>
+
+<h2
+    class="section-title"
+    style="margin-bottom:5px;"
+>
+
+<i class="bi bi-exclamation-diamond"></i>
+
+Top Priority Cases
+
+</h2>
+
+<div style="color:#8b949e;">
+Cases requiring the earliest municipal attention.
+</div>
+
+</div>
+
+<span class="risk-badge critical-badge">
+PRIORITY
+</span>
+
+</div>
+
+
+<div id="priorityContainer"></div>
+
+</section>
+
+
+<!-- =========================
+     REPORTS
+========================= -->
+
+<section
+    class="section-card"
+    id="reports"
+>
+
+<h2 class="section-title">
+
+<i class="bi bi-file-earmark-text"></i>
+
+All Reports
+
+</h2>
+
+<p style="color:#8b949e;margin-top:-15px;">
+Search, filter, and inspect individual reports.
+</p>
+
+
+<div class="report-controls">
+
+<input
+    type="text"
+    id="searchInput"
+    placeholder="Search case ID, location, habitat..."
+>
+
+
+<select id="riskFilter">
+
+<option value="">
+All Risks
+</option>
+
+<option value="CRITICAL">
+Critical
+</option>
+
+<option value="HIGH">
+High
+</option>
+
+<option value="MEDIUM">
+Medium
+</option>
+
+<option value="LOW">
+Low
+</option>
+
+</select>
+
+
+<select id="statusFilter">
+
+<option value="">
+All Status
+</option>
+
+<option value="PENDING">
+Pending
+</option>
+
+<option value="IN PROGRESS">
+In Progress
+</option>
+
+<option value="COMPLETED">
+Completed
+</option>
+
+</select>
+
+
+<button
+    class="reset-btn"
+    onclick="resetFilters()"
+>
+
+<i class="bi bi-arrow-counterclockwise"></i>
+
+Reset Filters
+
+</button>
+
+</div>
+
+
+<div class="table-wrapper">
+
+<table class="reports-table">
+
+<thead>
+
+<tr>
+
+<th>Image</th>
+
+<th>Case</th>
+
+<th>Location</th>
+
+<th>Risk</th>
+
+<th>Score</th>
+
+<th>Flag</th>
+
+<th>Status</th>
+
+<th>Time</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="reportTable"></tbody>
+
+</table>
+
+</div>
+
+</section>
+
+
+</main>
+
+
+<!-- =====================================================
+     FULL EXPANDED CASE MODAL
+===================================================== -->
+
+<div
+    class="modal fade"
+    id="caseDetailsModal"
+    tabindex="-1"
+>
+
+<div class="modal-dialog modal-xl modal-dialog-centered case-modal">
+
+<div class="modal-content">
+
+
+<div class="modal-header">
+
+<div>
+
+<div class="modal-title">
+
+<i class="bi bi-file-earmark-medical"></i>
+
+Case Investigation
+
+</div>
+
+<div
+    style="
+        color:#8b949e;
+        font-size:14px;
+        margin-top:4px;
+    "
+>
+Complete case intelligence and municipal assessment
+</div>
+
+</div>
+
+
+<button
+    type="button"
+    class="btn-close"
+    data-bs-dismiss="modal"
+></button>
+
+</div>
+
+
+<div
+    class="modal-body"
+    id="caseDetailsBody"
+>
+
+</div>
+
+
+<div class="modal-footer">
+
+    <div class="me-auto d-flex gap-2">
+
+        <button
+            type="button"
+            class="btn btn-danger"
+            onclick="updateCaseStatus('PENDING')"
+        >
+            <i class="bi bi-flag"></i>
+            Pending
+        </button>
+
+        <button
+            type="button"
+            class="btn btn-warning"
+            onclick="updateCaseStatus('IN PROGRESS')"
+        >
+            <i class="bi bi-arrow-repeat"></i>
+            In Progress
+        </button>
+
+        <button
+            type="button"
+            class="btn btn-success"
+            onclick="updateCaseStatus('COMPLETED')"
+        >
+            <i class="bi bi-check2-circle"></i>
+            Completed
+        </button>
+
+    </div>
+
+    <button
+        type="button"
+        class="btn btn-secondary"
+        data-bs-dismiss="modal"
+    >
+        Close
+    </button>
+
+</div>
+
+
+</div>
+
+</div>
+
+</div>
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
+
+<script
+    src="https://unpkg.com/leaflet/dist/leaflet.js"
+></script>
+
+
+<script>
+
+
+/* =====================================================
+   DEMO DATA
+===================================================== */
+
+const demoReports = [
+
+{
+    id:"LR-0001",
+    latitude:22.8046,
+    longitude:86.2029,
+    risk_level:"CRITICAL",
+    risk_score:80.83,
+    status:"PENDING",
+    timestamp:"2026-08-19T03:20:00Z",
+
+    evidence:[
+        "Larvae detected",
+        "Open stagnant water",
+        "Large habitat coverage"
+    ],
+
+    vision:{
+        status:"biological_evidence",
+        route:"model3",
+
+        breeding_object:{
+            detected:false,
+            confidence:0
+        },
+
+        habitat:{
+            detected:true,
+            type:"open_stagnant_water",
+            confidence:0.2747,
+
+            bounding_box:{
+                area_pixels:54936.01,
+                coverage_percent:83.83
+            },
+
+            segmentation:{
+                area_pixels:41801.83,
+                coverage_percent:63.78,
+                mask_ratio:0.637845
+            }
+        },
+
+        larvae:{
+            detected:true,
+            count:3,
+            non_larvae_count:0,
+            confidence:0.5002,
+            density_per_10000_pixels:0.7177
+        }
+    },
+
+    environment:{
+
+        weather:{
+            temperature_c:25.1,
+            humidity_percent:96
+        },
+
+        rainfall:{
+            "24h_mm":16.1,
+            "3d_mm":43.7,
+            "7d_mm":119.3
+        },
+
+        population:{
+            radius_m:500,
+            estimated_population:16664.89,
+            density_per_km2:21297.79
+        },
+
+        nearby_facilities:{
+            schools_500m:8,
+            hospitals_500m:9,
+            higher_education_500m:7
+        },
+
+        historical_hotspot:{
+            status:"database_unavailable",
+            hotspots_500m:null,
+            nearest_hotspot_m:null,
+            historical_cases:null
+        }
+
+    },
+
+    risk:{
+        breeding:{
+            score:74,
+            max_score:100,
+            level:"HIGH"
+        },
+
+        municipal:{
+            score:80.83,
+            max_score:100,
+            level:"CRITICAL",
+            status:"PROVISIONAL"
+        }
+    },
+
+    workflow:{
+        status:"PENDING",
+        display_flag:"RED"
+    }
+},
+
+{
+    id:"LR-0002",
+    latitude:22.8100,
+    longitude:86.2100,
+    risk_level:"HIGH",
+    risk_score:64.58,
+    status:"IN PROGRESS",
+    timestamp:"2026-08-19T04:10:00Z",
+
+    evidence:[
+        "Stagnant water habitat detected"
+    ],
+
+    vision:{
+        habitat:{
+            detected:true,
+            type:"open_stagnant_water",
+            confidence:0.71
+        },
+
+        larvae:{
+            detected:true,
+            count:2,
+            confidence:0.61
+        }
+    },
+
+    environment:{
+        weather:{
+            temperature_c:26.4,
+            humidity_percent:91
+        },
+
+        rainfall:{
+            "24h_mm":12.3,
+            "3d_mm":31.2,
+            "7d_mm":94.5
+        },
+
+        population:{
+            radius_m:500,
+            estimated_population:13200
+        },
+
+        nearby_facilities:{
+            schools_500m:5,
+            hospitals_500m:3,
+            higher_education_500m:2
+        }
+    }
+},
+
+{
+    id:"LR-0003",
+    latitude:22.7980,
+    longitude:86.1950,
+    risk_level:"MEDIUM",
+    risk_score:45,
+    status:"PENDING",
+    timestamp:"2026-08-18T16:30:00Z",
+
+    evidence:[
+        "Potential breeding object detected"
+    ]
+},
+
+{
+    id:"LR-0004",
+    latitude:22.8150,
+    longitude:86.1900,
+    risk_level:"LOW",
+    risk_score:22,
+    status:"COMPLETED",
+    timestamp:"2026-08-18T10:20:00Z",
+
+    evidence:[
+        "Low breeding potential"
+    ]
+}
+
+];
+
+
+let reports = [];
+
+let map;
+
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+function adminLogout(){
+
+    localStorage.removeItem(
+        "adminLoggedIn"
+    );
+
+    window.location.href =
+        "municipality-login.html";
+
+}
+
+
+/* =====================================================
+   MAP
+===================================================== */
+
+function initializeMap(){
+
+    map =
+        L.map("riskMap")
+        .setView(
+            [22.8046,86.2029],
+            13
+        );
+
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom:19,
+            attribution:
+                '&copy; OpenStreetMap contributors'
+        }
+    ).addTo(map);
+
+}
+
+
+/* =====================================================
+   RISK COLOR
+===================================================== */
+
+function getRiskColor(risk){
+
+    const value =
+        String(risk || "")
+        .toUpperCase();
+
+    if(value==="CRITICAL")
+        return "#ff3b30";
+
+    if(value==="HIGH")
+        return "#ff9800";
+
+    if(value==="MEDIUM")
+        return "#ffd400";
+
+    return "#00e6a8";
+
+}
+
+
+/* =====================================================
+   RISK BADGE
+===================================================== */
+
+function getRiskBadge(risk){
+
+    const value =
+        String(risk || "LOW")
+        .toUpperCase();
+
+    let cls="low-badge";
+
+    if(value==="CRITICAL")
+        cls="critical-badge";
+
+    else if(value==="HIGH")
+        cls="high-badge";
+
+    else if(value==="MEDIUM")
+        cls="medium-badge";
+
+    return `
+        <span class="risk-badge ${cls}">
+            ${value}
+        </span>
+    `;
+
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+function normalizeStatus(status){
+
+    const value =
+        String(status || "PENDING")
+        .toUpperCase();
+
+    if(
+        value==="IN_PROGRESS" ||
+        value==="WORKING"
+    ){
+        return "IN PROGRESS";
+    }
+
+    return value;
+
+}
+
+
+function getStatusBadge(status){
+
+    const value =
+        normalizeStatus(status);
+
+    let cls="status-pending";
+
+    if(value==="IN PROGRESS")
+        cls="status-progress";
+
+    if(value==="COMPLETED")
+        cls="status-completed";
+
+    return `
+        <span class="status-badge ${cls}">
+            ${value}
+        </span>
+    `;
+
+}
+
+
+/* =====================================================
+   FLAG
+===================================================== */
+
+function getFlag(status){
+
+    const value =
+        normalizeStatus(status);
+
+    if(value==="COMPLETED"){
+
+        return `
+            <span class="flag">
+                <span class="flag-dot flag-green"></span>
+                Done
+            </span>
+        `;
+
+    }
+
+    if(value==="IN PROGRESS"){
+
+        return `
+            <span class="flag">
+                <span class="flag-dot flag-yellow"></span>
+                Working
+            </span>
+        `;
+
+    }
+
+    return `
+        <span class="flag">
+            <span class="flag-dot flag-red"></span>
+            Not Done
+        </span>
+    `;
+
+}
+
+
+/* =====================================================
+   ADD MAP MARKER
+===================================================== */
+
+function addMarker(report){
+
+    const lat =
+        parseFloat(report.latitude);
+
+    const lng =
+        parseFloat(report.longitude);
+
+    if(
+        Number.isNaN(lat) ||
+        Number.isNaN(lng)
+    ){
+        return;
+    }
+
+
+    const color =
+        getRiskColor(
+            report.risk_level
+        );
+
+
+    const marker =
+        L.circleMarker(
+            [lat,lng],
+            {
+                radius:11,
+                fillColor:color,
+                color:color,
+                weight:2,
+                opacity:1,
+                fillOpacity:.85
+            }
+        );
+
+
+    marker.bindPopup(`
+
+        <strong>
+            ${report.id || "Report"}
+        </strong>
+
+        <br><br>
+
+        Risk:
+        <strong style="color:${color}">
+            ${report.risk_level || "N/A"}
+        </strong>
+
+        <br>
+
+        Score:
+        ${report.risk_score ?? "N/A"}
+
+        <br>
+
+        Status:
+        ${normalizeStatus(report.status)}
+
+        <br><br>
+
+        <button
+            onclick="viewReport('${report.id}')"
+            style="
+                background:#0d1117;
+                color:#00ffaa;
+                border:1px solid #00ffaa;
+                border-radius:6px;
+                padding:6px 10px;
+            "
+        >
+            View Full Case
+        </button>
+
+    `);
+
+    marker.addTo(map);
+
+}
+
+
+/* =====================================================
+   DASHBOARD COUNTS
+===================================================== */
+
+function updateDashboard(){
+
+    const total=reports.length;
+
+    const critical=
+        reports.filter(
+            r =>
+                String(r.risk_level)
+                .toUpperCase()==="CRITICAL"
+        ).length;
+
+    const high=
+        reports.filter(
+            r =>
+                String(r.risk_level)
+                .toUpperCase()==="HIGH"
+        ).length;
+
+    const medium=
+        reports.filter(
+            r =>
+                String(r.risk_level)
+                .toUpperCase()==="MEDIUM"
+        ).length;
+
+    const low=
+        reports.filter(
+            r =>
+                String(r.risk_level)
+                .toUpperCase()==="LOW"
+        ).length;
+
+    const pending=
+        reports.filter(
+            r =>
+                normalizeStatus(r.status)==="PENDING"
+        ).length;
+
+    const progress=
+        reports.filter(
+            r =>
+                normalizeStatus(r.status)==="IN PROGRESS"
+        ).length;
+
+    const completed=
+        reports.filter(
+            r =>
+                normalizeStatus(r.status)==="COMPLETED"
+        ).length;
+
+
+    document.getElementById("totalCases").textContent=total;
+    document.getElementById("criticalCases").textContent=critical;
+    document.getElementById("highCases").textContent=high;
+    document.getElementById("mediumCases").textContent=medium;
+    document.getElementById("lowCases").textContent=low;
+    document.getElementById("pendingCases").textContent=pending;
+    document.getElementById("progressCases").textContent=progress;
+    document.getElementById("completedCases").textContent=completed;
+
+
+    document.getElementById("performanceTotal").textContent=total;
+
+    document.getElementById("performanceCompleted").textContent=completed;
+
+    document.getElementById("performancePending").textContent=pending;
+
+
+    const rate =
+        total > 0
+        ? Math.round(
+            completed / total * 1000
+        ) / 10
+        : 0;
+
+
+    document.getElementById("resolutionRate").textContent =
+        rate+"%";
+
+    document.getElementById("progressPercentage").textContent =
+        rate+"%";
+
+    document.getElementById("completionProgress").style.width =
+        rate+"%";
+
+}
+
+
+/* =====================================================
+   PRIORITY CASES
+===================================================== */
+
+function renderPriorityCases(){
+
+    const container=
+        document.getElementById(
+            "priorityContainer"
+        );
+
+
+    const priority=
+        [...reports]
+        .filter(
+            r =>
+                ["CRITICAL","HIGH"]
+                .includes(
+                    String(
+                        r.risk_level
+                    ).toUpperCase()
+                )
+        )
+        .sort(
+            (a,b) =>
+                Number(b.risk_score || 0)
+                -
+                Number(a.risk_score || 0)
+        )
+        .slice(0,5);
+
+
+    if(priority.length===0){
+
+        container.innerHTML=`
+            <div style="color:#8b949e;">
+                No priority cases found.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        priority
+        .map(
+            report =>
+                createPriorityCard(report)
+        )
+        .join("");
+
+}
+
+
+function createPriorityCard(report){
+
+    const evidence =
+        Array.isArray(report.evidence)
+        ? report.evidence
+        : [];
+
+
+    const description =
+        evidence.length
+        ? evidence.join(" • ")
+        : "High-risk mosquito breeding case.";
+
+
+    return `
+
+        <div class="priority-card">
+
+            <div class="priority-main">
+
+                <div class="priority-id">
+                    ${report.id || "REPORT"}
+                </div>
+
+                <div class="priority-location">
+
+                    <i class="bi bi-geo-alt"></i>
+
+                    ${report.latitude ?? "—"},
+                    ${report.longitude ?? "—"}
+
+                </div>
+
+                <div class="priority-description">
+
+                    ${description}
+
+                </div>
+
+                <div class="priority-bottom">
+
+                    ${getFlag(report.status)}
+
+                    ${getStatusBadge(report.status)}
+
+                </div>
+
+            </div>
+
+
+            <div class="priority-right">
+
+                ${getRiskBadge(report.risk_level)}
+
+                <div
+                    style="
+                        font-size:17px;
+                        margin-top:12px;
+                        font-weight:bold;
+                    "
+                >
+
+                    Score:
+                    ${report.risk_score ?? "N/A"}
+
+                </div>
+
+
+                <button
+                    class="view-btn"
+                    onclick="viewReport('${report.id}')"
+                >
+
+                    <i class="bi bi-eye"></i>
+
+                    View Details
+
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =====================================================
+   FORMAT DATE
+===================================================== */
+
+function formatDate(value){
+
+    if(!value)
+        return "Data unavailable";
+
+    const date=new Date(value);
+
+    if(
+        Number.isNaN(
+            date.getTime()
+        )
+    ){
+        return value;
+    }
+
+    return date.toLocaleString(
+        "en-IN",
+        {
+            day:"2-digit",
+            month:"short",
+            year:"numeric",
+            hour:"2-digit",
+            minute:"2-digit"
+        }
+    );
+
+}
+
+
+/* =====================================================
+   IMAGE
+===================================================== */
+
+function getImage(report){
+
+    if(report.image_url){
+
+        return `
+            <div class="case-image">
+                <img
+                    src="${report.image_url}"
+                    alt="Case"
+                >
+            </div>
+        `;
+
+    }
+
+    if(report.image){
+
+        return `
+            <div class="case-image">
+                <i class="bi bi-bug-fill"></i>
+            </div>
+        `;
+
+    }
+
+    return `
+        <div class="case-image">
+            <i class="bi bi-bug-fill"></i>
+        </div>
+    `;
+
+}
+
+
+/* =====================================================
+   REPORT TABLE
+===================================================== */
+
+function renderReports(){
+
+    const table=
+        document.getElementById(
+            "reportTable"
+        );
+
+
+    const search=
+        document.getElementById(
+            "searchInput"
+        ).value.toLowerCase();
+
+
+    const risk=
+        document.getElementById(
+            "riskFilter"
+        ).value;
+
+
+    const status=
+        document.getElementById(
+            "statusFilter"
+        ).value;
+
+
+    const filtered=
+        reports.filter(
+            report => {
+
+                const id=
+                    String(
+                        report.id || ""
+                    ).toLowerCase();
+
+                const location=
+                    `${report.latitude || ""}
+                     ${report.longitude || ""}`
+                    .toLowerCase();
+
+                const riskValue=
+                    String(
+                        report.risk_level || ""
+                    ).toUpperCase();
+
+                const statusValue=
+                    normalizeStatus(
+                        report.status
+                    );
+
+
+                return (
+
+                    (
+                        !search ||
+                        id.includes(search) ||
+                        location.includes(search)
+                    )
+
+                    &&
+
+                    (
+                        !risk ||
+                        riskValue===risk
+                    )
+
+                    &&
+
+                    (
+                        !status ||
+                        statusValue===status
+                    )
+
+                );
+
+            }
+        );
+
+
+    if(filtered.length===0){
+
+        table.innerHTML=`
+
+            <tr>
+
+                <td
+                    colspan="9"
+                    style="
+                        text-align:center;
+                        padding:30px;
+                        color:#8b949e;
+                    "
+                >
+
+                    No reports found.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    table.innerHTML =
+        filtered
+        .map(
+            report => `
+
+            <tr>
+
+                <td>
+                    ${getImage(report)}
+                </td>
+
+                <td>
+                    <strong>
+                        ${report.id || "—"}
+                    </strong>
+                </td>
+
+                <td>
+                    ${report.latitude ?? "—"},
+                    ${report.longitude ?? "—"}
+                </td>
+
+                <td>
+                    ${getRiskBadge(
+                        report.risk_level
+                    )}
+                </td>
+
+                <td>
+                    <strong>
+                        ${report.risk_score ?? "—"} / 100
+                    </strong>
+                </td>
+
+                <td>
+                    ${getFlag(report.status)}
+                </td>
+
+                <td>
+                    ${getStatusBadge(report.status)}
+                </td>
+
+                <td>
+                    ${formatDate(report.timestamp)}
+                </td>
+
+                <td>
+
+                    <button
+                        class="view-btn"
+                        style="margin-top:0;"
+                        onclick="viewReport('${report.id}')"
+                    >
+
+                        <i class="bi bi-eye"></i>
+
+                        View
+
+                    </button>
+
+                </td>
+
+            </tr>
+
+            `
+        )
+        .join("");
+
+}
+
+
+/* =====================================================
+   SAFE VALUE
+===================================================== */
+
+function valueOrUnavailable(value){
+
+    if(
+        value === undefined ||
+        value === null ||
+        value === ""
+    ){
+        return "Data unavailable";
+    }
+
+    return value;
+
+}
+
+
+/* =====================================================
+   PERCENT
+===================================================== */
+
+function percentage(value){
+
+    if(
+        value === undefined ||
+        value === null
+    ){
+        return "Data unavailable";
+    }
+
+    return (
+        Number(value) * 100
+    ).toFixed(2)+"%";
+
+}
+
+/* =====================================================
+   ACTIVE CASE
+===================================================== */
+
+let activeCaseId = null;
+
+
+/* =====================================================
+   UPDATE CASE STATUS
+===================================================== */
+
+function updateCaseStatus(newStatus){
+
+    if(!activeCaseId){
+        return;
+    }
+
+    const report =
+        reports.find(
+            r =>
+                String(r.id) ===
+                String(activeCaseId)
+        );
+
+    if(!report){
+        return;
+    }
+
+
+    /* Update main status */
+
+    report.status = newStatus;
+
+
+    /* Keep workflow structure synchronized */
+
+    if(!report.workflow){
+        report.workflow = {};
+    }
+
+    report.workflow.status = newStatus;
+
+
+    /* Update display flag */
+
+    if(newStatus === "COMPLETED"){
+
+        report.workflow.display_flag = "GREEN";
+
+    }
+    else if(newStatus === "IN PROGRESS"){
+
+        report.workflow.display_flag = "YELLOW";
+
+    }
+    else{
+
+        report.workflow.display_flag = "RED";
+
+    }
+
+
+    /* Refresh dashboard */
+
+    updateDashboard();
+
+    renderPriorityCases();
+
+    renderReports();
+
+
+    /* Refresh the expanded case */
+
+    viewReport(activeCaseId);
+
+}
+/* =====================================================
+   EXPANDED CASE VIEW
+===================================================== */
+
+function viewReport(id){
+
+    const report=
+        reports.find(
+            r =>
+                String(r.id)===String(id)
+        );
+
+
+    if(!report)
+        return;
+    activeCaseId = id;
+
+
+    /*
+       Support both:
+
+       1. Your new complete analysis structure
+       2. Your current Firestore flat structure
+    */
+
+    const vision =
+        report.vision || {};
+
+    const environment =
+        report.environment || {};
+
+    const weather =
+        environment.weather || {};
+
+    const rainfall =
+        environment.rainfall || {};
+
+    const population =
+        environment.population || {};
+
+    const facilities =
+        environment.nearby_facilities || {};
+
+    const hotspot =
+        environment.historical_hotspot || {};
+
+    const risk =
+        report.risk || {};
+
+    const breedingRisk =
+        risk.breeding || {};
+
+    const municipalRisk =
+        risk.municipal || {};
+
+    const workflow =
+        report.workflow || {};
+
+    const habitat =
+        vision.habitat || {};
+
+    const larvae =
+        vision.larvae || {};
+
+    const breedingObject =
+        vision.breeding_object || {};
+
+    const segmentation =
+        habitat.segmentation || {};
+
+    const boundingBox =
+        habitat.bounding_box || {};
+
+
+    const latitude =
+        valueOrUnavailable(
+            report.latitude
+        );
+
+    const longitude =
+        valueOrUnavailable(
+            report.longitude
+        );
+
+
+    const mapsUrl =
+        (
+            report.latitude !== undefined &&
+            report.longitude !== undefined
+        )
+        ?
+        `https://www.google.com/maps?q=${report.latitude},${report.longitude}`
+        :
+        "#";
+
+
+    const riskLevel =
+        municipalRisk.level ||
+        report.risk_level ||
+        "Data unavailable";
+
+
+    const riskScore =
+        municipalRisk.score ??
+        report.risk_score;
+
+
+    const currentStatus =
+        workflow.status ||
+        report.status ||
+        "PENDING";
+
+
+    let flag =
+        workflow.display_flag;
+
+
+    if(!flag){
+
+        const normalized =
+            normalizeStatus(currentStatus);
+
+        flag =
+            normalized==="COMPLETED"
+            ? "GREEN"
+            :
+            normalized==="IN PROGRESS"
+            ? "YELLOW"
+            : "RED";
+
+    }
+
+
+    let flagClass="red";
+
+    if(flag==="YELLOW")
+        flagClass="yellow";
+
+    if(flag==="GREEN")
+        flagClass="green";
+
+
+    const evidence =
+        Array.isArray(report.evidence)
+        ? report.evidence
+        : [];
+
+
+    let evidenceHtml="";
+
+    if(evidence.length){
+
+        evidenceHtml =
+            evidence
+            .map(
+                item => `
+                    <div class="evidence-item">
+
+                        <i class="bi bi-check-circle-fill"></i>
+
+                        ${item}
+
+                    </div>
+                `
+            )
+            .join("");
+
+    }else{
+
+        evidenceHtml=`
+
+            <div class="evidence-item">
+
+                <i class="bi bi-info-circle"></i>
+
+                No biological evidence data available.
+
+            </div>
+
+        `;
+
+    }
+
+
+    document.getElementById(
+        "caseDetailsBody"
+    ).innerHTML = `
+
+
+    <!-- CASE HEADER -->
+
+    <div class="expanded-header">
+
+        <div>
+
+            <div class="expanded-case-id">
+
+                ${valueOrUnavailable(report.id)}
+
+            </div>
+
+            <div class="expanded-location">
+
+                <i class="bi bi-geo-alt"></i>
+
+                ${latitude},
+                ${longitude}
+
+            </div>
+
+            <div
+                style="
+                    color:#8b949e;
+                    margin-top:7px;
+                "
+            >
+
+                Reported:
+                ${formatDate(report.timestamp)}
+
+            </div>
+
+        </div>
+
+
+        <div class="expanded-badges">
+
+            ${getRiskBadge(riskLevel)}
+
+            ${getStatusBadge(currentStatus)}
+
+            <span class="large-flag ${flagClass}">
+
+                <i class="bi bi-flag-fill"></i>
+
+                ${flag}
+
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- IMAGE + MAP -->
+
+    <div class="case-top-grid">
+
+
+        <div class="case-image-large">
+
+            ${
+                report.image_url
+
+                ?
+
+                `
+                <img
+                    src="${report.image_url}"
+                    alt="Case image"
+                >
+                `
+
+                :
+
+                `
+                <div class="case-image-placeholder">
+
+                    <i class="bi bi-bug-fill"></i>
+
+                </div>
+                `
+            }
+
+        </div>
+
+
+        <div
+            id="caseDetailMap"
+            class="case-detail-map"
+        ></div>
+
+
+    </div>
+
+
+    <!-- LOCATION -->
+
+    <div class="detail-section">
+
+        <div class="detail-section-title">
+
+            <i class="bi bi-geo-alt"></i>
+
+            Location Intelligence
+
+        </div>
+
+
+        <div class="detail-grid">
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Latitude
+                </div>
+
+                <div class="detail-value">
+                    ${latitude}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Longitude
+                </div>
+
+                <div class="detail-value">
+                    ${longitude}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    GPS Accuracy
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        report.accuracy_m
+                    )}${report.accuracy_m ? " m" : ""}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div style="margin-top:18px;">
+
+            ${
+                mapsUrl !== "#"
+
+                ?
+
+                `
+                <a
+                    href="${mapsUrl}"
+                    target="_blank"
+                    class="map-link"
+                >
+
+                    <i class="bi bi-map"></i>
+
+                    Open Location in Google Maps
+
+                </a>
+                `
+
+                :
+
+                `
+                <span style="color:#8b949e;">
+                    Map location unavailable
+                </span>
+                `
+            }
+
+        </div>
+
+    </div>
+
+
+    <!-- MUNICIPAL RISK -->
+
+    <div class="detail-section">
+
+        <div class="detail-section-title">
+
+            <i class="bi bi-shield-exclamation"></i>
+
+            Municipal Risk Assessment
+
+        </div>
+
+
+        <div class="detail-grid">
+
+
+            <div class="score-box">
+
+                <div class="detail-label">
+                    Municipal Risk
+                </div>
+
+                <div class="score-number">
+
+                    ${valueOrUnavailable(riskScore)}
+
+                </div>
+
+                <div style="color:#8b949e;">
+                    / 100
+                </div>
+
+                ${
+                    riskScore !== undefined &&
+                    riskScore !== null
+
+                    ?
+
+                    `
+                    <div class="score-progress">
+
+                        <div
+                            class="score-progress-inner"
+                            style="
+                                width:${Math.min(
+                                    Number(riskScore),
+                                    100
+                                )}%;
+                                background:${getRiskColor(riskLevel)};
+                            "
+                        ></div>
+
+                    </div>
+                    `
+
+                    :
+
+                    ""
+                }
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Risk Level
+                </div>
+
+                <div class="detail-value">
+                    ${riskLevel}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Assessment Status
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        municipalRisk.status
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Breeding Risk Score
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        breedingRisk.score !== undefined
+                        ?
+                        `${breedingRisk.score} / ${valueOrUnavailable(breedingRisk.max_score)}`
+                        :
+                        "Data unavailable"
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- BIOLOGICAL EVIDENCE -->
+
+    <div class="detail-section">
+
+        <div class="detail-section-title">
+
+            <i class="bi bi-bug"></i>
+
+            Biological Evidence
+
+        </div>
+
+
+        <div class="detail-grid">
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Analysis Status
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        vision.status
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    AI Route
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        vision.route
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Breeding Object
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        breedingObject.detected === undefined
+                        ?
+                        "Data unavailable"
+                        :
+                        breedingObject.detected
+                        ? "Detected"
+                        : "Not detected"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Habitat
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        habitat.detected === undefined
+                        ?
+                        "Data unavailable"
+                        :
+                        habitat.detected
+                        ? "Detected"
+                        : "Not detected"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Habitat Type
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        habitat.type
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Habitat Confidence
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        habitat.confidence !== undefined
+                        ?
+                        percentage(habitat.confidence)
+                        :
+                        "Data unavailable"
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- HABITAT ANALYSIS -->
+
+    <div class="detail-section">
+
+        <div class="detail-section-title">
+
+            <i class="bi bi-water"></i>
+
+            Habitat & Segmentation
+
+        </div>
+
+
+        <div class="detail-grid">
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Bounding Box Area
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        boundingBox.area_pixels
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Bounding Coverage
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        boundingBox.coverage_percent !== undefined
+                        ?
+                        boundingBox.coverage_percent+"%"
+                        :
+                        "Data unavailable"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Segmentation Area
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        segmentation.area_pixels
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Segmentation Coverage
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        segmentation.coverage_percent !== undefined
+                        ?
+                        segmentation.coverage_percent+"%"
+                        :
+                        "Data unavailable"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Mask Ratio
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        segmentation.mask_ratio !== undefined
+                        ?
+                        percentage(
+                            segmentation.mask_ratio
+                        )
+                        :
+                        "Data unavailable"
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- LARVAE -->
+
+    <div class="detail-section">
+
+        <div class="detail-section-title">
+
+            <i class="bi bi-bug-fill"></i>
+
+            Larvae Detection
+
+        </div>
+
+
+        <div class="detail-grid">
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Larvae Detected
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        larvae.detected === undefined
+                        ?
+                        "Data unavailable"
+                        :
+                        larvae.detected
+                        ? "YES"
+                        : "NO"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Larvae Count
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        larvae.count
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Non-Larvae Count
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        larvae.non_larvae_count
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Confidence
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        larvae.confidence !== undefined
+                        ?
+                        percentage(
+                            larvae.confidence
+                        )
+                        :
+                        "Data unavailable"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Density / 10,000 Pixels
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        larvae.density_per_10000_pixels
+                    )}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- EVIDENCE -->
+
+    <div class="detail-section">
+
+        <div class="detail-section-title">
+
+            <i class="bi bi-search"></i>
+
+            Evidence Summary
+
+        </div>
+
+
+        <div class="evidence-list">
+
+            ${evidenceHtml}
+
+        </div>
+
+    </div>
+
+
+    <!-- ENVIRONMENT -->
+
+    <div class="detail-section">
+
+        <div class="detail-section-title">
+
+            <i class="bi bi-cloud-sun"></i>
+
+            Environmental Conditions
+
+        </div>
+
+
+        <div class="detail-grid">
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Temperature
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        weather.temperature_c !== undefined
+                        ?
+                        weather.temperature_c+" °C"
+                        :
+                        "Data unavailable"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Humidity
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        weather.humidity_percent !== undefined
+                        ?
+                        weather.humidity_percent+"%"
+                        :
+                        "Data unavailable"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Rainfall - 24h
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        rainfall["24h_mm"] !== undefined
+                        ?
+                        rainfall["24h_mm"]+" mm"
+                        :
+                        "Data unavailable"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Rainfall - 3 Days
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        rainfall["3d_mm"] !== undefined
+                        ?
+                        rainfall["3d_mm"]+" mm"
+                        :
+                        "Data unavailable"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Rainfall - 7 Days
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        rainfall["7d_mm"] !== undefined
+                        ?
+                        rainfall["7d_mm"]+" mm"
+                        :
+                        "Data unavailable"
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- POPULATION -->
+
+    <div class="detail-section">
+
+        <div class="detail-section-title">
+
+            <i class="bi bi-people"></i>
+
+            Population Exposure
+
+        </div>
+
+
+        <div class="detail-grid">
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Analysis Radius
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        population.radius_m !== undefined
+                        ?
+                        population.radius_m+" m"
+                        :
+                        "Data unavailable"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Estimated Population
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        population.estimated_population
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Population Density
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        population.density_per_km2
+                    )}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- FACILITIES -->
+
+    <div class="detail-section">
+
+        <div class="detail-section-title">
+
+            <i class="bi bi-buildings"></i>
+
+            Nearby Sensitive Locations
+
+        </div>
+
+
+        <div class="detail-grid">
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Schools within 500m
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        facilities.schools_500m
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Hospitals within 500m
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        facilities.hospitals_500m
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Higher Education within 500m
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        facilities.higher_education_500m
+                    )}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- HOTSPOT -->
+
+    <div class="detail-section">
+
+        <div class="detail-section-title">
+
+            <i class="bi bi-fire"></i>
+
+            Historical Hotspot Intelligence
+
+        </div>
+
+
+        <div class="detail-grid">
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Database Status
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        hotspot.status
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Hotspots within 500m
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        hotspot.hotspots_500m
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Nearest Hotspot
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        hotspot.nearest_hotspot_m !== undefined &&
+                        hotspot.nearest_hotspot_m !== null
+
+                        ?
+
+                        hotspot.nearest_hotspot_m+" m"
+
+                        :
+
+                        "Data unavailable"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Historical Cases
+                </div>
+
+                <div class="detail-value">
+                    ${valueOrUnavailable(
+                        hotspot.historical_cases
+                    )}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- WORKFLOW -->
+
+    <div class="detail-section">
+
+        <div class="detail-section-title">
+
+            <i class="bi bi-clipboard-check"></i>
+
+            Municipal Intervention
+
+        </div>
+
+
+        <div class="detail-grid">
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Current Status
+                </div>
+
+                <div class="detail-value">
+                    ${normalizeStatus(currentStatus)}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Display Flag
+                </div>
+
+                <div class="detail-value">
+                    ${flag}
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-label">
+                    Priority
+                </div>
+
+                <div class="detail-value">
+
+                    ${
+                        String(riskLevel)
+                        .toUpperCase()
+                        === "CRITICAL"
+                        ||
+                        String(riskLevel)
+                        .toUpperCase()
+                        === "HIGH"
+
+                        ?
+
+                        "EARLY ATTENTION REQUIRED"
+
+                        :
+
+                        "NORMAL"
+
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    `;
+
+
+    /*
+       Show modal first so Leaflet knows its dimensions.
+    */
+
+    const modalElement =
+        document.getElementById(
+            "caseDetailsModal"
+        );
+
+
+    const modal =
+        new bootstrap.Modal(
+            modalElement
+        );
+
+
+    modal.show();
+
+
+    modalElement.addEventListener(
+        "shown.bs.modal",
+        function(){
+
+            setTimeout(
+                function(){
+
+                    createCaseMap(
+                        report
+                    );
+
+                },
+                150
+            );
+
+        },
+        {
+            once:true
+        }
+    );
+
+}
+
+
+/* =====================================================
+   CASE DETAIL MAP
+===================================================== */
+
+function createCaseMap(report){
+
+    const container =
+        document.getElementById(
+            "caseDetailMap"
+        );
+
+
+    if(!container)
+        return;
+
+
+    if(
+        report.latitude === undefined ||
+        report.longitude === undefined
+    ){
+
+        container.innerHTML=`
+
+            <div
+                style="
+                    height:100%;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    color:#8b949e;
+                "
+            >
+
+                <i class="bi bi-geo-alt"></i>
+
+                &nbsp;
+
+                Location unavailable
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    const lat =
+        parseFloat(report.latitude);
+
+    const lng =
+        parseFloat(report.longitude);
+
+
+    const detailMap =
+        L.map(
+            "caseDetailMap"
+        ).setView(
+            [lat,lng],
+            16
+        );
+
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom:19,
+            attribution:
+                '&copy; OpenStreetMap contributors'
+        }
+    ).addTo(detailMap);
+
+
+    const color =
+        getRiskColor(
+            report.risk_level
+        );
+
+
+    L.circleMarker(
+        [lat,lng],
+        {
+            radius:14,
+            fillColor:color,
+            color:"#ffffff",
+            weight:3,
+            fillOpacity:.9
+        }
+    )
+    .addTo(detailMap)
+    .bindPopup(
+        `<strong>${report.id}</strong>`
+    )
+    .openPopup();
+
+
+    L.circle(
+        [lat,lng],
+        {
+            radius:500,
+            color:color,
+            fillColor:color,
+            fillOpacity:.08,
+            weight:1
+        }
+    ).addTo(detailMap);
+
+
+    setTimeout(
+        function(){
+
+            detailMap.invalidateSize();
+
+        },
+        200
+    );
+
+}
+
+
+/* =====================================================
+   FILTERS
+===================================================== */
+
+function resetFilters(){
+
+    document.getElementById(
+        "searchInput"
+    ).value="";
+
+    document.getElementById(
+        "riskFilter"
+    ).value="";
+
+    document.getElementById(
+        "statusFilter"
+    ).value="";
+
+    renderReports();
+
+}
+
+
+document.getElementById(
+    "searchInput"
+).addEventListener(
+    "input",
+    renderReports
+);
+
+
+document.getElementById(
+    "riskFilter"
+).addEventListener(
+    "change",
+    renderReports
+);
+
+
+document.getElementById(
+    "statusFilter"
+).addEventListener(
+    "change",
+    renderReports
+);
+
+
+/* =====================================================
+   LOAD REPORTS
+===================================================== */
+
+async function loadReports(){
+
+    try{
+
+        const response =
+            await fetch(
+                "http://127.0.0.1:5000/reports"
+            );
+
+
+        if(!response.ok){
+
+            throw new Error(
+                "Backend unavailable"
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if(
+            Array.isArray(data) &&
+            data.length>0
+        ){
+
+            reports=data;
+
+        }else{
+
+            reports=demoReports;
+
+        }
+
+    }
+
+    catch(error){
+
+        console.warn(
+            "Backend unavailable. Using demo data.",
+            error
+        );
+
+        reports=demoReports;
+
+    }
+
+
+    updateDashboard();
+
+    renderPriorityCases();
+
+    renderReports();
+
+
+    reports.forEach(
+        addMarker
+    );
+
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        initializeMap();
+
+        loadReports();
+
+    }
+);
+
+</script>
+
+
+</body>
+
+</html>
+>>>>>>> 875544b (final changes admin dashboard and some api)

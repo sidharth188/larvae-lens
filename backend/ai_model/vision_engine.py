@@ -73,13 +73,8 @@ from ultralytics import YOLO
 # LARVAELENS ENGINES
 # ============================================================
 
-from backend.ai_model.environmental_engine import (
-    EnvironmentalEngine
-)
-
-from backend.ai_model.risk_engine import (
-    RiskEngine
-)
+from ai_model.environmental_engine import EnvironmentalEngine
+from ai_model.risk_engine import RiskEngine
 
 
 # ============================================================
