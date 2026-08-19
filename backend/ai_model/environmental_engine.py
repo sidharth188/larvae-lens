@@ -4,8 +4,8 @@ import requests
 
 from datetime import datetime, timezone
 
-from backend.ai_model.population_engine import PopulationEngine
-from backend.ai_model.hotspot_engine import HotspotEngine
+from ai_model.population_engine import PopulationEngine
+from ai_model.hotspot_engine import HotspotEngine
 
 
 class EnvironmentalEngine:
