@@ -137,19 +137,22 @@ def upload():
     user_name     = request.form.get("user_name", "").strip()
 
     # --------------------------------------------------------
-    # SAVE TEMP FILE
+    # ALL PROCESSING IN TRY BLOCK
     # --------------------------------------------------------
 
-    unique_filename = f"{uuid.uuid4()}_{image.filename or 'image.jpg'}"
-    image_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-    image.save(image_path)
-
-    image_url = ""
+    image_path = None
 
     try:
+        # SAVE TEMP FILE
+        unique_filename = f"{uuid.uuid4()}_{image.filename or 'image.jpg'}"
+        image_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+        image.save(image_path)
+
+        image_url = ""
 
         # ----------------------------------------------------
         # VALIDATE IMAGE
+
         # ----------------------------------------------------
 
         img = cv2.imread(image_path)
