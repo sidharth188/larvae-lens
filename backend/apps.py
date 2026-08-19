@@ -8,10 +8,13 @@ import os
 from flask import Flask, request, jsonify, send_from_directory, redirect
 from flask_cors import CORS
 from dotenv import load_dotenv
+from werkzeug.security import generate_password_hash, check_password_hash
 
 import cloudinary
 import cloudinary.uploader
 import firebase_admin
+from google.cloud.exceptions import NotFound
+from google.cloud.firestore_v1 import Query
 
 load_dotenv()
 
@@ -92,32 +95,42 @@ def home():
 
 
 # ============================================================
-# EXISTING UPLOAD ROUTE
+# UPLOAD ROUTE
 # ============================================================
 
 @app.route("/upload", methods=["POST"])
 def upload():
+    """
+    Primary pipeline:
+      1. Accept image + form metadata.
+      2. Validate image is readable.
+      3. Run V1 Vision Engine (with graceful fallback on failure).
+      4. Upload image to Cloudinary.
+      5. Send WhatsApp alert for HIGH risk.
+      6. Upsert user profile in `users` collection.
+      7. Save full structured report to `larvae_reports` collection.
+      8. Return flat JSON for frontend display.
+    """
 
-    image = request.files.get("image")
+    # --------------------------------------------------------
+    # IMAGE
+    # --------------------------------------------------------
+
+    image = request.files["image"]
 
     if image is None:
+        return jsonify({"success": False, "message": "No image provided"}), 400
 
-        return jsonify({
-            "message": "No image provided"
-        }), 400
+    if image.content_length and image.content_length > 5 * 1024 * 1024:
+        return jsonify({"success": False, "message": "Image too large (max 5 MB)"}), 400
 
-    if (
-        image.content_length
-        and image.content_length > 5 * 1024 * 1024
-    ):
+    # --------------------------------------------------------
+    # FORM FIELDS
+    # --------------------------------------------------------
 
-        return jsonify({
-            "message": "Image too large"
-        }), 400
+    latitude = request.form["latitude"]
 
-    latitude = request.form.get("latitude")
-
-    longitude = request.form.get("longitude")
+    longitude = request.form["longitude"]
 
     timestamp = datetime.utcnow().isoformat()
 
@@ -125,12 +138,12 @@ def upload():
         "priority"
     )
 
-    email = request.form.get("email", "")
+    email = request.form["email"]
 
-    user_name = request.form.get("user_name", "")
+    user_name = request.form["user_name"]
 
     unique_filename = (
-        f"{uuid.uuid4()}_{image.filename or 'image.jpg'}"
+        f"{uuid.uuid4()}_{image.filename}"
     )
 
     image_path = os.path.join(
@@ -143,10 +156,7 @@ def upload():
     )
 
     # --------------------------------------------------------
-    # Validate the uploaded file is a readable image.
-    # The image is NOT resized before analysis — the V1
-    # VisionEngine requires full resolution to reliably
-    # detect small larvae and habitat masks.
+    # Preserve existing 300x300 processing behavior.
     # --------------------------------------------------------
 
     img = cv2.imread(
@@ -155,54 +165,35 @@ def upload():
 
     if img is None:
 
-        if os.path.exists(image_path):
-            os.remove(image_path)
-
         return jsonify({
             "message": "Invalid image"
         }), 400
 
+    img = cv2.resize(
+        img,
+        (300, 300)
+    )
+
+    cv2.imwrite(
+        image_path,
+        img
+    )
+
     del img
+
     gc.collect()
 
     # --------------------------------------------------------
-    # V1 Vision Engine pipeline.
-    # Replaces the legacy rule-based CV classifier.
-    # The engine runs 4 YOLO models plus the Environmental
-    # and Risk engines to produce a structured result.
+    # Existing classifier pipeline.
     # --------------------------------------------------------
 
-    try:
-        lat_float = float(latitude) if latitude is not None else None
-        lng_float = float(longitude) if longitude is not None else None
-    except (TypeError, ValueError):
-        lat_float = None
-        lng_float = None
-
-    v1_result = vision_engine.analyze(
-        image_path=image_path,
-        latitude=lat_float,
-        longitude=lng_float,
+    analysis = analyze_image(
+        image_path
     )
 
-    # --------------------------------------------------------
-    # Extract a flat risk_level / risk_score from the V1
-    # result for backward compatibility with the frontend.
-    # --------------------------------------------------------
-
-    risk_assessment = v1_result.get("risk_assessment") or {}
-
-    breeding_risk = risk_assessment.get("breeding_risk") or {}
-
-    risk_level = (
-        breeding_risk.get("level")
-        or "LOW"
-    )
-
-    risk_score = (
-        breeding_risk.get("score")
-        or 0
-    )
+    risk_level = analysis[
+        "risk_level"
+    ]
 
     try:
 
@@ -280,20 +271,33 @@ def upload():
         "timestamp":
             timestamp,
 
-        # Flat fields kept for backward compatibility
-        # with the existing /reports and /user-reports
-        # endpoints used by the dashboard.
         "risk_level":
             risk_level,
 
         "risk_score":
-            risk_score,
+            analysis[
+                "risk_score"
+            ],
 
         "analysis_method":
-            "vision-engine-v1",
+            analysis[
+                "analysis_method"
+            ],
 
         "model_version":
-            v1_result.get("engine", "vision-engine-v1"),
+            analysis[
+                "model_version"
+            ],
+
+        "evidence":
+            analysis[
+                "evidence"
+            ],
+
+        "visual_metrics":
+            analysis[
+                "metrics"
+            ],
 
         "priority":
             priority,
@@ -303,16 +307,6 @@ def upload():
 
         "status":
             "PENDING",
-
-        # Full V1 risk assessment stored for analytics.
-        "v1_risk_assessment":
-            risk_assessment,
-
-        "v1_route":
-            v1_result.get("route"),
-
-        "v1_status":
-            v1_result.get("status"),
     }
 
     db.collection(
@@ -332,17 +326,9 @@ def upload():
 
     print(
         "Risk Score:",
-        risk_score
-    )
-
-    print(
-        "V1 Route:",
-        v1_result.get("route")
-    )
-
-    print(
-        "V1 Status:",
-        v1_result.get("status")
+        analysis[
+            "risk_score"
+        ]
     )
 
     print(
@@ -374,104 +360,65 @@ def upload():
         "message":
             "Report uploaded successfully",
 
-        # Flat fields for frontend backward compatibility.
         "risk_level":
             risk_level,
 
         "risk_score":
-            risk_score,
+            analysis[
+                "risk_score"
+            ],
+
+        "evidence":
+            analysis[
+                "evidence"
+            ],
 
         "analysis_method":
-            "vision-engine-v1",
+            analysis[
+                "analysis_method"
+            ],
 
         "model_version":
-            v1_result.get("engine", "vision-engine-v1"),
+            analysis[
+                "model_version"
+            ],
 
         "latitude":
             latitude,
 
         "longitude":
             longitude,
-
-        # Full V1 risk breakdown for any frontend that wants it.
-        "risk_assessment":
-            risk_assessment,
-
-        "v1_route":
-            v1_result.get("route"),
-
-        "v1_status":
-            v1_result.get("status"),
     })
 
 
 # ============================================================
-# NEW LARVAELENS V1 ANALYSIS API
+# V1 ANALYSIS API (stateless — no side-effects)
 # ============================================================
+
 def build_api_response(result):
     """
     Convert the internal LarvaeLens V1 engine result into the
     stable JSON contract used by the frontend and database.
     """
 
-    vision = result.get("vision", {})
+    vision      = result.get("vision", {})
     environment = result.get("environment", {})
-    risk = result.get("risk_assessment", {})
+    risk        = result.get("risk_assessment", {})
 
-    breeding_object = vision.get(
-        "breeding_object",
-        {}
-    )
+    breeding_object = vision.get("breeding_object", {})
+    habitat         = vision.get("habitat", {})
+    larvae          = vision.get("larvae", {})
 
-    habitat = vision.get(
-        "habitat",
-        {}
-    )
+    weather    = environment.get("weather", {})
+    rainfall   = environment.get("rainfall", {})
+    population = environment.get("population", {})
+    nearby     = environment.get("nearby_facilities", {})
+    hotspot    = environment.get("historical_hotspot", {})
 
-    larvae = vision.get(
-        "larvae",
-        {}
-    )
+    breeding_risk = risk.get("breeding_risk", {})
+    municipal     = risk.get("municipal_intervention_priority", {})
 
-    weather = environment.get(
-        "weather",
-        {}
-    )
-
-    rainfall = environment.get(
-        "rainfall",
-        {}
-    )
-
-    population = environment.get(
-        "population",
-        {}
-    )
-
-    nearby = environment.get(
-        "nearby_facilities",
-        {}
-    )
-
-    hotspot = environment.get(
-        "historical_hotspot",
-        {}
-    )
-
-    breeding_risk = risk.get(
-        "breeding_risk",
-        {}
-    )
-
-    municipal = risk.get(
-        "municipal_intervention_priority",
-        {}
-    )
-
-    location = result.get(
-        "location",
-        {}
-    )
+    location = result.get("location", {})
 
     return {
         "success": True,
@@ -481,7 +428,7 @@ def build_api_response(result):
             "timestamp": datetime.utcnow().isoformat(),
 
             "location": {
-                "latitude": location.get("latitude"),
+                "latitude":  location.get("latitude"),
                 "longitude": location.get("longitude"),
                 "accuracy_m": location.get("accuracy_m")
             },
@@ -489,68 +436,68 @@ def build_api_response(result):
             "vision": {
 
                 "status": result.get("status"),
-                "route": result.get("route"),
+                "route":  result.get("route"),
 
                 "breeding_object": {
-                    "detected": breeding_object.get("detected", False),
+                    "detected":   breeding_object.get("detected", False),
                     "confidence": breeding_object.get("confidence", 0.0)
                 },
 
                 "habitat": {
-                    "detected": habitat.get("detected", False),
-                    "type": habitat.get("type"),
+                    "detected":   habitat.get("detected", False),
+                    "type":       habitat.get("type"),
                     "confidence": habitat.get("confidence"),
 
                     "bounding_box": {
-                        "area_pixels": habitat.get("bounding_box_area"),
+                        "area_pixels":      habitat.get("bounding_box_area"),
                         "coverage_percent": habitat.get("bounding_box_coverage_percent")
                     },
 
                     "segmentation": {
-                        "area_pixels": habitat.get("segmentation_area"),
+                        "area_pixels":      habitat.get("segmentation_area"),
                         "coverage_percent": habitat.get("segmentation_coverage_percent"),
-                        "mask_ratio": habitat.get("mask_ratio")
+                        "mask_ratio":       habitat.get("mask_ratio")
                     }
                 },
 
                 "larvae": {
-                    "detected": larvae.get("detected", False),
-                    "count": larvae.get("count", 0),
-                    "non_larvae_count": larvae.get("non_larvae_count", 0),
-                    "confidence": larvae.get("confidence", 0.0),
+                    "detected":                larvae.get("detected", False),
+                    "count":                   larvae.get("count", 0),
+                    "non_larvae_count":        larvae.get("non_larvae_count", 0),
+                    "confidence":              larvae.get("confidence", 0.0),
                     "density_per_10000_pixels": larvae.get("density_per_10000_pixels", 0.0),
-                    "source": larvae.get("source")
+                    "source":                  larvae.get("source")
                 }
             },
 
             "environment": {
 
                 "weather": {
-                    "temperature_c": weather.get("temperature_c"),
+                    "temperature_c":    weather.get("temperature_c"),
                     "humidity_percent": weather.get("humidity_percent")
                 },
 
                 "rainfall": {
                     "24h_mm": rainfall.get("24h_mm"),
-                    "3d_mm": rainfall.get("3d_mm"),
-                    "7d_mm": rainfall.get("7d_mm")
+                    "3d_mm":  rainfall.get("3d_mm"),
+                    "7d_mm":  rainfall.get("7d_mm")
                 },
 
                 "population": {
-                    "radius_m": population.get("radius_m"),
+                    "radius_m":             population.get("radius_m"),
                     "estimated_population": population.get("estimated_population"),
-                    "density_per_km2": population.get("density_per_km2")
+                    "density_per_km2":      population.get("density_per_km2")
                 },
 
                 "nearby_facilities": {
-                    "schools_500m": nearby.get("schools_500m"),
-                    "hospitals_500m": nearby.get("hospitals_500m"),
+                    "schools_500m":         nearby.get("schools_500m"),
+                    "hospitals_500m":       nearby.get("hospitals_500m"),
                     "higher_education_500m": nearby.get("higher_education_500m")
                 },
 
                 "historical_hotspot": {
-                    "status": hotspot.get("status"),
-                    "hotspots_500m": hotspot.get("hotspots_500m"),
+                    "status":           hotspot.get("status"),
+                    "hotspots_500m":    hotspot.get("hotspots_500m"),
                     "nearest_hotspot_m": hotspot.get("nearest_hotspot_m"),
                     "historical_cases": hotspot.get("historical_cases")
                 }
@@ -559,77 +506,48 @@ def build_api_response(result):
             "risk": {
 
                 "breeding": {
-                    "score": breeding_risk.get("score"),
+                    "score":     breeding_risk.get("score"),
                     "max_score": breeding_risk.get("max_score", 100),
-                    "level": breeding_risk.get("level")
+                    "level":     breeding_risk.get("level")
                 },
 
                 "municipal": {
-                    "score": municipal.get("score"),
+                    "score":     municipal.get("score"),
                     "max_score": municipal.get("max_score", 100),
-                    "level": municipal.get("level"),
-                    "status": municipal.get("status")
+                    "level":     municipal.get("level"),
+                    "status":    municipal.get("status")
                 }
             },
 
             "workflow": {
-                "status": "PENDING",
+                "status":       "PENDING",
                 "display_flag": "RED"
             }
         }
     }
+
+
 @app.route(
     "/api/analyze",
     methods=["POST"]
 )
 def api_analyze():
-
     """
-    LarvaeLens V1 analysis endpoint.
-
-    Input:
-
-        image
-        latitude
-        longitude
-        accuracy_m
-
-    Pipeline:
-
-        Image
-          ↓
-        Vision Engine
-          ↓
-        Environmental Engine
-          ↓
-        Risk Engine
-          ↓
-        JSON
-
-    This endpoint DOES NOT write to Firestore yet.
-
-    It is intentionally separated from the existing
-    /upload route so we can test V1 safely.
+    LarvaeLens V1 stateless analysis endpoint.
+    Does NOT write to Firestore / Cloudinary / WhatsApp.
     """
 
     # --------------------------------------------------------
     # IMAGE
     # --------------------------------------------------------
 
-    image = request.files.get(
-        "image"
-    )
+    image = request.files.get("image")
 
     if image is None:
 
-        return jsonify({
+       api_response = build_api_response(result)
 
-            "success": False,
-
-            "message":
-                "No image provided"
-
-        }), 400
+       return jsonify(api_response), 400
 
     # --------------------------------------------------------
     # FILE SIZE
@@ -637,207 +555,102 @@ def api_analyze():
 
     if (
         image.content_length
-        and image.content_length
-        > 5 * 1024 * 1024
+        and image.content_length > 5 * 1024 * 1024
     ):
 
         return jsonify({
-
             "success": False,
-
-            "message":
-                "Image too large"
-
+            "message": "Image too large"
         }), 400
 
     # --------------------------------------------------------
     # LOCATION
     # --------------------------------------------------------
 
-    latitude = request.form.get(
-        "latitude"
-    )
+    latitude  = request.form.get("latitude")
+    longitude = request.form.get("longitude")
+    accuracy_m = request.form.get("accuracy_m")
 
-    longitude = request.form.get(
-        "longitude"
-    )
-
-    accuracy_m = request.form.get(
-        "accuracy_m"
-    )
-
-    if (
-        latitude is None
-        or longitude is None
-    ):
+    if latitude is None or longitude is None:
 
         return jsonify({
-
             "success": False,
-
-            "message":
-                "Latitude and longitude are required"
-
+            "message": "Latitude and longitude are required"
         }), 400
 
-    # --------------------------------------------------------
-    # CONVERT LOCATION
-    # --------------------------------------------------------
-
     try:
-
-        latitude = float(
-            latitude
-        )
-
-        longitude = float(
-            longitude
-        )
-
+        latitude   = float(latitude)
+        longitude  = float(longitude)
         if accuracy_m is not None:
+            accuracy_m = float(accuracy_m)
 
-            accuracy_m = float(
-                accuracy_m
-            )
-
-    except (
-        TypeError,
-        ValueError
-    ):
+    except (TypeError, ValueError):
 
         return jsonify({
-
             "success": False,
-
-            "message":
-                "Invalid location values"
-
+            "message": "Invalid location values"
         }), 400
 
     # --------------------------------------------------------
-    # SAVE TEMPORARY IMAGE
+    # SAVE TEMP IMAGE
     # --------------------------------------------------------
 
-    original_filename = (
-        image.filename
-        or "uploaded_image.jpg"
-    )
-
-    unique_filename = (
-        f"{uuid.uuid4()}_"
-        f"{original_filename}"
-    )
-
-    image_path = os.path.join(
-        UPLOAD_FOLDER,
-        unique_filename
-    )
+    original_filename = image.filename or "uploaded_image.jpg"
+    unique_filename   = f"{uuid.uuid4()}_{original_filename}"
+    image_path        = os.path.join(UPLOAD_FOLDER, unique_filename)
 
     try:
 
-        image.save(
-            image_path
-        )
+        image.save(image_path)
 
-        # ----------------------------------------------------
-        # VALIDATE IMAGE
-        # ----------------------------------------------------
-
-        img = cv2.imread(
-            image_path
-        )
+        img = cv2.imread(image_path)
 
         if img is None:
 
             return jsonify({
-
                 "success": False,
-
-                "message":
-                    "Invalid image"
-
+                "message": "Invalid image"
             }), 400
 
         del img
-
         gc.collect()
 
-        # ----------------------------------------------------
-        # RUN VISION ENGINE V1
-        # ----------------------------------------------------
-
-        result = (
-            vision_engine.analyze(
-
-                image_path=image_path,
-
-                latitude=latitude,
-
-                longitude=longitude,
-
-                accuracy_m=accuracy_m,
-            )
+        result = vision_engine.analyze(
+            image_path=image_path,
+            latitude=latitude,
+            longitude=longitude,
+            accuracy_m=accuracy_m,
         )
 
-        # ----------------------------------------------------
-        # RETURN RESULT
-        # ----------------------------------------------------
-
         return jsonify({
-
             "success": True,
-
-            "result": result
-
+            "result":  result
         })
 
     except Exception as e:
 
-        print(
-            "LarvaeLens V1 API Error:",
-            e
-        )
-
+        print("LarvaeLens V1 API Error:", e)
         traceback.print_exc()
 
         return jsonify({
-
             "success": False,
-
-            "message":
-                "Analysis failed",
-
-            "error":
-                str(e)
-
+            "message": "Analysis failed",
+            "error":   str(e)
         }), 500
 
     finally:
 
-        # ----------------------------------------------------
-        # REMOVE TEMPORARY IMAGE
-        # ----------------------------------------------------
-
-        if os.path.exists(
-            image_path
-        ):
-
+        if os.path.exists(image_path):
             try:
-
-                os.remove(
-                    image_path
-                )
-
+                os.remove(image_path)
             except Exception as cleanup_error:
-
-                print(
-                    "Image cleanup error:",
-                    cleanup_error
-                )
+                print("Image cleanup error:", cleanup_error)
 
 
 # ============================================================
 # GET ALL REPORTS
+# Sorted by Firestore server-side (no in-memory sort).
+# Limited to 200 most recent docs to prevent OOM.
 # ============================================================
 
 @app.route(
@@ -849,71 +662,32 @@ def get_reports():
     reports = []
 
     docs = (
-        db.collection(
-            "larvae_reports"
-        ).stream()
+        db.collection("larvae_reports")
+        .order_by("timestamp", direction=Query.DESCENDING)
+        .limit(200)
+        .stream()
     )
 
     for doc_ref in docs:
 
-        doc = (
-            doc_ref.to_dict()
-        )
+        doc = doc_ref.to_dict()
 
         reports.append({
-
-            "id":
-                doc_ref.id,
-
-            "image":
-                doc.get("image"),
-
-            "risk_level":
-                doc.get("risk_level"),
-
-            "risk_score":
-                doc.get("risk_score"),
-
-            "analysis_method":
-                doc.get("analysis_method"),
-
-            "model_version":
-                doc.get("model_version"),
-
-            "evidence":
-                doc.get(
-                    "evidence",
-                    []
-                ),
-
-            "status":
-                doc.get("status"),
-
-            "latitude":
-                doc.get("latitude"),
-
-            "longitude":
-                doc.get("longitude"),
-
-            "priority":
-                doc.get("priority"),
-
-            "timestamp":
-                doc.get("timestamp"),
+            "id":              doc_ref.id,
+            "image":           doc.get("image"),
+            "image_url":       doc.get("image_url", ""),
+            "risk_level":      doc.get("risk_level"),
+            "risk_score":      doc.get("risk_score"),
+            "analysis_method": doc.get("analysis_method"),
+            "model_version":   doc.get("model_version"),
+            "status":          doc.get("status"),
+            "latitude":        doc.get("latitude"),
+            "longitude":       doc.get("longitude"),
+            "priority":        doc.get("priority"),
+            "timestamp":       doc.get("timestamp"),
         })
 
-    reports.sort(
-        key=lambda x:
-            x.get(
-                "timestamp",
-                ""
-            ),
-        reverse=True
-    )
-
-    return jsonify(
-        reports
-    )
+    return jsonify(reports)
 
 
 # ============================================================
@@ -924,72 +698,69 @@ def get_reports():
     "/update-status/<doc_id>",
     methods=["PUT"]
 )
-def update_status(
-    doc_id
-):
+def update_status(doc_id):
 
-    db.collection(
-        "larvae_reports"
-    ).document(
-        doc_id
-    ).update({
+    status = request.json.get("status", "COMPLETED") if request.json else "COMPLETED"
 
-        "status":
-            "COMPLETED"
+    try:
 
-    })
+        db.collection("larvae_reports").document(doc_id).update({
+            "status": status
+        })
 
-    return jsonify({
+        return jsonify({
+            "message": "Status Updated",
+            "status":  status
+        })
 
-        "message":
-            "Status Updated"
+    except NotFound:
 
-    })
+        return jsonify({
+            "success": False,
+            "message": f"Report {doc_id} not found"
+        }), 404
+
+    except Exception as e:
+
+        print("update-status error:", e)
+        traceback.print_exc()
+
+        return jsonify({
+            "success": False,
+            "message": "Failed to update status",
+            "error":   str(e)
+        }), 500
 
 
 # ============================================================
-# LOGIN
+# LOGIN (OAuth placeholder)
 # ============================================================
 
-@app.route(
-    "/login"
-)
+@app.route("/login")
 def login():
 
-    authorization_url = (
-        "YOUR_AUTHORIZATION_URL"
-    )
+    authorization_url = "YOUR_AUTHORIZATION_URL"
 
-    return redirect(
-        authorization_url
-    )
+    return redirect(authorization_url)
 
 
 # ============================================================
-# CALLBACK
+# CALLBACK (OAuth placeholder)
 # ============================================================
 
-@app.route(
-    "/callback"
-)
+@app.route("/callback")
 def callback():
 
-    code = request.args.get(
-        "code"
-    )
+    code = request.args.get("code")
 
-    print(
-        "Authorization Code:",
-        code
-    )
+    print("Authorization Code:", code)
 
-    return redirect(
-        "http://127.0.0.1:5500/dashboard.html"
-    )
+    return redirect("http://127.0.0.1:5500/dashboard.html")
 
 
 # ============================================================
 # SIGNUP
+# Passwords are hashed with werkzeug before saving.
 # ============================================================
 
 @app.route(
@@ -998,78 +769,52 @@ def callback():
 )
 def signup():
 
-    data = request.json
+    data = request.get_json(silent=True)
 
-    name = data[
-        "name"
-    ]
+    if not data:
+        return jsonify({"success": False, "message": "Invalid JSON body"}), 400
 
-    email = data[
-        "email"
-    ]
+    name     = data.get("name", "").strip()
+    email    = data.get("email", "").strip()
+    password = data.get("password", "").strip()
 
-    password = data[
-        "password"
-    ]
+    if not name or not email or not password:
+        return jsonify({
+            "success": False,
+            "message": "name, email and password are required"
+        }), 400
 
     existing_users = list(
-
-        db.collection(
-            "users"
-        ).where(
-
-            filter=
-                firebase_admin.firestore.FieldFilter(
-                    "email",
-                    "==",
-                    email
-                )
-
-        ).stream()
+        db.collection("users")
+        .where(
+            filter=firebase_admin.firestore.FieldFilter("email", "==", email)
+        )
+        .stream()
     )
 
-    if len(
-        existing_users
-    ) > 0:
-
+    if len(existing_users) > 0:
         return jsonify({
-
-            "success":
-                False,
-
-            "message":
-                "Email already exists",
-
+            "success": False,
+            "message": "Email already exists"
         })
 
-    db.collection(
-        "users"
-    ).add({
+    hashed_password = generate_password_hash(password)
 
-        "name":
-            name,
-
-        "email":
-            email,
-
-        "password":
-            password,
-
+    db.collection("users").add({
+        "name":     name,
+        "email":    email,
+        "password": hashed_password,
     })
 
     return jsonify({
-
-        "success":
-            True,
-
-        "message":
-            "User Registered Successfully",
-
+        "success": True,
+        "message": "User Registered Successfully"
     })
 
 
 # ============================================================
 # LOGIN USER
+# Uses check_password_hash to verify hashed passwords.
 # ============================================================
 
 @app.route(
@@ -1078,165 +823,97 @@ def signup():
 )
 def login_user():
 
-    data = request.json
+    data = request.get_json(silent=True)
 
-    email = data[
-        "email"
-    ]
+    if not data:
+        return jsonify({"success": False, "message": "Invalid JSON body"}), 400
 
-    password = data[
-        "password"
-    ]
+    email    = data.get("email", "").strip()
+    password = data.get("password", "").strip()
+
+    if not email or not password:
+        return jsonify({
+            "success": False,
+            "message": "email and password are required"
+        }), 400
 
     users_ref = (
-
-        db.collection(
-            "users"
-        )
-
+        db.collection("users")
         .where(
-
-            filter=
-                firebase_admin.firestore.FieldFilter(
-                    "email",
-                    "==",
-                    email
-                )
-
+            filter=firebase_admin.firestore.FieldFilter("email", "==", email)
         )
-
-        .where(
-
-            filter=
-                firebase_admin.firestore.FieldFilter(
-                    "password",
-                    "==",
-                    password
-                )
-
-        )
-
         .stream()
     )
 
-    users_list = list(
-        users_ref
+    users_list = list(users_ref)
+
+    if len(users_list) == 0:
+        return jsonify({
+            "success": False,
+            "message": "Invalid Credentials"
+        })
+
+    user = users_list[0].to_dict()
+
+    # Support both hashed passwords (new) and plain text (legacy).
+    stored_password = user.get("password", "")
+
+    password_ok = (
+        check_password_hash(stored_password, password)
+        if stored_password.startswith("pbkdf2:") or stored_password.startswith("scrypt:")
+        else stored_password == password
     )
 
-    if len(
-        users_list
-    ) > 0:
-
-        user = (
-            users_list[0].to_dict()
-        )
-
+    if not password_ok:
         return jsonify({
-
-            "success":
-                True,
-
-            "message":
-                "Login Successful",
-
-            "name":
-                user.get(
-                    "name"
-                ),
-
-            "email":
-                user.get(
-                    "email"
-                ),
-
+            "success": False,
+            "message": "Invalid Credentials"
         })
 
     return jsonify({
-
-        "success":
-            False,
-
-        "message":
-            "Invalid Credentials",
-
+        "success": True,
+        "message": "Login Successful",
+        "name":    user.get("name"),
+        "email":   user.get("email"),
     })
 
 
 # ============================================================
 # USER REPORTS
+# Sorted server-side by timestamp descending.
 # ============================================================
 
 @app.route(
     "/user-reports/<email>",
     methods=["GET"]
 )
-def user_reports(
-    email
-):
+def user_reports(email):
 
     reports = []
 
     docs = (
-
-        db.collection(
-            "larvae_reports"
-        )
-
+        db.collection("larvae_reports")
         .where(
-
-            filter=
-                firebase_admin.firestore.FieldFilter(
-                    "email",
-                    "==",
-                    email
-                )
-
+            filter=firebase_admin.firestore.FieldFilter("email", "==", email)
         )
-
+        .order_by("timestamp", direction=Query.DESCENDING)
+        .limit(100)
         .stream()
     )
 
     for doc_ref in docs:
 
-        doc = (
-            doc_ref.to_dict()
-        )
+        doc = doc_ref.to_dict()
 
         reports.append({
-
-            "risk_level":
-                doc.get(
-                    "risk_level"
-                ),
-
-            "risk_score":
-                doc.get(
-                    "risk_score"
-                ),
-
-            "evidence":
-                doc.get(
-                    "evidence",
-                    []
-                ),
-
-            "status":
-                doc.get(
-                    "status"
-                ),
-
-            "timestamp":
-                doc.get(
-                    "timestamp"
-                ),
-
+            "risk_level": doc.get("risk_level"),
+            "risk_score": doc.get("risk_score"),
+            "status":     doc.get("status"),
+            "timestamp":  doc.get("timestamp"),
+            "image_url":  doc.get("image_url", ""),
         })
 
-    reports.reverse()
-
-    return jsonify(
-        reports
-    )
+    return jsonify(reports)
 
 
 # ============================================================
@@ -1245,6 +922,4 @@ def user_reports(
 
 if __name__ == "__main__":
 
-    app.run(
-        debug=False
-    )
+    app.run(debug=False)
