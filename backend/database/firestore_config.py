@@ -42,7 +42,7 @@ def initialize_firestore():
 
     # Pass the named database ID so we connect to "larvae-lens"
     # instead of the "(default)" database that doesn't exist.
-    return firestore.client(database=DATABASE_ID)
+    return firestore.client(database_id=DATABASE_ID)
 
 
 db = initialize_firestore()
