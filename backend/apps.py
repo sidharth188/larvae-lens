@@ -133,6 +133,7 @@ def upload():
     accuracy_raw  = request.form.get("accuracy_m")
     timestamp     = datetime.utcnow().isoformat()
     priority      = request.form.get("priority", "false")
+    priority = str(priority_raw).strip().lower() == "true"
     email         = request.form.get("email", "").strip()
     user_name     = request.form.get("user_name", "").strip()
 
@@ -338,6 +339,82 @@ def upload():
             "final_score":         breeding_risk.get("score"),
             "risk_level":          risk_level,
             "generated_at":        timestamp,
+        }
+        # ---- risk sub-document ----
+        municipal_priority = (
+            risk_raw.get("municipal_priority") or {}
+        )
+
+        breeding_components = (
+            breeding_risk.get("components") or {}
+        )
+
+        municipal_components = (
+            municipal_priority.get("components") or {}
+        )
+
+        risk_doc = {
+            "engine": risk_raw.get(
+                "risk_engine",
+                "risk-engine-v1"
+           ),
+
+           # -----------------------------------------
+           # BREEDING RISK
+           # -----------------------------------------
+           "breeding_risk": {
+               "score": breeding_risk.get("score"),
+               "level": breeding_risk.get("level"),
+               "base_level": breeding_risk.get("base_level"),
+               "maximum": breeding_risk.get(
+                   "maximum",
+                   100
+               ),
+               "escalation_reasons":
+                   breeding_risk.get(
+                       "escalation_reasons",
+                       []
+                   ),
+                "components": breeding_components,
+           },
+
+           # -----------------------------------------
+           # MUNICIPAL INTERVENTION PRIORITY
+           # -----------------------------------------
+           "municipal_priority": {
+               "score": municipal_priority.get("score"),
+               "level": municipal_priority.get("level"),
+               "maximum": municipal_priority.get(
+                   "maximum",
+                   100
+               ),
+               "normalized_from_available_evidence":
+                   municipal_priority.get(
+                      "normalized_from_available_evidence",
+                      False
+                   ),
+               "unavailable_components":
+                   municipal_priority.get(
+                       "unavailable_components",
+                       []
+                   ),
+                "components": municipal_components,
+           },
+
+           # -----------------------------------------
+           # QUICK-ACCESS SCORES
+           # -----------------------------------------
+           "final_score":
+               breeding_risk.get("score"),
+
+           "risk_level":
+               breeding_risk.get("level"),
+
+           "municipal_score":
+               municipal_priority.get("score"),
+
+            "municipal_level":
+               municipal_priority.get("level"),
         }
 
         # ----------------------------------------------------
@@ -729,10 +806,7 @@ def api_analyze():
 # Limited to 200 most recent docs to prevent OOM.
 # ============================================================
 
-@app.route(
-    "/reports",
-    methods=["GET"]
-)
+@app.route("/reports", methods=["GET"])
 def get_reports():
 
     reports = []
@@ -748,19 +822,97 @@ def get_reports():
 
         doc = doc_ref.to_dict()
 
+        location = doc.get("location") or {}
+        vision = doc.get("vision") or {}
+        environment = doc.get("environment") or {}
+        risk = doc.get("risk") or {}
+
+        risk_level = (
+            doc.get("risk_level")
+            or risk.get("risk_level")
+            or "LOW"
+        )
+
+        risk_score = (
+            doc.get("risk_score")
+            if doc.get("risk_score") is not None
+            else risk.get("final_score")
+        )
+
+        status = doc.get("status") or "PENDING"
+
         reports.append({
-            "id":              doc_ref.id,
-            "image":           doc.get("image"),
-            "image_url":       doc.get("image_url", ""),
-            "risk_level":      doc.get("risk_level"),
-            "risk_score":      doc.get("risk_score"),
-            "analysis_method": doc.get("analysis_method"),
-            "model_version":   doc.get("model_version"),
-            "status":          doc.get("status"),
-            "latitude":        doc.get("latitude"),
-            "longitude":       doc.get("longitude"),
-            "priority":        doc.get("priority"),
-            "timestamp":       doc.get("timestamp"),
+
+            "id": doc_ref.id,
+
+            "image": doc.get("image"),
+            "image_url": doc.get("image_url", ""),
+
+            "timestamp": doc.get("timestamp"),
+
+            "email": doc.get("email"),
+            "user_name": doc.get("user_name"),
+            "priority": doc.get("priority"),
+
+            "risk_level": risk_level,
+            "risk_score": risk_score,
+
+            "status": status,
+
+            "latitude": location.get("latitude"),
+            "longitude": location.get("longitude"),
+            "accuracy_m": location.get("accuracy_m"),
+
+            "vision": vision,
+
+            "environment": {
+                "weather": {
+                    "temperature_c": environment.get("temperature_c"),
+                    "humidity_percent": environment.get("humidity_percent"),
+                    "source": environment.get("source"),
+                    "weather_timezone": environment.get("weather_timezone")
+                },
+
+                "rainfall": {
+                    "24h_mm": environment.get("rainfall_24h_mm"),
+                    "3d_mm": environment.get("rainfall_3d_mm"),
+                    "7d_mm": environment.get("rainfall_7d_mm"),
+                    "current_precipitation_mm":
+                        environment.get("current_precipitation_mm")
+                },
+
+                "population": doc.get("population") or {},
+
+                "nearby_facilities":
+                    doc.get("nearby_facilities") or {},
+
+                "historical_hotspot":
+                    doc.get("historical_risk") or {}
+            },
+
+            "risk": {
+                "breeding": {
+                    "score": risk.get("biological_score"),
+                    "level": risk_level
+                },
+
+                "municipal": {
+                    "score": risk_score,
+                    "level": risk_level,
+                    "status": status
+                }
+            },
+
+            "workflow": {
+                "status": status,
+                "display_flag": (
+                    "GREEN"
+                    if status == "COMPLETED"
+                    else "YELLOW"
+                    if status == "IN PROGRESS"
+                    else "RED"
+                )
+            }
         })
 
     return jsonify(reports)
