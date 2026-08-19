@@ -82,19 +82,19 @@ from ai_model.risk_engine import RiskEngine
 # ============================================================
 
 MODEL1_PATH = os.getenv(
-    "MODEL1_PATH"
+    "MODEL1_PATH", "/app/models/model1_detect.pt"
 )
 
 MODEL2_PATH = os.getenv(
-    "MODEL2_PATH"
+    "MODEL2_PATH", "/app/models/model2_segment.pt"
 )
 
 MODEL3_PATH = os.getenv(
-    "MODEL3_PATH"
+    "MODEL3_PATH", "/app/models/model3_segment.pt"
 )
 
 MODEL4_PATH = os.getenv(
-    "MODEL4_PATH"
+    "MODEL4_PATH", "/app/models/model4_detect.pt"
 )
 
 
