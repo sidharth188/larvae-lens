@@ -133,7 +133,7 @@ def upload():
     accuracy_raw  = request.form.get("accuracy_m")
     timestamp     = datetime.utcnow().isoformat()
     priority      = request.form.get("priority", "false")
-    priority = str(priority_raw).strip().lower() == "true"
+    priority      = str(priority).strip().lower() == "true"
     email         = request.form.get("email", "").strip()
     user_name     = request.form.get("user_name", "").strip()
 
