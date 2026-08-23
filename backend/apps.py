@@ -200,6 +200,45 @@ def upload():
                 "risk_assessment": {},
             }
 
+                    # ----------------------------------------------------
+        # REJECT INVALID / GARBAGE IMAGES
+        #
+        # Vision Engine must explicitly confirm that the
+        # image contains valid mosquito-breeding evidence.
+        #
+        # IMPORTANT:
+        # This happens BEFORE Cloudinary and Firestore.
+        # ----------------------------------------------------
+
+        vision_status = str(
+            v1_result.get("status", "")
+        ).strip().lower()
+
+        if vision_status == "garbage":
+
+            print(
+                "=== UPLOAD REJECTED ==="
+            )
+            print(
+                "Reason: invalid / irrelevant image"
+            )
+            print(
+                "Vision route:",
+                v1_result.get("route")
+            )
+
+            return jsonify({
+                "success": False,
+                "rejected": True,
+                "reason": "garbage",
+                "message": (
+                    "This image does not contain "
+                    "clear mosquito breeding or "
+                    "stagnant-water evidence. "
+                    "Please upload a clearer image."
+                )
+            }), 400
+
         # ----------------------------------------------------
         # UNPACK V1 RESULT into the exact target schema
         # ----------------------------------------------------
@@ -221,6 +260,7 @@ def upload():
 
         risk_level = breeding_risk.get("level") or "LOW"
         risk_score = breeding_risk.get("score") or 0
+
 
         # ---- vision sub-document ----
         vision_doc = {
@@ -958,7 +998,128 @@ def update_status(doc_id):
             "message": "Failed to update status",
             "error":   str(e)
         }), 500
+# ============================================================
+# DELETE REPORT
+# Deletes:
+#   1. Firestore report
+#   2. Cloudinary image
+# ============================================================
 
+@app.route("/delete-report/<doc_id>", methods=["DELETE"])
+def delete_report(doc_id):
+
+    try:
+        # ----------------------------------------------------
+        # GET FIRESTORE REPORT
+        # ----------------------------------------------------
+
+        report_ref = db.collection("larvae_reports").document(doc_id)
+        report_snapshot = report_ref.get()
+
+        if not report_snapshot.exists:
+            return jsonify({
+                "success": False,
+                "message": f"Report {doc_id} not found"
+            }), 404
+
+        report_data = report_snapshot.to_dict() or {}
+
+        image_url = report_data.get("image_url", "")
+
+        # ----------------------------------------------------
+        # DELETE CLOUDINARY IMAGE
+        # ----------------------------------------------------
+
+        cloudinary_deleted = False
+
+        if image_url:
+            try:
+                # Expected URL:
+                # https://res.cloudinary.com/<cloud>/image/upload/...
+                #
+                # Our uploads use:
+                # larvae_lens/<generated filename>
+
+                marker = "/image/upload/"
+
+                if marker in image_url:
+
+                    public_path = image_url.split(
+                        marker, 1
+                    )[1]
+
+                    # Remove transformation/version segments
+                    parts = public_path.split("/")
+
+                    if parts and parts[0].startswith("v"):
+                        parts = parts[1:]
+
+                    public_id_with_extension = "/".join(parts)
+
+                    # Remove file extension
+                    public_id = os.path.splitext(
+                        public_id_with_extension
+                    )[0]
+
+                    print(
+                        "Deleting Cloudinary public_id:",
+                        public_id
+                    )
+
+                    result = cloudinary.uploader.destroy(
+                        public_id,
+                        resource_type="image"
+                    )
+
+                    print(
+                        "Cloudinary delete result:",
+                        result
+                    )
+
+                    cloudinary_deleted = (
+                        result.get("result") in
+                        ("ok", "not found")
+                    )
+
+            except Exception as cloudinary_error:
+
+                print(
+                    "Cloudinary delete error:",
+                    cloudinary_error
+                )
+
+                traceback.print_exc()
+
+        # ----------------------------------------------------
+        # DELETE FIRESTORE REPORT
+        # ----------------------------------------------------
+
+        report_ref.delete()
+
+        print("=== REPORT DELETED ===")
+        print("Report ID:", doc_id)
+        print(
+            "Cloudinary deleted:",
+            cloudinary_deleted
+        )
+
+        return jsonify({
+            "success": True,
+            "message": "Report deleted successfully",
+            "report_id": doc_id,
+            "cloudinary_deleted": cloudinary_deleted
+        }), 200
+
+    except Exception as e:
+
+        print("delete-report error:", e)
+        traceback.print_exc()
+
+        return jsonify({
+            "success": False,
+            "message": "Failed to delete report",
+            "error": str(e)
+        }), 500
 
 # ============================================================
 # LOGIN (OAuth placeholder)
