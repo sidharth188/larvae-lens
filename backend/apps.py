@@ -1269,7 +1269,7 @@ def login_user():
 
 # ============================================================
 # USER REPORTS
-# Sorted server-side by timestamp descending.
+# Returns complete structured reports for the logged-in user.
 # ============================================================
 
 @app.route(
@@ -1280,31 +1280,109 @@ def user_reports(email):
 
     reports = []
 
-    docs = (
-        db.collection("larvae_reports")
-        .where(
-            filter=firebase_admin.firestore.FieldFilter("email", "==", email)
+    try:
+
+        docs = (
+            db.collection("larvae_reports")
+            .where(
+                filter=firebase_admin.firestore.FieldFilter(
+                    "email",
+                    "==",
+                    email
+                )
+            )
+            .order_by(
+                "timestamp",
+                direction=Query.DESCENDING
+            )
+            .limit(100)
+            .stream()
         )
-        .order_by("timestamp", direction=Query.DESCENDING)
-        .limit(100)
-        .stream()
-    )
 
-    for doc_ref in docs:
+        for doc_ref in docs:
 
-        doc = doc_ref.to_dict()
+            doc = doc_ref.to_dict() or {}
 
-        reports.append({
-            "risk_level": doc.get("risk_level"),
-            "risk_score": doc.get("risk_score"),
-            "status":     doc.get("status"),
-            "timestamp":  doc.get("timestamp"),
-            "image_url":  doc.get("image_url", ""),
-        })
+            # Keep the complete Firestore document.
+            # This is important because the user dashboard
+            # needs vision, environment, risk, location,
+            # population, facilities, etc.
+            report = dict(doc)
 
-    return jsonify(reports)
+            # Always expose the Firestore document ID.
+            report["report_id"] = doc_ref.id
 
+            # Preserve flat fields expected by existing frontend code.
+            report["risk_level"] = doc.get(
+                "risk_level"
+            )
 
+            report["risk_score"] = doc.get(
+                "risk_score"
+            )
+
+            report["status"] = doc.get(
+                "status",
+                "PENDING"
+            )
+
+            report["timestamp"] = doc.get(
+                "timestamp"
+            )
+
+            report["image_url"] = doc.get(
+                "image_url",
+                ""
+            )
+
+            report["image"] = doc.get(
+                "image",
+                ""
+            )
+
+            report["priority"] = doc.get(
+                "priority",
+                False
+            )
+
+            # Explicit municipality values.
+            risk = doc.get("risk") or {}
+
+            municipal = (
+                risk.get("municipal_priority")
+                or {}
+            )
+
+            report["municipal_score"] = (
+                doc.get("municipal_score")
+                if doc.get("municipal_score") is not None
+                else municipal.get("score")
+            )
+
+            report["municipal_level"] = (
+                doc.get("municipal_level")
+                if doc.get("municipal_level") is not None
+                else municipal.get("level")
+            )
+
+            reports.append(report)
+
+        return jsonify(reports), 200
+
+    except Exception as error:
+
+        print(
+            "User reports error:",
+            error
+        )
+
+        traceback.print_exc()
+
+        return jsonify({
+            "success": False,
+            "message": "Unable to load user reports",
+            "error": str(error)
+        }), 500
 # ============================================================
 # APPLICATION ENTRY POINT
 # ============================================================
