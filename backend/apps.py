@@ -216,31 +216,6 @@ def upload():
             v1_result.get("status", "")
         ).strip().lower()
 
-        if vision_status == "garbage":
-
-            print(
-                "=== UPLOAD REJECTED ==="
-            )
-            print(
-                "Reason: invalid / irrelevant image"
-            )
-            print(
-                "Vision route:",
-                v1_result.get("route")
-            )
-
-            return jsonify({
-                "success": False,
-                "rejected": True,
-                "reason": "garbage",
-                "message": (
-                    "This image does not contain "
-                    "clear mosquito breeding or "
-                    "stagnant-water evidence. "
-                    "Please upload a clearer image."
-                )
-            }), 400
-
         # ----------------------------------------------------
         # UNPACK V1 RESULT into the exact target schema
         # ----------------------------------------------------
