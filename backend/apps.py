@@ -136,6 +136,8 @@ def upload():
     priority      = str(priority).strip().lower() == "true"
     email         = request.form.get("email", "").strip()
     user_name     = request.form.get("user_name", "").strip()
+    uid           = request.form.get("uid", "").strip()
+    location_name = request.form.get("location_name", "").strip()
 
     # --------------------------------------------------------
     # ALL PROCESSING IN TRY BLOCK
@@ -514,10 +516,12 @@ def upload():
             # ---- user identity ----
             "email":         email,
             "user_name":     user_name,
+            "uid":           uid,
 
             # ---- flat risk fields (for quick dashboard queries) ----
             "risk_level":    risk_level,
             "risk_score":    risk_score,
+            "location_name": location_name,
 
             # ---- full nested analysis ----
             "vision":             vision_doc,
