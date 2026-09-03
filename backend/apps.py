@@ -128,32 +128,14 @@ def upload():
     # FORM FIELDS
     # --------------------------------------------------------
 
-    latitude = request.form["latitude"]
-
-    longitude = request.form["longitude"]
-
-    timestamp = datetime.utcnow().isoformat()
-
-    priority = request.form.get(
-        "priority"
-    )
-
-    email = request.form["email"]
-
-    user_name = request.form["user_name"]
-
-    unique_filename = (
-        f"{uuid.uuid4()}_{image.filename}"
-    )
-
-    image_path = os.path.join(
-        UPLOAD_FOLDER,
-        unique_filename
-    )
-
-    image.save(
-        image_path
-    )
+    latitude_raw  = request.form.get("latitude")
+    longitude_raw = request.form.get("longitude")
+    accuracy_raw  = request.form.get("accuracy_m")
+    timestamp     = datetime.utcnow().isoformat()
+    priority      = request.form.get("priority", "false")
+    priority      = str(priority).strip().lower() == "true"
+    email         = request.form.get("email", "").strip()
+    user_name     = request.form.get("user_name", "").strip()
 
     # --------------------------------------------------------
     # Preserve existing 300x300 processing behavior.
@@ -183,212 +165,425 @@ def upload():
 
     gc.collect()
 
-    # --------------------------------------------------------
-    # Existing classifier pipeline.
-    # --------------------------------------------------------
+        # ----------------------------------------------------
+        # PARSE LOCATION
+        # ----------------------------------------------------
 
-    analysis = analyze_image(
-        image_path
-    )
+        try:
+            lat_float  = float(latitude_raw)  if latitude_raw  else None
+            lng_float  = float(longitude_raw) if longitude_raw else None
+            acc_float  = float(accuracy_raw)  if accuracy_raw  else None
+        except (TypeError, ValueError):
+            lat_float = lng_float = acc_float = None
 
-    risk_level = analysis[
-        "risk_level"
-    ]
+        # ----------------------------------------------------
+        # V1 VISION ENGINE
+        # Falls back gracefully if a model file is missing.
+        # ----------------------------------------------------
 
-    try:
-
-        upload_result = (
-            cloudinary.uploader.upload(
-                image_path,
-                folder="larvae_lens"
+        try:
+            v1_result = vision_engine.analyze(
+                image_path=image_path,
+                latitude=lat_float,
+                longitude=lng_float,
+                accuracy_m=acc_float,
             )
+        except Exception as engine_error:
+            print("VisionEngine error (fallback):", engine_error)
+            traceback.print_exc()
+            v1_result = {
+                "engine": "vision-engine-v1",
+                "status": "engine_error",
+                "route":  "engine_error",
+                "model1": {"detected": False, "objects": [], "confidence": 0.0},
+                "model2": None,
+                "model3": None,
+                "model4": None,
+                "environment": {},
+                "risk_assessment": {},
+            }
+
+                    # ----------------------------------------------------
+        # REJECT INVALID / GARBAGE IMAGES
+        #
+        # Vision Engine must explicitly confirm that the
+        # image contains valid mosquito-breeding evidence.
+        #
+        # IMPORTANT:
+        # This happens BEFORE Cloudinary and Firestore.
+        # ----------------------------------------------------
+
+        vision_status = str(
+            v1_result.get("status", "")
+        ).strip().lower()
+
+        if vision_status == "garbage":
+
+            print(
+                "=== UPLOAD REJECTED ==="
+            )
+            print(
+                "Reason: invalid / irrelevant image"
+            )
+            print(
+                "Vision route:",
+                v1_result.get("route")
+            )
+
+            return jsonify({
+                "success": False,
+                "rejected": True,
+                "reason": "garbage",
+                "message": (
+                    "This image does not contain "
+                    "clear mosquito breeding or "
+                    "stagnant-water evidence. "
+                    "Please upload a clearer image."
+                )
+            }), 400
+
+        # ----------------------------------------------------
+        # UNPACK V1 RESULT into the exact target schema
+        # ----------------------------------------------------
+
+        env_raw         = v1_result.get("environment") or {}
+        weather_raw     = env_raw.get("weather")       or {}
+        population_raw  = env_raw.get("population")    or {}
+        facilities_raw  = env_raw.get("nearby_facilities") or {}
+        hist_raw        = env_raw.get("historical_risk")   or {}
+        loc_raw         = env_raw.get("location")      or {}
+
+        risk_raw        = v1_result.get("risk_assessment") or {}
+        breeding_risk   = risk_raw.get("breeding_risk")    or {}
+
+        model1_raw = v1_result.get("model1") or {}
+        model2_raw = v1_result.get("model2")        # may be None
+        model3_raw = v1_result.get("model3")        # may be None
+        model4_raw = v1_result.get("model4") or {}
+
+        risk_level = breeding_risk.get("level") or "LOW"
+        risk_score = breeding_risk.get("score") or 0
+
+
+        # ---- vision sub-document ----
+        vision_doc = {
+            "engine":       v1_result.get("engine", "vision-engine-v1"),
+            "final_status": v1_result.get("status"),
+            "route":        v1_result.get("route"),
+            "model1": {
+                "detected":   model1_raw.get("detected", False),
+                "objects":    model1_raw.get("objects", []),
+                "confidence": model1_raw.get("confidence", 0.0),
+            },
+            "model2": (
+                {
+                    "water_detected": model2_raw.get("water_detected", False),
+                    "objects":        model2_raw.get("objects", []),
+                    "confidence":     model2_raw.get("confidence", 0.0),
+                }
+                if model2_raw is not None else None
+            ),
+            "model3": (
+                {
+                    "detected":   model3_raw.get("detected", False),
+                    "classes":    model3_raw.get("classes", []),
+                    "confidence": model3_raw.get("confidence", 0.0),
+                }
+                if model3_raw is not None else None
+            ),
+            "model4": (
+                {
+                    "detected":                      model4_raw.get("detected", False),
+                    "larvae_count":                  model4_raw.get("larvae_count", 0),
+                    "non_larvae_count":              model4_raw.get("non_larvae_count", 0),
+                    "larvae_density_per_10000_pixels": model4_raw.get("larvae_density_per_10000_pixels", 0.0),
+                    "confidence":                    model4_raw.get("confidence", 0.0),
+                }
+                if model4_raw else None
+            ),
+        }
+
+        # ---- environment sub-document ----
+        environment_doc = {
+            "temperature_c":           weather_raw.get("temperature_c"),
+            "humidity_percent":        weather_raw.get("humidity_percent"),
+            "rainfall_24h_mm":         weather_raw.get("rainfall_24h_mm"),
+            "rainfall_3d_mm":          weather_raw.get("rainfall_3d_mm"),
+            "rainfall_7d_mm":          weather_raw.get("rainfall_7d_mm"),
+            "current_precipitation_mm": weather_raw.get("current_precipitation_mm"),
+            "source":                  weather_raw.get("source"),
+            "weather_timezone":        weather_raw.get("weather_timezone"),
+        }
+
+        # ---- location sub-document ----
+        location_doc = {
+            "latitude":   loc_raw.get("latitude")  or lat_float,
+            "longitude":  loc_raw.get("longitude") or lng_float,
+            "accuracy_m": loc_raw.get("accuracy_m") or acc_float,
+        }
+
+        # ---- population sub-document ----
+        population_doc = {
+            "search_radius_m":             population_raw.get("search_radius_m"),
+            "estimated_population_500m":   population_raw.get("estimated_population_500m"),
+            "population_density_500m":     population_raw.get("population_density_500m"),
+            "area_km2":                    population_raw.get("area_km2"),
+            "data_year":                   population_raw.get("data_year"),
+            "resolution":                  population_raw.get("resolution"),
+            "source":                      population_raw.get("source"),
+        }
+
+        # ---- nearby_facilities sub-document ----
+        def _spatial(raw, key):
+            return (raw.get(key) or {}).get("spatial_summary") or {}
+
+        schools_spatial    = _spatial(facilities_raw, "schools")
+        hospitals_spatial  = _spatial(facilities_raw, "hospitals")
+        higher_ed_spatial  = _spatial(facilities_raw, "higher_education")
+
+        nearby_facilities_doc = {
+            "search_radius_m": facilities_raw.get("search_radius_m"),
+            "schools": {
+                "within_250m": schools_spatial.get("within_250m", 0),
+                "within_500m": schools_spatial.get("within_500m", 0),
+                "within_1km":  schools_spatial.get("within_1km",  0),
+            },
+            "hospitals": {
+                "within_250m": hospitals_spatial.get("within_250m", 0),
+                "within_500m": hospitals_spatial.get("within_500m", 0),
+                "within_1km":  hospitals_spatial.get("within_1km",  0),
+            },
+            "universities": {
+                "within_250m": higher_ed_spatial.get("within_250m", 0),
+                "within_500m": higher_ed_spatial.get("within_500m", 0),
+                "within_1km":  higher_ed_spatial.get("within_1km",  0),
+            },
+            "source": facilities_raw.get("provider", "Google Places API (New)"),
+        }
+
+        # ---- historical_risk sub-document ----
+        historical_risk_doc = {
+            "search_radius_m":               hist_raw.get("search_radius_m", 500),
+            "hotspots_within_500m":          hist_raw.get("hotspots_within_500m"),
+            "nearest_hotspot_distance_m":    hist_raw.get("nearest_hotspot_distance_m"),
+            "historical_cases_within_500m":  hist_raw.get("historical_cases_within_500m"),
+            "most_recent_hotspot_year":      hist_raw.get("most_recent_hotspot_year"),
+            "source":                        hist_raw.get("source", "LarvaeLens historical database"),
+        }
+
+        # ---- risk sub-document ----
+        risk_doc = {
+            "engine":              risk_raw.get("risk_engine", "risk-engine-v1"),
+            "biological_score":    risk_raw.get("biological_score"),
+            "environmental_score": risk_raw.get("environmental_score"),
+            "population_score":    risk_raw.get("population_score"),
+            "facility_score":      risk_raw.get("facility_score"),
+            "historical_score":    risk_raw.get("historical_score"),
+            "final_score":         breeding_risk.get("score"),
+            "risk_level":          risk_level,
+            "generated_at":        timestamp,
+        }
+        # ---- risk sub-document ----
+        municipal_priority = (
+            risk_raw.get("municipal_priority") or {}
         )
 
-        image_url = upload_result.get(
-            "secure_url"
+        breeding_components = (
+            breeding_risk.get("components") or {}
         )
 
-    except Exception as e:
-
-        print(
-            "Cloudinary Error:",
-            e
+        municipal_components = (
+            municipal_priority.get("components") or {}
         )
+
+        risk_doc = {
+            "engine": risk_raw.get(
+                "risk_engine",
+                "risk-engine-v1"
+           ),
+
+           # -----------------------------------------
+           # BREEDING RISK
+           # -----------------------------------------
+           "breeding_risk": {
+               "score": breeding_risk.get("score"),
+               "level": breeding_risk.get("level"),
+               "base_level": breeding_risk.get("base_level"),
+               "maximum": breeding_risk.get(
+                   "maximum",
+                   100
+               ),
+               "escalation_reasons":
+                   breeding_risk.get(
+                       "escalation_reasons",
+                       []
+                   ),
+                "components": breeding_components,
+           },
+
+           # -----------------------------------------
+           # MUNICIPAL INTERVENTION PRIORITY
+           # -----------------------------------------
+           "municipal_priority": {
+               "score": municipal_priority.get("score"),
+               "level": municipal_priority.get("level"),
+               "maximum": municipal_priority.get(
+                   "maximum",
+                   100
+               ),
+               "normalized_from_available_evidence":
+                   municipal_priority.get(
+                      "normalized_from_available_evidence",
+                      False
+                   ),
+               "unavailable_components":
+                   municipal_priority.get(
+                       "unavailable_components",
+                       []
+                   ),
+                "components": municipal_components,
+           },
+
+           # -----------------------------------------
+           # QUICK-ACCESS SCORES
+           # -----------------------------------------
+           "final_score":
+               breeding_risk.get("score"),
+
+           "risk_level":
+               breeding_risk.get("level"),
+
+           "municipal_score":
+               municipal_priority.get("score"),
+
+            "municipal_level":
+               municipal_priority.get("level"),
+        }
+
+        # ----------------------------------------------------
+        # CLOUDINARY UPLOAD
+        # ----------------------------------------------------
+
+        try:
+            upload_result = cloudinary.uploader.upload(image_path, folder="larvae_lens")
+            image_url = upload_result.get("secure_url", "")
+        except Exception as cloudinary_error:
+            print("Cloudinary error:", cloudinary_error)
+            traceback.print_exc()
+            image_url = ""
+
+        # ----------------------------------------------------
+        # WHATSAPP ALERT (HIGH risk only)
+        # ----------------------------------------------------
+
+        try:
+            if risk_level == "HIGH":
+                send_whatsapp_alert(user_name, risk_level, latitude_raw, longitude_raw, image_url)
+        except Exception as whatsapp_error:
+            print("WhatsApp error:", whatsapp_error)
+
+        # ----------------------------------------------------
+        # UPSERT USER PROFILE in `users` collection
+        # ----------------------------------------------------
+
+        try:
+            if email:
+                existing = list(
+                    db.collection("users")
+                    .where(filter=firebase_admin.firestore.FieldFilter("email", "==", email))
+                    .limit(1)
+                    .stream()
+                )
+                if not existing:
+                    db.collection("users").add({
+                        "name":  user_name,
+                        "email": email,
+                    })
+        except Exception as user_upsert_error:
+            print("User upsert error:", user_upsert_error)
+
+        # ----------------------------------------------------
+        # SAVE FULL STRUCTURED REPORT to `larvae_reports`
+        # ----------------------------------------------------
+
+        report_data = {
+            # ---- metadata ----
+            "timestamp":     timestamp,
+            "image_url":     image_url,
+            "image":         unique_filename,
+            "priority":      priority,
+            "status":        "PENDING",
+
+            # ---- user identity ----
+            "email":         email,
+            "user_name":     user_name,
+
+            # ---- flat risk fields (for quick dashboard queries) ----
+            "risk_level":    risk_level,
+            "risk_score":    risk_score,
+
+            # ---- full nested analysis ----
+            "vision":             vision_doc,
+            "environment":        environment_doc,
+            "location":           location_doc,
+            "population":         population_doc,
+            "nearby_facilities":  nearby_facilities_doc,
+            "historical_risk":    historical_risk_doc,
+            "risk":               risk_doc,
+        }
+
+        _ts, report_ref = db.collection("larvae_reports").add(report_data)
+        report_id = report_ref.id
+
+        # ----------------------------------------------------
+        # LOGGING
+        # ----------------------------------------------------
+
+        print("=== UPLOAD SUCCESS ===")
+        print("Report ID:  ", report_id)
+        print("Risk Level: ", risk_level)
+        print("Risk Score: ", risk_score)
+        print("V1 Route:   ", v1_result.get("route"))
+        print("V1 Status:  ", v1_result.get("status"))
+        print("Image URL:  ", image_url)
+
+        # ----------------------------------------------------
+        # SUCCESS RESPONSE
+        # ----------------------------------------------------
 
         return jsonify({
-            "message":
-                "Failed to upload image to cloud"
+            "success":         True,
+            "message":         "Report uploaded successfully",
+            "report_id":       report_id,
+
+            # flat fields for the frontend alert
+            "risk_level":      risk_level,
+            "risk_score":      risk_score,
+            "image_url":       image_url,
+
+            # detailed breakdown (optional — frontend may use for analytics)
+            "vision":          vision_doc,
+            "risk":            risk_doc,
+            "environment":     environment_doc,
+            "location":        location_doc,
+        })
+
+    except Exception as fatal_error:
+        print("Upload route fatal error:", fatal_error)
+        traceback.print_exc()
+        return jsonify({
+            "success": False,
+            "message": "Internal server error during upload",
+            "error":   str(fatal_error)
         }), 500
 
     finally:
+        if os.path.exists(image_path):
+            try:
+                os.remove(image_path)
+            except Exception as cleanup_error:
+                print("Temp file cleanup error:", cleanup_error)
 
-        if os.path.exists(
-            image_path
-        ):
-
-            os.remove(
-                image_path
-            )
-
-    # --------------------------------------------------------
-    # WhatsApp notification
-    # --------------------------------------------------------
-
-    try:
-
-        send_whatsapp_alert(
-            user_name,
-            risk_level,
-            latitude,
-            longitude,
-            image_url,
-        )
-
-    except Exception as e:
-
-        print(
-            "WhatsApp Error:",
-            e
-        )
-
-        traceback.print_exc()
-
-    # --------------------------------------------------------
-    # Firestore report
-    # --------------------------------------------------------
-
-    report_data = {
-
-        "image":
-            unique_filename,
-
-        "latitude":
-            latitude,
-
-        "longitude":
-            longitude,
-
-        "timestamp":
-            timestamp,
-
-        "risk_level":
-            risk_level,
-
-        "risk_score":
-            analysis[
-                "risk_score"
-            ],
-
-        "analysis_method":
-            analysis[
-                "analysis_method"
-            ],
-
-        "model_version":
-            analysis[
-                "model_version"
-            ],
-
-        "evidence":
-            analysis[
-                "evidence"
-            ],
-
-        "visual_metrics":
-            analysis[
-                "metrics"
-            ],
-
-        "priority":
-            priority,
-
-        "email":
-            email,
-
-        "status":
-            "PENDING",
-    }
-
-    db.collection(
-        "larvae_reports"
-    ).add(
-        report_data
-    )
-
-    # --------------------------------------------------------
-    # Console logging
-    # --------------------------------------------------------
-
-    print(
-        "Risk Level:",
-        risk_level
-    )
-
-    print(
-        "Risk Score:",
-        analysis[
-            "risk_score"
-        ]
-    )
-
-    print(
-        "Image Saved:",
-        unique_filename
-    )
-
-    print(
-        "Latitude:",
-        latitude
-    )
-
-    print(
-        "Longitude:",
-        longitude
-    )
-
-    print(
-        "Timestamp:",
-        timestamp
-    )
-
-    print(
-        "UPLOAD SUCCESS"
-    )
-
-    return jsonify({
-
-        "message":
-            "Report uploaded successfully",
-
-        "risk_level":
-            risk_level,
-
-        "risk_score":
-            analysis[
-                "risk_score"
-            ],
-
-        "evidence":
-            analysis[
-                "evidence"
-            ],
-
-        "analysis_method":
-            analysis[
-                "analysis_method"
-            ],
-
-        "model_version":
-            analysis[
-                "model_version"
-            ],
-
-        "latitude":
-            latitude,
-
-        "longitude":
-            longitude,
-    })
 
 
 # ============================================================
@@ -653,10 +848,7 @@ def api_analyze():
 # Limited to 200 most recent docs to prevent OOM.
 # ============================================================
 
-@app.route(
-    "/reports",
-    methods=["GET"]
-)
+@app.route("/reports", methods=["GET"])
 def get_reports():
 
     reports = []
@@ -672,19 +864,97 @@ def get_reports():
 
         doc = doc_ref.to_dict()
 
+        location = doc.get("location") or {}
+        vision = doc.get("vision") or {}
+        environment = doc.get("environment") or {}
+        risk = doc.get("risk") or {}
+
+        risk_level = (
+            doc.get("risk_level")
+            or risk.get("risk_level")
+            or "LOW"
+        )
+
+        risk_score = (
+            doc.get("risk_score")
+            if doc.get("risk_score") is not None
+            else risk.get("final_score")
+        )
+
+        status = doc.get("status") or "PENDING"
+
         reports.append({
-            "id":              doc_ref.id,
-            "image":           doc.get("image"),
-            "image_url":       doc.get("image_url", ""),
-            "risk_level":      doc.get("risk_level"),
-            "risk_score":      doc.get("risk_score"),
-            "analysis_method": doc.get("analysis_method"),
-            "model_version":   doc.get("model_version"),
-            "status":          doc.get("status"),
-            "latitude":        doc.get("latitude"),
-            "longitude":       doc.get("longitude"),
-            "priority":        doc.get("priority"),
-            "timestamp":       doc.get("timestamp"),
+
+            "id": doc_ref.id,
+
+            "image": doc.get("image"),
+            "image_url": doc.get("image_url", ""),
+
+            "timestamp": doc.get("timestamp"),
+
+            "email": doc.get("email"),
+            "user_name": doc.get("user_name"),
+            "priority": doc.get("priority"),
+
+            "risk_level": risk_level,
+            "risk_score": risk_score,
+
+            "status": status,
+
+            "latitude": location.get("latitude"),
+            "longitude": location.get("longitude"),
+            "accuracy_m": location.get("accuracy_m"),
+
+            "vision": vision,
+
+            "environment": {
+                "weather": {
+                    "temperature_c": environment.get("temperature_c"),
+                    "humidity_percent": environment.get("humidity_percent"),
+                    "source": environment.get("source"),
+                    "weather_timezone": environment.get("weather_timezone")
+                },
+
+                "rainfall": {
+                    "24h_mm": environment.get("rainfall_24h_mm"),
+                    "3d_mm": environment.get("rainfall_3d_mm"),
+                    "7d_mm": environment.get("rainfall_7d_mm"),
+                    "current_precipitation_mm":
+                        environment.get("current_precipitation_mm")
+                },
+
+                "population": doc.get("population") or {},
+
+                "nearby_facilities":
+                    doc.get("nearby_facilities") or {},
+
+                "historical_hotspot":
+                    doc.get("historical_risk") or {}
+            },
+
+            "risk": {
+                "breeding": {
+                    "score": risk.get("biological_score"),
+                    "level": risk_level
+                },
+
+                "municipal": {
+                    "score": risk_score,
+                    "level": risk_level,
+                    "status": status
+                }
+            },
+
+            "workflow": {
+                "status": status,
+                "display_flag": (
+                    "GREEN"
+                    if status == "COMPLETED"
+                    else "YELLOW"
+                    if status == "IN PROGRESS"
+                    else "RED"
+                )
+            }
         })
 
     return jsonify(reports)
@@ -730,7 +1000,128 @@ def update_status(doc_id):
             "message": "Failed to update status",
             "error":   str(e)
         }), 500
+# ============================================================
+# DELETE REPORT
+# Deletes:
+#   1. Firestore report
+#   2. Cloudinary image
+# ============================================================
 
+@app.route("/delete-report/<doc_id>", methods=["DELETE"])
+def delete_report(doc_id):
+
+    try:
+        # ----------------------------------------------------
+        # GET FIRESTORE REPORT
+        # ----------------------------------------------------
+
+        report_ref = db.collection("larvae_reports").document(doc_id)
+        report_snapshot = report_ref.get()
+
+        if not report_snapshot.exists:
+            return jsonify({
+                "success": False,
+                "message": f"Report {doc_id} not found"
+            }), 404
+
+        report_data = report_snapshot.to_dict() or {}
+
+        image_url = report_data.get("image_url", "")
+
+        # ----------------------------------------------------
+        # DELETE CLOUDINARY IMAGE
+        # ----------------------------------------------------
+
+        cloudinary_deleted = False
+
+        if image_url:
+            try:
+                # Expected URL:
+                # https://res.cloudinary.com/<cloud>/image/upload/...
+                #
+                # Our uploads use:
+                # larvae_lens/<generated filename>
+
+                marker = "/image/upload/"
+
+                if marker in image_url:
+
+                    public_path = image_url.split(
+                        marker, 1
+                    )[1]
+
+                    # Remove transformation/version segments
+                    parts = public_path.split("/")
+
+                    if parts and parts[0].startswith("v"):
+                        parts = parts[1:]
+
+                    public_id_with_extension = "/".join(parts)
+
+                    # Remove file extension
+                    public_id = os.path.splitext(
+                        public_id_with_extension
+                    )[0]
+
+                    print(
+                        "Deleting Cloudinary public_id:",
+                        public_id
+                    )
+
+                    result = cloudinary.uploader.destroy(
+                        public_id,
+                        resource_type="image"
+                    )
+
+                    print(
+                        "Cloudinary delete result:",
+                        result
+                    )
+
+                    cloudinary_deleted = (
+                        result.get("result") in
+                        ("ok", "not found")
+                    )
+
+            except Exception as cloudinary_error:
+
+                print(
+                    "Cloudinary delete error:",
+                    cloudinary_error
+                )
+
+                traceback.print_exc()
+
+        # ----------------------------------------------------
+        # DELETE FIRESTORE REPORT
+        # ----------------------------------------------------
+
+        report_ref.delete()
+
+        print("=== REPORT DELETED ===")
+        print("Report ID:", doc_id)
+        print(
+            "Cloudinary deleted:",
+            cloudinary_deleted
+        )
+
+        return jsonify({
+            "success": True,
+            "message": "Report deleted successfully",
+            "report_id": doc_id,
+            "cloudinary_deleted": cloudinary_deleted
+        }), 200
+
+    except Exception as e:
+
+        print("delete-report error:", e)
+        traceback.print_exc()
+
+        return jsonify({
+            "success": False,
+            "message": "Failed to delete report",
+            "error": str(e)
+        }), 500
 
 # ============================================================
 # LOGIN (OAuth placeholder)
@@ -880,7 +1271,7 @@ def login_user():
 
 # ============================================================
 # USER REPORTS
-# Sorted server-side by timestamp descending.
+# Returns complete structured reports for the logged-in user.
 # ============================================================
 
 @app.route(
@@ -891,31 +1282,109 @@ def user_reports(email):
 
     reports = []
 
-    docs = (
-        db.collection("larvae_reports")
-        .where(
-            filter=firebase_admin.firestore.FieldFilter("email", "==", email)
+    try:
+
+        docs = (
+            db.collection("larvae_reports")
+            .where(
+                filter=firebase_admin.firestore.FieldFilter(
+                    "email",
+                    "==",
+                    email
+                )
+            )
+            .order_by(
+                "timestamp",
+                direction=Query.DESCENDING
+            )
+            .limit(100)
+            .stream()
         )
-        .order_by("timestamp", direction=Query.DESCENDING)
-        .limit(100)
-        .stream()
-    )
 
-    for doc_ref in docs:
+        for doc_ref in docs:
 
-        doc = doc_ref.to_dict()
+            doc = doc_ref.to_dict() or {}
 
-        reports.append({
-            "risk_level": doc.get("risk_level"),
-            "risk_score": doc.get("risk_score"),
-            "status":     doc.get("status"),
-            "timestamp":  doc.get("timestamp"),
-            "image_url":  doc.get("image_url", ""),
-        })
+            # Keep the complete Firestore document.
+            # This is important because the user dashboard
+            # needs vision, environment, risk, location,
+            # population, facilities, etc.
+            report = dict(doc)
 
-    return jsonify(reports)
+            # Always expose the Firestore document ID.
+            report["report_id"] = doc_ref.id
 
+            # Preserve flat fields expected by existing frontend code.
+            report["risk_level"] = doc.get(
+                "risk_level"
+            )
 
+            report["risk_score"] = doc.get(
+                "risk_score"
+            )
+
+            report["status"] = doc.get(
+                "status",
+                "PENDING"
+            )
+
+            report["timestamp"] = doc.get(
+                "timestamp"
+            )
+
+            report["image_url"] = doc.get(
+                "image_url",
+                ""
+            )
+
+            report["image"] = doc.get(
+                "image",
+                ""
+            )
+
+            report["priority"] = doc.get(
+                "priority",
+                False
+            )
+
+            # Explicit municipality values.
+            risk = doc.get("risk") or {}
+
+            municipal = (
+                risk.get("municipal_priority")
+                or {}
+            )
+
+            report["municipal_score"] = (
+                doc.get("municipal_score")
+                if doc.get("municipal_score") is not None
+                else municipal.get("score")
+            )
+
+            report["municipal_level"] = (
+                doc.get("municipal_level")
+                if doc.get("municipal_level") is not None
+                else municipal.get("level")
+            )
+
+            reports.append(report)
+
+        return jsonify(reports), 200
+
+    except Exception as error:
+
+        print(
+            "User reports error:",
+            error
+        )
+
+        traceback.print_exc()
+
+        return jsonify({
+            "success": False,
+            "message": "Unable to load user reports",
+            "error": str(error)
+        }), 500
 # ============================================================
 # APPLICATION ENTRY POINT
 # ============================================================

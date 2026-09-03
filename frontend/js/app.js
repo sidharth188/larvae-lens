@@ -48,15 +48,102 @@ async function loadReports(){
     reports.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp)).forEach(report=>{
         const status=normalizeCaseStatus(report.status);
         const imageUrl = report.image_url || `${ENV.API_BASE_URL}/uploads/${report.image}`;
-        table.innerHTML+=`<tr><td><img src="${imageUrl}" width="120" height="80" style="border-radius:10px;object-fit:cover" onerror="this.src='https://placehold.co/120x80?text=No+Image'"></td><td class="${report.risk_level.toLowerCase()}">${report.risk_level} ${report.priority==="true"?'<span class="badge bg-danger">PRIORITY</span>':''}</td><td><span class="badge ${statusBadgeClass(status)}">${status}</span></td><td><div class="d-flex flex-wrap gap-2"><button class="btn btn-danger btn-sm" onclick="setCaseStatus('${report.id}','PENDING',this)">Pending</button><button class="btn btn-warning btn-sm" onclick="setCaseStatus('${report.id}','IN PROGRESS',this)">In Progress</button><button class="btn btn-success btn-sm" onclick="setCaseStatus('${report.id}','COMPLETED',this)">Completed</button></div></td></tr>`;
+        table.innerHTML+=`<tr><td><img src="${imageUrl}" width="120" height="80" style="border-radius:10px;object-fit:cover" onerror="this.src='https://placehold.co/120x80?text=No+Image'"></td><td class="${report.risk_level.toLowerCase()}">${report.risk_level} ${report.priority === true || report.priority === "true"?'<span class="badge bg-danger">PRIORITY</span>':''}</td><td><span class="badge ${statusBadgeClass(status)}">${status}</span></td><td><div class="d-flex flex-wrap gap-2"><button class="btn btn-danger btn-sm" onclick="setCaseStatus('${report.id}','PENDING',this)">Pending</button><button class="btn btn-warning btn-sm" onclick="setCaseStatus('${report.id}','IN PROGRESS',this)">In Progress</button><button class="btn btn-success btn-sm" onclick="setCaseStatus('${report.id}','COMPLETED',this)">Completed</button></div></td></tr>`;
     });
 }
 
-function setCaseStatus(id,status,button){
-    const row=button.closest("tr");if(!row)return;
-    row.children[2].innerHTML=`<span class="badge ${statusBadgeClass(status)}">${status}</span>`;
-    row.querySelectorAll("button").forEach(btn=>btn.classList.remove("active"));button.classList.add("active");
-    console.log("Case status changed:",id,status);
+async function setCaseStatus(id, status, button) {
+
+    const row = button.closest("tr");
+
+    if (!row) return;
+
+    const normalizedStatus =
+        status === "IN PROGRESS"
+            ? "IN_PROGRESS"
+            : status === "COMPLETED"
+                ? "COMPLETED"
+                : "PENDING";
+
+    const buttons =
+        row.querySelectorAll("button");
+
+    buttons.forEach(btn => {
+        btn.disabled = true;
+    });
+
+    try {
+
+        const response = await fetch(
+            `${ENV.API_BASE_URL}/update-status/${encodeURIComponent(id)}`,
+            {
+                method: "PUT",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    status: normalizedStatus
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.message ||
+                data.error ||
+                `HTTP ${response.status}`
+            );
+
+        }
+
+        const displayStatus =
+            normalizeCaseStatus(
+                data.status || normalizedStatus
+            );
+
+        /*
+         * Update the admin screen only after
+         * Firestore confirms the change.
+         */
+
+        row.children[2].innerHTML =
+            `<span class="badge ${statusBadgeClass(displayStatus)}">${displayStatus}</span>`;
+
+        buttons.forEach(btn => {
+            btn.classList.remove("active");
+        });
+
+        button.classList.add("active");
+
+        console.log(
+            "Firestore status updated:",
+            id,
+            normalizedStatus
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Status update failed:",
+            error
+        );
+
+        alert(
+            `Failed to update report status.\n\n${error.message}`
+        );
+
+    } finally {
+
+        buttons.forEach(btn => {
+            btn.disabled = false;
+        });
+
+    }
 }
 
 function payNow(){const options={key:ENV.RAZORPAY_KEY_ID,amount:2000,currency:"INR",name:"Larvae Lens",description:"Priority Municipal Escalation",image:"https://cdn-icons-png.flaticon.com/512/616/616408.png",handler:function(response){alert("Payment Successful\n\nPriority Report Activated");console.log(response)},theme:{color:"#00ffaa"}};new Razorpay(options).open();}

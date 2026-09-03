@@ -82,19 +82,19 @@ from ai_model.risk_engine import RiskEngine
 # ============================================================
 
 MODEL1_PATH = os.getenv(
-    "MODEL1_PATH"
+    "MODEL1_PATH", "/app/models/model1_detect.pt"
 )
 
 MODEL2_PATH = os.getenv(
-    "MODEL2_PATH"
+    "MODEL2_PATH", "/app/models/model2_segment.pt"
 )
 
 MODEL3_PATH = os.getenv(
-    "MODEL3_PATH"
+    "MODEL3_PATH", "/app/models/model3_segment.pt"
 )
 
 MODEL4_PATH = os.getenv(
-    "MODEL4_PATH"
+    "MODEL4_PATH", "/app/models/model4_detect.pt"
 )
 
 
@@ -469,25 +469,117 @@ class VisionEngine:
         if model3["detected"]:
 
             # ------------------------------------------------
-            # Find largest open stagnant water mask.
+            # VALIDATE MODEL 3 HABITAT EVIDENCE
             #
-            # Risk Engine currently uses the largest
-            # individual mask.
+            # Do not accept every Model 3 detection.
+            # A noisy / irrelevant image may produce a
+            # low-confidence false positive.
+            # ------------------------------------------------
+
+            VALID_HABITAT_CLASSES = {
+               "open_stagnant_water",
+               "water_in_container",
+               "dense_vegetation_habitat",
+            }
+
+            MIN_HABITAT_CONFIDENCE = 0.50
+            MIN_HABITAT_MASK_RATIO = 0.02
+            MAX_HABITAT_MASK_RATIO = 0.90
+
+            valid_habitats = []
+
+            for detection in model3.get("classes", []):
+
+                class_name = detection.get("class")
+
+                confidence = float(
+                    detection.get("confidence", 0.0)
+                )
+
+                mask_ratio = float(
+                    detection.get("mask_ratio", 0.0)
+                )
+
+                bbox_ratio = float(
+                     detection.get("bbox_ratio", 0.0)
+                )
+
+                valid_class = (
+                    class_name in VALID_HABITAT_CLASSES
+                )
+
+                valid_confidence = (
+                    confidence >= MIN_HABITAT_CONFIDENCE
+                )
+
+                valid_mask = (
+                    MIN_HABITAT_MASK_RATIO
+                    <= mask_ratio
+                    <= MAX_HABITAT_MASK_RATIO
+                )
+
+                # Reject detections that unrealistically cover
+                # almost the entire image. These are commonly
+                # produced by noisy / irrelevant images.
+                full_image_false_positive = (
+                    mask_ratio > 0.90
+                    or bbox_ratio > 0.98
+                )
+
+                if (
+                    valid_class
+                    and valid_confidence
+                    and valid_mask
+                    and not full_image_false_positive
+                ):
+                    valid_habitats.append(detection)
+
+                else:
+                    print(
+                        "Model 3 detection rejected:",
+                        {
+                            "class": class_name,
+                            "confidence": round(confidence, 3),
+                            "mask_ratio": round(mask_ratio, 3),
+                            "bbox_ratio": round(bbox_ratio, 3),
+                        }
+                    )
+            # ------------------------------------------------
+            # NO VALID HABITAT EVIDENCE
+            # ------------------------------------------------
+
+            if not valid_habitats:
+
+                print(
+                    "Model 3 rejected: "
+                    "no valid habitat evidence."
+                )
+
+                return self._complete_result(
+                    route="model3_invalid",
+                    model1=model1,
+                    model2=None,
+                    model3=model3,
+                    model4=None,
+                    environment=environment,
+                    forced_status="garbage"
+                )
+
+            # ------------------------------------------------
+            # Find largest VALID habitat mask.
             # ------------------------------------------------
 
             habitat_area_pixels = 0.0
 
-            for detection in model3["classes"]:
+            for detection in valid_habitats:
 
                 if (
                     detection.get("class")
-                    == "open_stagnant_water"
+                    in VALID_HABITAT_CLASSES
                 ):
 
                     habitat_area_pixels = max(
-
                         habitat_area_pixels,
-
                         float(
                             detection.get(
                                 "mask_area_pixels",
@@ -497,7 +589,6 @@ class VisionEngine:
                     )
 
             if habitat_area_pixels <= 0:
-
                 habitat_area_pixels = None
 
             # ------------------------------------------------
@@ -505,31 +596,21 @@ class VisionEngine:
             # ------------------------------------------------
 
             model4 = self.run_model4(
-
                 image_path,
-
                 source="open_stagnant_water",
-
                 habitat_area_pixels=(
                     habitat_area_pixels
                 )
             )
 
             return self._complete_result(
-
                 route="model3",
-
                 model1=model1,
-
                 model2=None,
-
                 model3=model3,
-
                 model4=model4,
-
                 environment=environment
             )
-
         # ====================================================
         # NO HABITAT
         # ====================================================
