@@ -1408,8 +1408,8 @@ class EnvironmentalEngine:
 
         Population is obtained from WorldPop.
 
-        Historical hotspot values remain available for
-        future database integration.
+        Historical hotspot values are retrieved
+        from the Firestore-backed Hotspot Engine.
         """
 
         # ====================================================
@@ -1717,6 +1717,9 @@ class EnvironmentalEngine:
                 "hotspots_within_500m": historical_risk.get(
                                         "hotspots_within_500m"
                                           ),
+                "repeated_reports_within_500m": historical_risk.get(
+                                               "repeated_reports_within_500m"
+                                           ),
 
                 "nearest_hotspot_distance_m": historical_risk.get(
                                               "nearest_hotspot_distance_m"
@@ -2105,6 +2108,12 @@ if __name__ == "__main__":
             "hotspots_within_500m"
         ]
     )
+    print(
+    "Repeated reports within 500m:",
+    historical[
+        "repeated_reports_within_500m"
+    ]
+)
 
     print(
         "Historical cases within 500m:",

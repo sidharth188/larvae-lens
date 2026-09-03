@@ -581,6 +581,7 @@ class HotspotEngine:
 
                 "hotspots_within_500m":
                     None,
+                "repeated_reports_within_500m": None,
 
                 "nearest_hotspot_distance_m":
                     None,
@@ -630,6 +631,7 @@ class HotspotEngine:
 
                 "hotspots_within_500m":
                     None,
+                "repeated_reports_within_500m": None,
 
                 "nearest_hotspot_distance_m":
                     None,
@@ -745,6 +747,8 @@ class HotspotEngine:
 
                 "hotspots_within_500m":
                     0,
+                "repeated_reports_within_500m":
+                    0,
 
                 "nearest_hotspot_distance_m":
                     None,
@@ -843,6 +847,11 @@ class HotspotEngine:
                     nearby_hotspots
                 ),
 
+            "repeated_reports_within_500m":
+                len(
+                    nearby_hotspots
+                ),
+
             "nearest_hotspot_distance_m":
                 nearest[
                     "distance_m"
@@ -918,6 +927,13 @@ if __name__ == "__main__":
             result.get(
                 "hotspots_within_500m"
             )
+        )
+
+        print(
+    "Repeated reports within 500m:",
+    result.get(
+        "repeated_reports_within_500m"
+           )
         )
 
 
