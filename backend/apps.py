@@ -138,7 +138,25 @@ def upload():
     user_name     = request.form.get("user_name", "").strip()
 
     # --------------------------------------------------------
-    # Preserve existing 300x300 processing behavior.
+    # SAVE TEMP IMAGE
+    # --------------------------------------------------------
+
+    original_filename = image.filename or "uploaded_image.jpg"
+
+    unique_filename = (
+    f"{uuid.uuid4()}_{original_filename}"
+    )
+
+    image_path = os.path.join(
+       UPLOAD_FOLDER,
+       unique_filename
+    )
+
+    image.save(image_path)
+
+
+    # --------------------------------------------------------
+    # READ AND NORMALIZE IMAGE
     # --------------------------------------------------------
 
     img = cv2.imread(
@@ -148,9 +166,12 @@ def upload():
     if img is None:
 
         return jsonify({
+            "success": False,
             "message": "Invalid image"
         }), 400
 
+
+    # Preserve existing 300x300 processing behavior
     img = cv2.resize(
         img,
         (300, 300)
@@ -164,7 +185,6 @@ def upload():
     del img
 
     gc.collect()
-
         # ----------------------------------------------------
         # PARSE LOCATION
         # ----------------------------------------------------

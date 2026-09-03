@@ -482,8 +482,8 @@ class VisionEngine:
                "dense_vegetation_habitat",
             }
 
-            MIN_HABITAT_CONFIDENCE = 0.50
-            MIN_HABITAT_MASK_RATIO = 0.02
+            MIN_HABITAT_CONFIDENCE = 0.35
+            MIN_HABITAT_MASK_RATIO = 0.005
             MAX_HABITAT_MASK_RATIO = 0.90
 
             valid_habitats = []
