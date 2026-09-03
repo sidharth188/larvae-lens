@@ -104,134 +104,165 @@ def upload():
     Primary pipeline:
       1. Accept image + form metadata.
       2. Validate image is readable.
-      3. Run V1 Vision Engine (with graceful fallback on failure).
+      3. Run V1 Vision Engine with graceful fallback.
       4. Upload image to Cloudinary.
-      5. Send WhatsApp alert for HIGH risk.
-      6. Upsert user profile in `users` collection.
-      7. Save full structured report to `larvae_reports` collection.
-      8. Return flat JSON for frontend display.
+      5. Send WhatsApp alert for HIGH breeding risk.
+      6. Upsert user profile.
+      7. Save full structured report.
+      8. Return structured JSON for frontend.
     """
 
-    # --------------------------------------------------------
-    # IMAGE
-    # --------------------------------------------------------
+    image_path = None
+    unique_filename = None
 
-    image = request.files["image"]
+    try:
+        # --------------------------------------------------------
+        # IMAGE
+        # --------------------------------------------------------
 
-    if image is None:
-        return jsonify({"success": False, "message": "No image provided"}), 400
+        image = request.files.get("image")
 
-    if image.content_length and image.content_length > 5 * 1024 * 1024:
-        return jsonify({"success": False, "message": "Image too large (max 5 MB)"}), 400
+        if image is None or not image.filename:
+            return jsonify({
+                "success": False,
+                "message": "No image provided"
+            }), 400
 
-    # --------------------------------------------------------
-    # FORM FIELDS
-    # --------------------------------------------------------
+        if image.content_length and image.content_length > 5 * 1024 * 1024:
+            return jsonify({
+                "success": False,
+                "message": "Image too large (max 5 MB)"
+            }), 400
 
-    latitude_raw  = request.form.get("latitude")
-    longitude_raw = request.form.get("longitude")
-    accuracy_raw  = request.form.get("accuracy_m")
-    timestamp     = datetime.utcnow().isoformat()
-    priority      = request.form.get("priority", "false")
-    priority      = str(priority).strip().lower() == "true"
-    email         = request.form.get("email", "").strip()
-    user_name     = request.form.get("user_name", "").strip()
+        # --------------------------------------------------------
+        # FORM FIELDS
+        # --------------------------------------------------------
 
-    # --------------------------------------------------------
-    # SAVE TEMP IMAGE
-    # --------------------------------------------------------
+        latitude_raw = request.form.get("latitude")
+        longitude_raw = request.form.get("longitude")
+        accuracy_raw = request.form.get("accuracy_m")
 
-    original_filename = image.filename or "uploaded_image.jpg"
+        timestamp = datetime.utcnow().isoformat()
 
-    unique_filename = (
-    f"{uuid.uuid4()}_{original_filename}"
-    )
+        priority_raw = request.form.get("priority", "false")
+        priority = str(priority_raw).strip().lower() == "true"
 
-    image_path = os.path.join(
-       UPLOAD_FOLDER,
-       unique_filename
-    )
+        email = request.form.get("email", "").strip()
+        user_name = request.form.get("user_name", "").strip()
 
-    image.save(image_path)
+        # --------------------------------------------------------
+        # SAVE TEMP IMAGE
+        # --------------------------------------------------------
 
+        original_filename = image.filename or "uploaded_image.jpg"
 
-    # --------------------------------------------------------
-    # READ AND NORMALIZE IMAGE
-    # --------------------------------------------------------
+        unique_filename = (
+            f"{uuid.uuid4()}_{original_filename}"
+        )
 
-    img = cv2.imread(
-        image_path
-    )
+        image_path = os.path.join(
+            UPLOAD_FOLDER,
+            unique_filename
+        )
 
-    if img is None:
+        image.save(image_path)
 
-        return jsonify({
-            "success": False,
-            "message": "Invalid image"
-        }), 400
+        # --------------------------------------------------------
+        # READ AND NORMALIZE IMAGE
+        # --------------------------------------------------------
 
+        img = cv2.imread(image_path)
 
-    # Preserve existing 300x300 processing behavior
-    img = cv2.resize(
-        img,
-        (300, 300)
-    )
+        if img is None:
+            return jsonify({
+                "success": False,
+                "message": "Invalid image"
+            }), 400
 
-    cv2.imwrite(
-        image_path,
-        img
-    )
+        img = cv2.resize(img, (300, 300))
 
-    del img
+        cv2.imwrite(image_path, img)
 
-    gc.collect()
-        # ----------------------------------------------------
+        del img
+        gc.collect()
+
+        # --------------------------------------------------------
         # PARSE LOCATION
-        # ----------------------------------------------------
-
+        # --------------------------------------------------------
         try:
-            lat_float  = float(latitude_raw)  if latitude_raw  else None
-            lng_float  = float(longitude_raw) if longitude_raw else None
-            acc_float  = float(accuracy_raw)  if accuracy_raw  else None
-        except (TypeError, ValueError):
-            lat_float = lng_float = acc_float = None
+            lat_float = (
+                float(latitude_raw)
+                if latitude_raw
+                else None
+            )
 
-        # ----------------------------------------------------
+            lng_float = (
+                float(longitude_raw)
+                if longitude_raw
+                else None
+            )
+
+            acc_float = (
+                float(accuracy_raw)
+                if accuracy_raw
+                else None
+            )
+
+        except (TypeError, ValueError):
+            lat_float = None
+            lng_float = None
+            acc_float = None
+
+        # --------------------------------------------------------
         # V1 VISION ENGINE
-        # Falls back gracefully if a model file is missing.
-        # ----------------------------------------------------
+        # --------------------------------------------------------
 
         try:
             v1_result = vision_engine.analyze(
                 image_path=image_path,
                 latitude=lat_float,
                 longitude=lng_float,
-                accuracy_m=acc_float,
+                accuracy_m=acc_float
             )
+
         except Exception as engine_error:
-            print("VisionEngine error (fallback):", engine_error)
+
+            print(
+                "VisionEngine error (fallback):",
+                engine_error
+            )
+
             traceback.print_exc()
+
             v1_result = {
                 "engine": "vision-engine-v1",
                 "status": "engine_error",
-                "route":  "engine_error",
-                "model1": {"detected": False, "objects": [], "confidence": 0.0},
+                "route": "engine_error",
+
+                "model1": {
+                    "detected": False,
+                    "objects": [],
+                    "confidence": 0.0
+                },
+
                 "model2": None,
                 "model3": None,
                 "model4": None,
+
                 "environment": {},
+
                 "risk_assessment": {},
+
+                "location": {
+                    "latitude": lat_float,
+                    "longitude": lng_float,
+                    "accuracy_m": acc_float
+                }
             }
 
-                    # ----------------------------------------------------
+        # --------------------------------------------------------
         # REJECT INVALID / GARBAGE IMAGES
-        #
-        # Vision Engine must explicitly confirm that the
-        # image contains valid mosquito-breeding evidence.
-        #
-        # IMPORTANT:
-        # This happens BEFORE Cloudinary and Firestore.
-        # ----------------------------------------------------
+        # --------------------------------------------------------
 
         vision_status = str(
             v1_result.get("status", "")
@@ -239,12 +270,8 @@ def upload():
 
         if vision_status == "garbage":
 
-            print(
-                "=== UPLOAD REJECTED ==="
-            )
-            print(
-                "Reason: invalid / irrelevant image"
-            )
+            print("=== UPLOAD REJECTED ===")
+            print("Reason: invalid / irrelevant image")
             print(
                 "Vision route:",
                 v1_result.get("route")
@@ -332,7 +359,7 @@ def upload():
             "rainfall_7d_mm":          weather_raw.get("rainfall_7d_mm"),
             "current_precipitation_mm": weather_raw.get("current_precipitation_mm"),
             "source":                  weather_raw.get("source"),
-            "weather_timezone":        weather_raw.get("weather_timezone"),
+           "weather_timezone":        weather_raw.get("weather_timezone"),
         }
 
         # ---- location sub-document ----
@@ -341,7 +368,6 @@ def upload():
             "longitude":  loc_raw.get("longitude") or lng_float,
             "accuracy_m": loc_raw.get("accuracy_m") or acc_float,
         }
-
         # ---- population sub-document ----
         population_doc = {
             "search_radius_m":             population_raw.get("search_radius_m"),
@@ -391,19 +417,10 @@ def upload():
             "source":                        hist_raw.get("source", "LarvaeLens historical database"),
         }
 
-        # ---- risk sub-document ----
-        risk_doc = {
-            "engine":              risk_raw.get("risk_engine", "risk-engine-v1"),
-            "biological_score":    risk_raw.get("biological_score"),
-            "environmental_score": risk_raw.get("environmental_score"),
-            "population_score":    risk_raw.get("population_score"),
-            "facility_score":      risk_raw.get("facility_score"),
-            "historical_score":    risk_raw.get("historical_score"),
-            "final_score":         breeding_risk.get("score"),
-            "risk_level":          risk_level,
-            "generated_at":        timestamp,
-        }
-        # ---- risk sub-document ----
+        # --------------------------------------------------------
+        # RISK DOCUMENT
+        # ----- ---------------------------------------------------
+
         municipal_priority = (
             risk_raw.get("municipal_priority") or {}
         )
@@ -420,64 +437,60 @@ def upload():
             "engine": risk_raw.get(
                 "risk_engine",
                 "risk-engine-v1"
-           ),
+            ),
 
-           # -----------------------------------------
-           # BREEDING RISK
-           # -----------------------------------------
-           "breeding_risk": {
-               "score": breeding_risk.get("score"),
-               "level": breeding_risk.get("level"),
-               "base_level": breeding_risk.get("base_level"),
-               "maximum": breeding_risk.get(
-                   "maximum",
-                   100
-               ),
-               "escalation_reasons":
-                   breeding_risk.get(
-                       "escalation_reasons",
-                       []
-                   ),
-                "components": breeding_components,
-           },
+            # ====================================================
+            # BREEDING RISK
+            # ====================================================
 
-           # -----------------------------------------
-           # MUNICIPAL INTERVENTION PRIORITY
-           # -----------------------------------------
-           "municipal_priority": {
-               "score": municipal_priority.get("score"),
-               "level": municipal_priority.get("level"),
-               "maximum": municipal_priority.get(
-                   "maximum",
-                   100
-               ),
-               "normalized_from_available_evidence":
-                   municipal_priority.get(
-                      "normalized_from_available_evidence",
-                      False
-                   ),
-               "unavailable_components":
-                   municipal_priority.get(
-                       "unavailable_components",
-                       []
-                   ),
-                "components": municipal_components,
-           },
+            "breeding_risk": {
+                "score": breeding_risk.get("score"),
+                "level": breeding_risk.get("level"),
+                "base_level": breeding_risk.get("base_level"),
+                "maximum": breeding_risk.get(
+                    "maximum",
+                    100
+                ),
+                "escalation_reasons": breeding_risk.get(
+                    "escalation_reasons",
+                    []
+                ),
+                "components": breeding_components
+            },
 
-           # -----------------------------------------
-           # QUICK-ACCESS SCORES
-           # -----------------------------------------
-           "final_score":
-               breeding_risk.get("score"),
+            # ====================================================
+            # MUNICIPAL INTERVENTION PRIORITY
+            # ====================================================
 
-           "risk_level":
-               breeding_risk.get("level"),
+            "municipal_priority": {
+                "score": municipal_priority.get("score"),
+                "level": municipal_priority.get("level"),
+                "maximum": municipal_priority.get(
+                    "maximum",
+                    100
+                ),
+                "normalized_from_available_evidence":
+                     municipal_priority.get(
+                        "normalized_from_available_evidence",
+                        False
+                    ),
+                "unavailable_components":
+                    municipal_priority.get(
+                        "unavailable_components",
+                        []
+                    ),
+                "components": municipal_components
+            },
 
-           "municipal_score":
-               municipal_priority.get("score"),
+            # ====================================================
+            # QUICK ACCESS
+            # ====================================================
 
-            "municipal_level":
-               municipal_priority.get("level"),
+            "final_score": breeding_risk.get("score"),
+            "risk_level": breeding_risk.get("level"),
+
+            "municipal_score": municipal_priority.get("score"),
+            "municipal_level": municipal_priority.get("level")
         }
 
         # ----------------------------------------------------
@@ -542,6 +555,9 @@ def upload():
             "risk_level":    risk_level,
             "risk_score":    risk_score,
 
+            "municipal_level": municipal_priority.get("level"),
+            "municipal_score": municipal_priority.get("score"),
+
             # ---- full nested analysis ----
             "vision":             vision_doc,
             "environment":        environment_doc,
@@ -598,7 +614,7 @@ def upload():
         }), 500
 
     finally:
-        if os.path.exists(image_path):
+        if image_path and os.path.exists(image_path):
             try:
                 os.remove(image_path)
             except Exception as cleanup_error:
@@ -758,12 +774,13 @@ def api_analyze():
 
     image = request.files.get("image")
 
-    if image is None:
+    if image is None or not image.filename:
+       return jsonify({
+           "success": False,
+           "message": "No image provided"
+       }), 400
 
-       api_response = build_api_response(result)
-
-       return jsonify(api_response), 400
-
+       
     # --------------------------------------------------------
     # FILE SIZE
     # --------------------------------------------------------
@@ -855,7 +872,7 @@ def api_analyze():
 
     finally:
 
-        if os.path.exists(image_path):
+        if image_path and os.path.exists(image_path):
             try:
                 os.remove(image_path)
             except Exception as cleanup_error:
@@ -888,9 +905,15 @@ def get_reports():
         vision = doc.get("vision") or {}
         environment = doc.get("environment") or {}
         risk = doc.get("risk") or {}
+        breeding_risk = risk.get("breeding_risk") or {}
+
+        municipal_priority = (
+            risk.get("municipal_priority") or {}
+        )
 
         risk_level = (
             doc.get("risk_level")
+            or breeding_risk.get("level")
             or risk.get("risk_level")
             or "LOW"
         )
@@ -898,7 +921,20 @@ def get_reports():
         risk_score = (
             doc.get("risk_score")
             if doc.get("risk_score") is not None
-            else risk.get("final_score")
+            else breeding_risk.get("score")
+        )
+
+        municipal_level = (
+            doc.get("municipal_level")
+            or municipal_priority.get("level")
+            or risk.get("municipal_level")
+            or "LOW"
+        )
+
+        municipal_score = (
+            doc.get("municipal_score")
+            if doc.get("municipal_score") is not None
+            else municipal_priority.get("score")
         )
 
         status = doc.get("status") or "PENDING"
@@ -954,13 +990,13 @@ def get_reports():
 
             "risk": {
                 "breeding": {
-                    "score": risk.get("biological_score"),
+                    "score": risk_score,
                     "level": risk_level
                 },
 
                 "municipal": {
-                    "score": risk_score,
-                    "level": risk_level,
+                    "score": municipal_score,
+                    "level": municipal_level,
                     "status": status
                 }
             },
