@@ -26,7 +26,7 @@ MarkupSafe==3.0.3
 msgspec==0.21.1
 multidict==6.7.1
 numpy
-opencv-python
+opencv-python-headless
 packaging==26.2
 pillow==12.2.0
 propcache==0.5.2

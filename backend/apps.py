@@ -775,12 +775,11 @@ def api_analyze():
     image = request.files.get("image")
 
     if image is None or not image.filename:
-       return jsonify({
-           "success": False,
-           "message": "No image provided"
-       }), 400
+        return jsonify({
+            "success": False,
+            "message": "No image provided"
+        }), 400
 
-       
     # --------------------------------------------------------
     # FILE SIZE
     # --------------------------------------------------------
