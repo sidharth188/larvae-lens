@@ -1026,17 +1026,50 @@ def get_reports():
 )
 def update_status(doc_id):
 
-    status = request.json.get("status", "COMPLETED") if request.json else "COMPLETED"
+    payload = request.get_json(silent=True) or {}
 
+    status = payload.get("status")
+
+    allowed_statuses = {
+    "PENDING",
+    "IN PROGRESS",
+    "COMPLETED"
+    }
+
+    if status not in allowed_statuses:
+       return jsonify({
+        "success": False,
+        "message": "Invalid status. Allowed values are PENDING, IN PROGRESS, and COMPLETED."
+    }), 400
     try:
 
         db.collection("larvae_reports").document(doc_id).update({
-            "status": status
+            "status": status,
+            "workflow.status": status,
+            "workflow.display_flag": (
+                "GREEN"
+                if status == "COMPLETED"
+                else "YELLOW"
+                if status == "IN PROGRESS"
+                else "RED"
+            )
         })
 
+        display_flag = (
+            "GREEN"
+            if status == "COMPLETED"
+            else "YELLOW"
+            if status == "IN PROGRESS"
+            else "RED"
+        )
         return jsonify({
-            "message": "Status Updated",
-            "status":  status
+            "success": True,
+            "message": f"Report {doc_id} status updated to {status}",
+            "status": status,
+            "workflow": {
+                "status": status,
+                "display_flag": display_flag
+            }
         })
 
     except NotFound:

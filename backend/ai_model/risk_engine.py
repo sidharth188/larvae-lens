@@ -99,9 +99,9 @@ class RiskEngine:
         validated/refined later using historical data.
         """
 
-        r24 = self._number(rainfall_24h)
-        r3 = self._number(rainfall_3d)
-        r7 = self._number(rainfall_7d)
+        r24 = None if rainfall_24h is None else self._number(rainfall_24h)
+        r3 = None if rainfall_3d is None else self._number(rainfall_3d)
+        r7 = None if rainfall_7d is None else self._number(rainfall_7d)
 
         # -----------------------------
         # 24 hour rainfall / 5
@@ -140,11 +140,26 @@ class RiskEngine:
         else:
             score_7d = 2
 
-        total = score_24h + score_3d + score_7d
+        available_scores = []
+
+        if r24 is not None:
+            available_scores.append(score_24h)
+
+        if r3 is not None:
+            available_scores.append(score_3d)
+
+        if r7 is not None:
+            available_scores.append(score_7d)
+
+        if available_scores:
+            total = sum(available_scores)
+        else:
+            total = None
 
         return {
             "score": total,
             "maximum": 10,
+            "available": bool(available_scores),
             "rainfall_24h_mm": r24,
             "rainfall_3d_mm": r3,
             "rainfall_7d_mm": r7,
@@ -1021,18 +1036,20 @@ class RiskEngine:
 
         available_score = (
             breeding_contribution
-            + rainfall_component["score"]
             + facility_component["score"]
         )
 
         available_maximum = (
             25
             + 10
-            + 10
         )
-
-        unavailable_components = []
-
+        if rainfall_component["score"] is not None:
+            available_score += (
+                rainfall_component["score"]
+            )
+            available_maximum += 10
+        if not rainfall_component["available"]:
+            unavailable_components.append("rainfall")
         if not population_component["available"]:
             unavailable_components.append(
                 "population"
