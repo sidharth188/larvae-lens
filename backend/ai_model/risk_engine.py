@@ -1101,12 +1101,19 @@ class RiskEngine:
             available_maximum += 5
 
         if available_maximum > 0:
-            municipal_score = (
+           municipal_score = (
                 available_score
                 / available_maximum
             ) * 100
         else:
-            municipal_score = 0
+           municipal_score = 0
+
+        total_maximum = 100
+
+        evidence_completeness = (
+            available_maximum
+            / total_maximum
+        ) * 100
 
         municipal_score = round(
             min(
@@ -1124,12 +1131,18 @@ class RiskEngine:
         )
 
         return {
-            "score": municipal_score,
-            "level": level,
-            "maximum": 100,
-            "normalized_from_available_evidence": (
-                len(unavailable_components) > 0
-            ),
+    "score": municipal_score,
+    "level": level,
+    "maximum": 100,
+
+    "evidence_completeness": round(
+        evidence_completeness,
+        1
+    ),
+
+    "normalized_from_available_evidence": (
+        len(unavailable_components) > 0
+    ),
             "unavailable_components":
                 unavailable_components,
             "components": {

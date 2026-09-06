@@ -308,8 +308,14 @@ def upload():
         model3_raw = v1_result.get("model3")        # may be None
         model4_raw = v1_result.get("model4") or {}
 
-        risk_level = breeding_risk.get("level") or "LOW"
-        risk_score = breeding_risk.get("score") or 0
+        risk_engine_status = risk_raw.get("status")
+
+        if risk_engine_status == "error":
+            risk_level = "UNAVAILABLE"
+            risk_score = None
+        else:
+            risk_level = breeding_risk.get("level")
+            risk_score = breeding_risk.get("score")
 
 
         # ---- vision sub-document ----
@@ -411,6 +417,7 @@ def upload():
         historical_risk_doc = {
             "search_radius_m":               hist_raw.get("search_radius_m", 500),
             "hotspots_within_500m":          hist_raw.get("hotspots_within_500m"),
+            "repeated_reports_within_500m":  hist_raw.get("repeated_reports_within_500m"),
             "nearest_hotspot_distance_m":    hist_raw.get("nearest_hotspot_distance_m"),
             "historical_cases_within_500m":  hist_raw.get("historical_cases_within_500m"),
             "most_recent_hotspot_year":      hist_raw.get("most_recent_hotspot_year"),
@@ -469,6 +476,9 @@ def upload():
                     "maximum",
                     100
                 ),
+                "evidence_completeness": municipal_priority.get(
+                "evidence_completeness"
+                ),
                 "normalized_from_available_evidence":
                      municipal_priority.get(
                         "normalized_from_available_evidence",
@@ -490,7 +500,10 @@ def upload():
             "risk_level": breeding_risk.get("level"),
 
             "municipal_score": municipal_priority.get("score"),
-            "municipal_level": municipal_priority.get("level")
+            "municipal_level": municipal_priority.get("level"),
+            "municipal_evidence_completeness": municipal_priority.get(
+                 "evidence_completeness"
+            )
         }
 
         # ----------------------------------------------------
@@ -912,9 +925,10 @@ def get_reports():
 
         risk_level = (
             doc.get("risk_level")
-            or breeding_risk.get("level")
-            or risk.get("risk_level")
-            or "LOW"
+            if doc.get("risk_level") is not None
+            else breeding_risk.get("level")
+            if breeding_risk.get("level") is not None
+            else risk.get("risk_level")
         )
 
         risk_score = (
@@ -925,15 +939,21 @@ def get_reports():
 
         municipal_level = (
             doc.get("municipal_level")
-            or municipal_priority.get("level")
-            or risk.get("municipal_level")
-            or "LOW"
+            if doc.get("municipal_level") is not None
+            else municipal_priority.get("level")
+            if municipal_priority.get("level") is not None
+            else risk.get("municipal_level")
         )
 
         municipal_score = (
             doc.get("municipal_score")
             if doc.get("municipal_score") is not None
             else municipal_priority.get("score")
+        )
+        municipal_evidence_completeness = (
+            doc.get("municipal_evidence_completeness")
+            if doc.get("municipal_evidence_completeness") is not None
+            else municipal_priority.get("evidence_completeness")
         )
 
         status = doc.get("status") or "PENDING"
@@ -996,6 +1016,7 @@ def get_reports():
                 "municipal": {
                     "score": municipal_score,
                     "level": municipal_level,
+                    "evidence_completeness": municipal_evidence_completeness,
                     "status": status
                 }
             },

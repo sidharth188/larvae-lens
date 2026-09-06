@@ -1379,24 +1379,16 @@ class VisionEngine:
                 ] = risk_assessment
 
             except Exception as error:
+              print("========== RISK ENGINE ERROR ==========")
+              print("Risk Engine error:", error)
+              import traceback
+              traceback.print_exc()
+              print("=======================================")
 
-                print(
-                    "Risk Engine error:",
-                    error
-                )
-
-                result[
-                    "risk_assessment"
-                ] = {
-
-                    "risk_engine":
-                        "risk-engine-v1",
-
-                    "status":
-                        "error",
-
-                    "error":
-                        str(error)
+              result["risk_assessment"] = {
+                    "risk_engine": "risk-engine-v1",
+                    "status": "error",
+                    "error": str(error)
                 }
 
         else:
