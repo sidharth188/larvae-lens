@@ -1033,7 +1033,9 @@ class RiskEngine:
         # -----------------------------------------
         # Handle unavailable database features
         # -----------------------------------------
-
+        
+        unavailable_components = []
+        
         available_score = (
             breeding_contribution
             + facility_component["score"]
