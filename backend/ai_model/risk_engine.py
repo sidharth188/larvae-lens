@@ -589,47 +589,65 @@ class RiskEngine:
         self,
         facilities
     ):
-        """
-        Uses validated facilities within 500m.
+       """
+       Uses validated facilities within 500m.
 
-        Maximum = 10.
-        """
+       Maximum = 10.
+       """
 
-        total = 0
+       total = 0
+       has_facility_data = False
 
-        for category in (
-            "schools",
-            "hospitals",
-            "higher_education"
-        ):
+       for category in (
+        "schools",
+        "hospitals",
+        "higher_education",
+        "universities"
+       ):
 
-            data = facilities.get(
-                category,
-                {}
-            )
+        data = facilities.get(
+            category,
+            {}
+        )
 
-            summary = data.get(
-                "spatial_summary",
-                {}
-            )
-
-            value = summary.get(
-                "within_500m"
-            )
+        # Current Environmental Engine format
+        if "within_500m" in data:
+            value = data.get("within_500m")
 
             if value is not None:
-                total += self._safe_int(
-                    value
-                )
+                has_facility_data = True
+                total += self._safe_int(value)
+
+        # Older / spatial-summary format
+        summary = data.get(
+            "spatial_summary",
+            {}
+        )
+
+        if "within_500m" in summary:
+            value = summary.get("within_500m")
+
+            if value is not None:
+                has_facility_data = True
+                total += self._safe_int(value)
+
+        # Facility information is unavailable
+        if not has_facility_data:
+           return {
+            "score": None,
+            "maximum": 10,
+            "available": False,
+            "facility_count_500m": None
+          }
 
         if total == 0:
-            score = 0
+           score = 0
 
         elif total <= 2:
-            score = 2
+           score = 2
 
         elif total <= 5:
-            score = 5
+           score = 5
 
         elif total <= 10:
             score = 8
@@ -638,9 +656,10 @@ class RiskEngine:
             score = 10
 
         return {
-            "score": score,
-            "maximum": 10,
-            "facility_count_500m": total
+        "score": score,
+        "maximum": 10,
+        "available": True,
+        "facility_count_500m": total
         }
 
     # =========================================================
@@ -1035,7 +1054,7 @@ class RiskEngine:
         # -----------------------------------------
         
         unavailable_components = []
-        
+
         available_score = (
             breeding_contribution
             + facility_component["score"]
@@ -1070,6 +1089,11 @@ class RiskEngine:
         if not proximity_component["available"]:
             unavailable_components.append(
                 "hotspot_proximity"
+            )
+
+        if not facility_component["available"]:
+            unavailable_components.append(
+                "facilities"
             )
 
         # -----------------------------------------
