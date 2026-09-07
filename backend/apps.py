@@ -4,7 +4,7 @@ import cv2
 import gc
 from datetime import datetime
 import os
-
+import requests
 from flask import Flask, request, jsonify, send_from_directory, redirect
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -46,6 +46,44 @@ from notification.whatsaap import send_whatsapp_alert
 app = Flask(__name__)
 
 vision_engine = VisionEngine()
+
+# ============================================================
+# REVERSE GEOCODING
+# ============================================================
+
+def reverse_geocode(latitude, longitude):
+    """
+    Convert latitude/longitude into a human-readable address.
+    Uses OpenStreetMap Nominatim.
+    """
+
+    if latitude is None or longitude is None:
+        return None
+
+    try:
+        response = requests.get(
+            "https://nominatim.openstreetmap.org/reverse",
+            params={
+                "lat": latitude,
+                "lon": longitude,
+                "format": "jsonv2",
+                "addressdetails": 1
+            },
+            headers={
+                "User-Agent": "LarvaeLens/1.0"
+            },
+            timeout=10
+        )
+
+        response.raise_for_status()
+
+        data = response.json()
+
+        return data.get("display_name")
+
+    except Exception as error:
+        print("Reverse geocoding error:", error)
+        return None
 
 CORS(
     app,
@@ -374,6 +412,13 @@ def upload():
             "longitude":  loc_raw.get("longitude") or lng_float,
             "accuracy_m": loc_raw.get("accuracy_m") or acc_float,
         }
+
+        # ---- human-readable location name ----
+        location_name = reverse_geocode(
+            location_doc["latitude"],
+            location_doc["longitude"]
+        )
+        
         # ---- population sub-document ----
         population_doc = {
             "search_radius_m":             population_raw.get("search_radius_m"),
@@ -575,6 +620,7 @@ def upload():
             "vision":             vision_doc,
             "environment":        environment_doc,
             "location":           location_doc,
+            "location_name":      location_name,
             "population":         population_doc,
             "nearby_facilities":  nearby_facilities_doc,
             "historical_risk":    historical_risk_doc,
